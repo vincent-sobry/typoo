@@ -52,8 +52,8 @@ test("text: short words with only the learned keys; length follows the pace", as
     return { ok: words.every((w) => w.length >= 2 && w.length <= 5 && [...w].every((c) => allowed.has(c))), n10, n40 };
   });
   expect(r.ok).toBe(true);
-  expect(r.n10).toBe(13);
-  expect(r.n40).toBe(50);
+  expect(r.n10).toBe(12);
+  expect(r.n40).toBe(40);
 });
 
 test("early chapters: the text uses only the keys met so far", async ({ page }) => {
@@ -104,4 +104,14 @@ test("Escape stops the warm-up; it stays on the home screen", async ({ page }) =
   await expect(page.locator("#home")).toBeVisible();
   await expect(page.locator("#mWarm")).toBeVisible();
   expect((await saved(page))?.warmup?.last || "").toBe("");
+});
+
+test("the run stops after 1 minute, also with words left", async ({ page }) => {
+  await openApp(page, withChapters(3));
+  await page.click("#mWarm");
+  await page.keyboard.type((await page.evaluate("S.text")).slice(0, 6), { delay: 5 });
+  await page.evaluate("S.start = performance.now() - 61000");
+  await expect(page.locator("#result")).toBeVisible();
+  await expect(page.locator("#rTitle")).toContainText("Warm-up done");
+  expect((await saved(page)).warmup.count).toBe(1);
 });

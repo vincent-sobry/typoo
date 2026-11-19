@@ -1208,7 +1208,7 @@ function boostDone(L,res){
 /* =========================================================================
    DAILY WARM-UP (1 to 2 minutes, easy words, all learned keys, no score)
    ========================================================================= */
-const WARMUP_SECS = 75;                               // planned length of the text, at the player's normal pace
+const WARMUP_SECS = 60;                               // the run stops after 1 minute; the text fits 1 minute at the normal pace
 /* Shows one time per day, after the first chapter is passed. */
 function warmupDue(){ return currentLessonIdx()>0 && (state.warmup?.last||"")!==todayStr(); }
 /* Short words (2 to 5 letters) with only the learned keys. Not the weak keys: that is Smart Practice. */
@@ -1222,9 +1222,11 @@ function genWarmup(){
   return out.slice(0,n).join(" ");
 }
 function startWarmup(){
-  startSession({mode:"warmup", title:"☀️ Daily warm-up", text:genWarmup(), noScore:true, onFinish:res=>{
+  startSession({mode:"warmup", title:"☀️ Daily warm-up", text:genWarmup(), noScore:true,
+    onTick(){ if(S.start && !S.done && elapsed()>=WARMUP_SECS) finishSession(); },   // stop at 1 minute, also with words left
+    onFinish:res=>{
     state.warmup={last:todayStr(), count:(state.warmup?.count||0)+1};
-    const xp=Math.round(S.text.length*Math.pow(res.acc/100,2)/3); state.xp+=xp;
+    const xp=Math.round(S.pos*Math.pow(res.acc/100,2)/3); state.xp+=xp;
     const cur=currentLessonIdx();
     showResult({title:"Warm-up done ☀️", res, xp, mood:"wow",
       msg:"Your fingers are warm. Ready for the real work!",
