@@ -227,6 +227,8 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .choice{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
 .choice:hover{border-color:var(--accent2)}
 .choice b{display:block;font-size:18px}
+.choice .bst{color:#ffd43b;letter-spacing:3px}
+.choice .bst i{font-style:normal;color:#3a4277}
 .count{font-size:120px;font-weight:900;color:#fff;text-shadow:0 0 40px var(--accent)}
 
 /* ---------- Meteor ---------- */
@@ -322,6 +324,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
             <button class="mode" id="mRain"><span class="ic">☄️</span><span><b>Word Rain</b><small>Stop the meteors before they land</small></span></button>
             <button class="mode" id="mLadder"><span class="ic">🪜</span><span><b>Longest Word</b><small id="mLadderText">Climb the word ladder against Keebo</small></span></button>
             <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b>Smart Practice</b><small>Train your weakest keys</small></span></button>
+            <button class="mode" id="mBoost"><span class="ic">⚡</span><span><b>Booster</b><small id="mBoostText">Get more stars on a chapter</small></span></button>
           </div>
         </div>
         <div class="card" style="margin-top:16px">
@@ -435,6 +438,12 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
   <p class="muted" id="llTxt"></p>
   <ol class="missing" id="llList"></ol>
   <button class="btn" id="llClose">OK</button>
+</div></div>
+<div class="overlay" id="boostLobby"><div class="panel">
+  <h2>⚡ Booster</h2>
+  <p class="muted" id="blTxt">Pick a chapter. A very good run gives it one more star.</p>
+  <div class="choices" id="boostChoices"></div>
+  <button class="btn ghost" id="boostCancel">Cancel</button>
 </div></div>
 <div class="overlay" id="rainOver"><div class="panel">
   <h2 id="rainTitle">Game over</h2>
@@ -1054,7 +1063,7 @@ function showResult(o){
   $("#rAcc").textContent=Math.round(o.res.acc)+"%";
   $("#rTime").textContent=o.res.secs<60?Math.round(o.res.secs)+"s":fmtTime(o.res.secs);
   $("#rXp").textContent="+"+o.xp;
-  showLevel(o.xp, o.stars);
+  showLevel(o.xp, o.stars, o.party!==false);
   $("#rNeed").textContent=o.need||"";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   $("#rWeak").innerHTML = weak.length ? "Tricky keys: "+weak.map(([c,n])=>`<kbd>${c===" "?"space":esc(c)}</kbd>×${n}`).join(" ") : "No mistakes. Wow! 💎";
@@ -1066,7 +1075,7 @@ function showResult(o){
 }
 let resultActions=null, lvlTimer=null;
 /* XP sum after the summary. A new level gets a celebration. */
-function showLevel(gained, stars){
+function showLevel(gained, stars, party=true){
   const now=levelInfo(state.xp), before=levelInfo(state.xp-gained);
   const up=now.lvl>before.lvl, newTitle=now.title!==before.title;
   clearTimeout(lvlTimer); $("#rLvlUp").classList.remove("on");
@@ -1090,7 +1099,7 @@ function showLevel(gained, stars){
     } else {
       bar.style.width=(now.into/now.need*100)+"%";
       $("#rLvlXp").textContent=`${now.into} / ${now.need} XP`;
-      if(stars>=1) confetti(stars>=3?90:40);
+      if(stars>=1 && party) confetti(stars>=3?90:40);
     }
   }, delay);
 }
@@ -1109,6 +1118,82 @@ function startSmart(){
       retry:startSmart, next:null});
   }});
   say("#type", `I picked your trickiest keys: ${weak.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}. Slow and precise!`, "think");
+}
+
+/* =========================================================================
+   BOOSTER
+   Extra practice on a chapter with 1 or 2 stars. The text uses the keys of
+   that chapter plus the player's weakest keys. A very good run (the rule of
+   the next star) gives the chapter one more star. Never more than one.
+   ========================================================================= */
+const BOOST_WEAK = 2;                                 // weakest learned keys added to the chapter keys
+const BOOST_WORDS = 16;
+const BOOST_XP = 20;                                  // bonus XP for a new star
+function boostList(){
+  return lessonsFlat().filter(l=>{ const s=lessonRec(l.idx)?.stars||0; return s>=1 && s<3; })
+    .sort((a,b)=>(lessonRec(a.idx).stars-lessonRec(b.idx).stars) || a.idx-b.idx);
+}
+/* The rule for the next star of chapter L, as text. */
+function boostGoal(L){
+  const s=lessonRec(L.idx)?.stars||0;
+  return s<2 ? `94% accuracy and ${L.target} WPM` : `97% accuracy and ${Math.ceil(L.target*1.3)} WPM`;
+}
+function weakKeys(letters, n){
+  return letters.map(c=>{ const s=state.keys[c]||{h:0,m:0}, tot=s.h+s.m; return {c, r: tot<5 ? 0 : s.m/tot}; })
+    .filter(x=>x.r>0).sort((a,b)=>b.r-a.r).slice(0,n).map(x=>x.c);
+}
+function genBoost(L){
+  const allowed=allowedUpTo(L.idx);
+  if(["*sentences","*numbers","*speed","*boss"].includes(L.keys)) return {text:genForLesson(L), focus:[]};
+  const caps=L.keys==="*shift";
+  const letters=[...allowed].filter(c=>/[a-z]/.test(c));
+  const own = L.keys[0]==="*" ? [] : [...L.keys].filter(c=>/[a-z]/.test(c));
+  const weak=weakKeys(letters.filter(c=>!own.includes(c)), BOOST_WEAK);
+  const focus=[...own, ...weak];
+  if(!focus.length) return {text:genWords(allowed, 22, caps), focus};
+  const drills=[]; focus.forEach(k=>{ for(let i=0;i<2;i++) drills.push(k+rnd(letters)+k); });
+  let words=shuffle(wordList().filter(w=>fits(w,allowed) && focus.some(k=>w.includes(k)))).slice(0,BOOST_WORDS);
+  if(caps) words=words.map(w=>Math.random()<0.55 ? w[0].toUpperCase()+w.slice(1) : w);
+  const out=[...drills, ...words];
+  if(out.length<22) out.push(...genWords(allowed, 22-out.length, caps).split(" "));
+  return {text:shuffle(out).join(" "), focus};
+}
+function openBoost(){
+  const list=boostList();
+  if(!list.length){
+    const any=lessonsFlat().some(l=>(lessonRec(l.idx)?.stars||0)>=1);
+    toast("⚡", any ? "All your chapters have ★★★. Wow! 🎉" : `Get 1 star on a ${chapterWord().toLowerCase()} first.`);
+    return;
+  }
+  $("#boostChoices").innerHTML=list.slice(0,6).map(l=>{ const s=lessonRec(l.idx).stars;
+    return `<button class="choice" data-i="${l.idx}"><span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
+      `<span class="bst">${"★".repeat(s)}<i>${"★".repeat(3-s)}</i></span><br><span class="muted" style="font-size:12px">Next star: ${boostGoal(l)}</span></button>`; }).join("");
+  $$("#boostChoices .choice").forEach(b=>b.onclick=()=>{ $("#boostLobby").classList.remove("on"); startBoost(+b.dataset.i); });
+  $("#boostLobby").classList.add("on");
+}
+$("#boostCancel").onclick=()=>$("#boostLobby").classList.remove("on");
+function startBoost(i){
+  const L=lessonsFlat()[i], s=lessonRec(i)?.stars||0;
+  if(!L || s<1 || s>=3) return openBoost();
+  const {text,focus}=genBoost(L);
+  startSession({mode:"boost", title:`⚡ Booster · ${i+1}. ${L.title}`, text, onFinish:res=>boostDone(L,res)});
+  const keys = focus.length ? ` Focus keys: ${focus.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}.` : "";
+  say("#type", `Boost to ${"★".repeat(s+1)}! You need ${boostGoal(L)}.${keys}`, "think");
+}
+function boostDone(L,res){
+  const recs=state.lessons[state.layout]||(state.lessons[state.layout]={});
+  const prev=recs[L.idx]||{stars:0,wpm:0,acc:0};
+  const up = starsFor(res.wpm,res.acc,L.target) > prev.stars;
+  const stars = up ? prev.stars+1 : prev.stars;
+  recs[L.idx]={stars, wpm:Math.max(prev.wpm,Math.round(res.wpm)), acc:Math.max(prev.acc,Math.round(res.acc))};
+  const b=state.boost || (state.boost={played:0,ups:0}); b.played++; if(up) b.ups++;
+  const xp=Math.round(S.text.length*Math.pow(res.acc/100,2)/3) + (up?BOOST_XP:0); state.xp+=xp;
+  const more=boostList().length>0, cw=`${chapterWord()} ${L.idx+1}`;
+  showResult({title:`⚡ Booster · ${L.title}`, stars, res, xp, party:up, mood: up?"wow":"happy",
+    msg: up ? `BOOST! ${cw} now has ${"★".repeat(stars)}! 🚀` : res.acc>=94 ? "So close! Try once more." : "Good training. Accuracy first, then speed.",
+    need: stars>=3 ? `${cw} is complete: ★★★` : `For ${"★".repeat(stars+1)}: ${boostGoal(L)}.`,
+    retry: stars<3 ? ()=>startBoost(L.idx) : openBoost, next: more ? openBoost : null, nextLabel:"Boost a chapter"});
+  if(up) chime();
 }
 
 /* =========================================================================
@@ -1543,6 +1628,9 @@ function renderHome(){
   const lmiss=ladderMissing().length, lrec=state.ladder?.best||0;
   $("#mLadder").classList.toggle("locked", lmiss>0);
   $("#mLadderText").textContent = lmiss ? `Locked: finish the Bottom Row first` : lrec ? `Record: ${lrec} of ${LADDER_SUBS} · climb against Keebo` : "Climb the word ladder against Keebo";
+  const bn=boostList().length, bany=L.some(l=>(lessonRec(l.idx)?.stars||0)>=1);
+  $("#mBoost").classList.toggle("locked", !bn);
+  $("#mBoostText").textContent = bn ? `${bn} ${bn===1?chapterWord().toLowerCase():state.lang==="nl"?"hoofdstukken":"chapters"} can get more stars` : bany ? "All chapters have ★★★ 🎉" : "Locked: get 1 star on a chapter first";
   // map
   const map=$("#map"); let html="";
   CURRICULUM[state.layout].forEach((st,si)=>{
@@ -1575,6 +1663,7 @@ $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=startRain;
 $("#mSmart").onclick=startSmart;
 $("#mLadder").onclick=openLadder;
+$("#mBoost").onclick=openBoost;
 $("#tBack").onclick=endSessionEarly;
 $("#tBlind").onclick=e=>{ state.blind=(state.blind+1)%3; save(); applyBlind(); e.currentTarget.blur(); };
 
@@ -1695,6 +1784,7 @@ $("#setCodeGo").onclick=()=>{
 document.addEventListener("keydown", e=>{
   if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
   if($("#ladderLock").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); $("#ladderLock").classList.remove("on"); } return; }
+  if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } return; }
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
   if(screen==="meteor") return onRainKey(e);
