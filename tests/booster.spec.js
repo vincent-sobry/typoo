@@ -41,16 +41,47 @@ test("all chapters with 3 stars: no lobby", async ({ page }) => {
   await expect(page.locator("#boostLobby")).toBeHidden();
 });
 
-test("lobby lists chapters with 1 or 2 stars, fewest stars first", async ({ page }) => {
+test("lobby: chapters with 1 or 2 stars only; one or two choices without a full set", async ({ page }) => {
   await openApp(page, withStars([3, 2, 1, 3, 1]));
   await expect(page.locator("#mBoostText")).toHaveText("3 chapters can get more stars");
   await page.click("#mBoost");
   const c = page.locator("#boostChoices .choice");
   await expect(c).toHaveCount(3);
-  expect(await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).toEqual([2, 4, 1]);
-  await expect(c.first()).toContainText("Next star: 94% accuracy");
+  expect((await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).sort()).toEqual([1, 2, 4]);
+  await expect(c.first()).toContainText("Next star:");
   await page.keyboard.press("Escape");
   await expect(page.locator("#boostLobby")).toBeHidden();
+});
+
+test("lobby: 3 chapters in one row, easy / medium / hard by the gap to the next star", async ({ page }) => {
+  // Home Row targets: gap = missing WPM share + missing accuracy / 10. Chapter 0..4 records:
+  const q = {
+    0: { stars: 1, wpm: 10, acc: 94 },   // rule met once: gap 0 -> easy
+    1: { stars: 1, wpm: 9, acc: 93 },    // gap 0.2
+    2: { stars: 1, wpm: 6, acc: 91 },    // gap 0.7
+    3: { stars: 2, wpm: 10, acc: 96 },   // needs 13 WPM, 97%: gap 0.33 = middle of 5 -> medium
+    4: { stars: 1, wpm: 2, acc: 90 },    // gap 1.2 -> hard
+    5: { stars: 3, wpm: 30, acc: 99 },
+  };
+  await openApp(page, player({ lessons: { qwerty: q, azerty: {} } }));
+  await page.click("#mBoost");
+  const c = page.locator("#boostChoices .choice");
+  await expect(c).toHaveCount(3);
+  expect(await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).toEqual([0, 3, 4]);
+  expect(await c.locator(".blvl").allTextContents()).toEqual(["Easy", "Medium", "Hard"]);
+  const tops = await c.evaluateAll((b) => b.map((x) => Math.round(x.getBoundingClientRect().top)));
+  expect(new Set(tops).size).toBe(1);                // one row
+});
+
+test("lobby: 2 chapters = easy and hard, 1 chapter = no label", async ({ page }) => {
+  await openApp(page, withStars([2, 1]));
+  await page.click("#mBoost");
+  await expect(page.locator("#boostChoices .blvl")).toHaveText(["Easy", "Hard"]);
+  await page.keyboard.press("Escape");
+  await page.evaluate("state.lessons.qwerty[0].stars = 3; renderHome()");
+  await page.click("#mBoost");
+  await expect(page.locator("#boostChoices .choice")).toHaveCount(1);
+  await expect(page.locator("#boostChoices .blvl")).toHaveCount(0);
 });
 
 test("text uses only learned keys and drills the chapter keys", async ({ page }) => {
