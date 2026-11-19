@@ -33,6 +33,7 @@ jobs:
         with:
           ref: main
           path: main
+          fetch-depth: 0   # full history + tags, for the build info
 
       - name: Check out dev (if it exists)
         id: dev
@@ -41,6 +42,7 @@ jobs:
         with:
           ref: dev
           path: dev
+          fetch-depth: 0
 
       - name: Assemble site
         run: |
@@ -50,6 +52,13 @@ jobs:
             mkdir -p _site/dev
             cp dev/index.html _site/dev/
           fi
+          # Build info (version, last PR, commit, date). Skipped if the page has no marker.
+          for d in main dev; do
+            f=_site/index.html; [ "$d" = dev ] && f=_site/dev/index.html
+            if [ -f "$f" ] && grep -q '/\*@BUILD@\*/' "$f"; then
+              python3 main/.github/build-info.py "$d" "$f"
+            fi
+          done
           touch _site/.nojekyll
           find _site -type f
 
