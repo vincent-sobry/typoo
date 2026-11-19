@@ -171,6 +171,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 /* Result screen: the card sits in the centre of the window. If it is taller than the window, the page scrolls. */
 #result.screen.on{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);margin-bottom:-24px}
 #result .result{margin:0 auto;width:100%}
+/* Result lock: the main button fills up while keys are locked. */
+#result .btn.filling{background-image:linear-gradient(#ffffff40,#ffffff40);background-repeat:no-repeat;background-size:0% 100%;animation:btnfill var(--lock,3s) linear forwards}
+@keyframes btnfill{to{background-size:100% 100%}}
 .bigstars{font-size:64px;letter-spacing:10px;margin:8px 0}
 .bigstars span{display:inline-block;color:#3a4277;transform:scale(.4);opacity:.3;transition:all .35s cubic-bezier(.3,1.8,.5,1)}
 .bigstars span.on{color:#ffd43b;transform:scale(1);opacity:1;text-shadow:0 0 22px #ffd43baa}
@@ -1091,8 +1094,15 @@ function lessonDone(L,res){
   if(stars>=1) chime();
   if(L.idx===5 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈","Tip: try Blind mode in Settings!"),1500);
 }
+/* Result lock. A player who is still typing must not start the next run by accident.
+   Keys do nothing for RESULT_KEY_LOCK ms, clicks for RESULT_CLICK_LOCK ms. The main button fills up meanwhile. */
+const RESULT_LOCK_SET = window.TYPOO_RESULT_LOCK || {};             // tests can shorten the lock
+const RESULT_KEY_LOCK = RESULT_LOCK_SET.keys ?? 3000, RESULT_CLICK_LOCK = RESULT_LOCK_SET.clicks ?? 1000;
+let resultAt = 0;
+const resultKeysLocked = () => performance.now() - resultAt < RESULT_KEY_LOCK;
+const resultClicksLocked = () => performance.now() - resultAt < RESULT_CLICK_LOCK;
 function showResult(o){
-  show("result");
+  show("result"); resultAt = performance.now();
   $("#rTitle").textContent=o.title;
   $$("#rStars span").forEach((s,i)=>{ s.className=""; if(o.stars===undefined){ s.parentElement.style.display="none"; } else { s.parentElement.style.display=""; setTimeout(()=>s.className= i<o.stars?"on":"dim", 250+i*300); } });
   $("#rWpm").textContent=Math.round(o.res.wpm);
@@ -1107,6 +1117,9 @@ function showResult(o){
   $("#rNext").style.display = o.next ? "" : "none";
   $("#rNext").textContent = o.nextLabel||"Next →";
   resultActions = o;
+  const main = o.next ? $("#rNext") : $("#rRetry");
+  $$("#result .rbtns .btn").forEach(b=>b.classList.remove("filling")); void main.offsetWidth;
+  main.style.setProperty("--lock", RESULT_KEY_LOCK+"ms"); main.classList.add("filling");
   offerLayout();
 }
 let resultActions=null, lvlTimer=null;
@@ -1139,9 +1152,9 @@ function showLevel(gained, stars, party=true){
     }
   }, delay);
 }
-$("#rMap").onclick=()=>goHome();
-$("#rRetry").onclick=()=>resultActions.retry();
-$("#rNext").onclick=()=>resultActions.next && resultActions.next();
+$("#rMap").onclick=()=>{ if(!resultClicksLocked()) goHome(); };
+$("#rRetry").onclick=()=>{ if(!resultClicksLocked()) resultActions.retry(); };
+$("#rNext").onclick=()=>{ if(!resultClicksLocked() && resultActions.next) resultActions.next(); };
 
 /* =========================================================================
    SMART PRACTICE
@@ -1890,6 +1903,7 @@ document.addEventListener("click", e=>{ if(e.detail===0) pressFx(e.target.closes
    GLOBAL KEYS
    ========================================================================= */
 document.addEventListener("keydown", e=>{
+  if(screen==="result" && resultKeysLocked()){ e.preventDefault(); return; }   // still typing: ignore all keys for a moment
   if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
   if($("#ladderLock").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); $("#ladderLock").classList.remove("on"); } return; }
   if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } return; }

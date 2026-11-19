@@ -11,8 +11,10 @@ function player(extra = {}) {
   }, extra);
 }
 
-/** Open the app with a saved state (or none, for onboarding). */
-async function openApp(page, state) {
+/** Open the app with a saved state (or none, for onboarding).
+ *  The result-screen lock is off by default, so tests can go on at once. Pass { resultLock: true } to keep it. */
+async function openApp(page, state, opts = {}) {
+  if (!opts.resultLock) await page.addInitScript(() => { window.TYPOO_RESULT_LOCK = { keys: 0, clicks: 0 }; });
   await page.addInitScript(([k, v]) => {
     if (!sessionStorage.getItem("seeded")) {
       sessionStorage.setItem("seeded", "1");
