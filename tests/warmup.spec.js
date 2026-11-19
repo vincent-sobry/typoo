@@ -113,5 +113,7 @@ test("the run stops after 1 minute, also with words left", async ({ page }) => {
   await page.evaluate("S.start = performance.now() - 61000");
   await expect(page.locator("#result")).toBeVisible();
   await expect(page.locator("#rTitle")).toContainText("Warm-up done");
-  expect((await saved(page)).warmup.count).toBe(1);
+  const st = await saved(page);
+  expect(st.warmup.count).toBe(1);
+  expect(st.flags.perfect, "a few letters do not give the Flawless badge").toBeFalsy();
 });
