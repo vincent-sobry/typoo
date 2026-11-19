@@ -265,8 +265,8 @@ test("the word is in the centre of the box, above the start lights", async ({ pa
   const box = await page.locator("#text").boundingBox();
   const cur = await page.locator("#c0").boundingBox();
   const lights = await page.locator("#lights").boundingBox();
-  const peek = await page.locator("#ladderPeek").boundingBox();
-  const mid = (cur.x + peek.x + peek.width) / 2;                                          // centre of the line
+  const last = await page.locator(`#c${(await page.evaluate("S.text")).length - 1}`).boundingBox();
+  const mid = (cur.x + last.x + last.width) / 2;                                          // centre of the word
   expect(Math.abs(mid - (box.x + box.width / 2))).toBeLessThan(20);
   expect(cur.y + cur.height).toBeLessThanOrEqual(lights.y);                              // word above the lights
   expect(lights.y + lights.height).toBeLessThanOrEqual(box.y + box.height);
@@ -275,4 +275,28 @@ test("the word is in the centre of the box, above the start lights", async ({ pa
   await page.click("#mRace");
   await page.locator("#raceChoices .choice").first().click();
   expect(await page.evaluate(() => getComputedStyle(document.querySelector("#text")).textAlign)).not.toBe("center");
+});
+
+test("hold: the finished word stays for 1.5 strokes, keys typed then go to the next word", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  await waitRung(page, 1);
+  const [w1, w2] = await page.evaluate(() => LW.words.slice(0, 2));
+  await expect(page.locator(".prog")).toBeHidden();                       // no progress bar
+  const cur = await page.locator("#c0").boundingBox(), pk = await page.locator("#ladderPeek").boundingBox();
+  expect(pk.y).toBeGreaterThan(cur.y + cur.height - 2);                   // next word on the line below
+  await page.keyboard.type(w1, { delay: 5 });
+  await page.keyboard.type(w2.slice(0, 1));                               // typed during the hold
+  expect(await page.evaluate("S.hold")).toBe(true);
+  await expect(page.locator("#text")).toHaveClass(/held/);
+  expect(await page.evaluate("S.text")).toBe(w1);                          // still the finished word
+  await page.waitForFunction(() => LW && LW.sub === 2 && !S.hold);
+  expect(await page.evaluate("S.text")).toBe(w2);
+  expect(await page.evaluate("S.pos")).toBe(1);                           // the key was not lost
+  expect(await page.evaluate("S.errors")).toBe(0);
+});
+
+test("hold time: 1.5 key strokes at the reference WPM, from 250 to 600 ms", async ({ page }) => {
+  await openApp(page, withChapters(18));
+  expect(await page.evaluate(() => [ladderHold(30), ladderHold(40), ladderHold(60), ladderHold(10), ladderHold(120)])).toEqual([600, 450, 300, 600, 250]);
 });
