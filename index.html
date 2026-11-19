@@ -57,8 +57,8 @@ h1,h2,h3{margin:0}
 .mode b{display:block}
 .mode small{color:var(--muted)}
 /* Daily warm-up: shows on the home screen until the player does it today. No live score during the run. */
-.mode.warm{border-color:#1fb86b;box-shadow:0 0 0 1px #1fb86b55,0 0 18px #1fb86b33}
-.mode.warm:hover{border-color:#a3f7bf}
+.mode.warm:not(.locked){border-color:#1fb86b;box-shadow:0 0 0 1px #1fb86b55,0 0 18px #1fb86b33}
+.mode.warm:not(.locked):hover{border-color:#a3f7bf}
 .mode[hidden]{display:none}
 #type.wumode .live{display:none}
 .stage{margin-bottom:18px}
@@ -332,7 +332,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
             <div class="stat"><b id="sStars">0</b><small>Stars</small></div>
           </div>
           <div class="modes">
-            <button class="mode warm" id="mWarm" hidden><span class="ic">☀️</span><span><b>Daily warm-up</b><small>1 minute · easy words · no score</small></span></button>
+            <button class="mode warm" id="mWarm"><span class="ic">☀️</span><span><b>Daily warm-up</b><small id="mWarmText">1 minute · easy words · no score</small></span></button>
             <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b>Continue</b><small id="mContText">Next chapter</small></span></button>
             <button class="mode" id="mRace"><span class="ic">🏁</span><span><b>Race Keebo</b><small>Beat the bot in a typing race</small></span></button>
             <button class="mode" id="mRain"><span class="ic">☄️</span><span><b>Word Rain</b><small>Stop the meteors before they land</small></span></button>
@@ -1235,7 +1235,13 @@ function boostDone(L,res){
    ========================================================================= */
 const WARMUP_SECS = 60;                               // the run stops after 1 minute; the text fits 1 minute at the normal pace
 /* Shows one time per day, after the first chapter is passed. */
-function warmupDue(){ return currentLessonIdx()>0 && (state.warmup?.last||"")!==todayStr(); }
+function warmupDue(){ return !warmupLock(); }
+/* Why the warm-up is locked: "" = open. */
+function warmupLock(){
+  if(currentLessonIdx()===0) return `Locked: pass ${chapterWord().toLowerCase()} 1 first`;
+  if((state.warmup?.last||"")===todayStr()) return "Done today ✓ · unlocks again tomorrow";
+  return "";
+}
 /* Short words (2 to 5 letters) with only the learned keys. Not the weak keys: that is Smart Practice. */
 function genWarmup(){
   const allowed=learnedSet();
@@ -1700,14 +1706,17 @@ function renderHome(){
   $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(b.n)}: ${esc(b.d)}" aria-label="${esc(b.n)}">${b.i}</button>`).join("");
   $$("#badges .badge").forEach(e=>e.onclick=()=>openBadge(e.dataset.id));
   $("#bCount").textContent=`${Object.keys(state.badges).length} / ${BADGES.length}`;
-  $("#mWarm").hidden = !warmupDue();
+  const wl=warmupLock();
+  $("#mWarm").classList.toggle("locked", !!wl);
+  $("#mWarmText").textContent = wl || "1 minute · easy words · no score";
   const hello = warmupDue() ? `Hi ${esc(state.name)}! Start the day with a 1-minute warm-up? ☀️` :
                 secs>=600 ? `Daily goal done, ${esc(state.name)}! 🎉 Extra practice makes you even faster.` :
                 !alive && state.streak.count>0 ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
   say("#home", hello, "happy");
 }
 $("#mContinue").onclick=()=>startLesson(currentLessonIdx());
-$("#mWarm").onclick=startWarmup;
+$("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
+  toast("☀️", currentLessonIdx()===0 ? `The warm-up opens after ${chapterWord().toLowerCase()} 1.` : "Warm-up done for today. It unlocks again tomorrow!"); };
 $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=startRain;
 $("#mSmart").onclick=startSmart;
