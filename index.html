@@ -56,6 +56,14 @@ h1,h2,h3{margin:0}
 .mode .ic{font-size:28px;width:44px;text-align:center}
 .mode b{display:block}
 .mode small{color:var(--muted)}
+/* Key hint on the home tiles: only with a mouse and keyboard. */
+.mode .hk{display:none;margin-left:auto;align-self:center;font:700 12px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+@media (hover:hover) and (pointer:fine){.mode .hk:not([hidden]){display:block}}
+.keys-list{width:100%;border-collapse:collapse;font-size:13px}
+.keys-list td{padding:3px 4px;vertical-align:top}
+.keys-list td:first-child{white-space:nowrap;width:1%;padding-right:10px}
+.keys-list th{text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;padding:8px 4px 2px}
+.keys-list kbd{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:var(--mono);font-size:12px}
 /* Daily warm-up: shows on the home screen until the player does it today. No live score during the run. */
 .mode.warm:not(.locked){border-color:#1fb86b;box-shadow:0 0 0 1px #1fb86b55,0 0 18px #1fb86b33}
 .mode.warm:not(.locked):hover{border-color:#a3f7bf}
@@ -556,6 +564,24 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <button data-v="1">On</button><button data-v="0">Off</button></div></div>
   <div class="field"><label>Click sound</label><div class="seg" id="setClicks">
     <button data-v="1">On<small>soft tick on buttons</small></button><button data-v="0">Off</button></div></div>
+  <div class="field" id="setKeys"><label>Keyboard shortcuts</label>
+    <table class="keys-list">
+      <tr><th colspan="2">Map</th></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Continue: next chapter</td></tr>
+      <tr><td><kbd>1</kbd> … <kbd>9</kbd>, <kbd>0</kbd></td><td>Open a game. The number is on the tile.</td></tr>
+      <tr><td><kbd>S</kbd></td><td>Settings</td></tr>
+      <tr><th colspan="2">While you type</th></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Stop and go back to the map</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>Start the same run again</td></tr>
+      <tr><td><kbd>Esc</kbd> in Word Rain</td><td>Let go of the current word</td></tr>
+      <tr><th colspan="2">Result</th></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Main button (next or retry)</td></tr>
+      <tr><td><kbd>R</kbd></td><td>Retry</td></tr>
+      <tr><td><kbd>M</kbd> or <kbd>Esc</kbd></td><td>Map</td></tr>
+      <tr><th colspan="2">Pop-ups</th></tr>
+      <tr><td><kbd>1</kbd> … <kbd>4</kbd></td><td>Pick a choice in Race Keebo and Booster</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Close</td></tr>
+    </table></div>
   <div class="field"><label>Backup</label>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn ghost" id="setExport">Copy backup code</button>
@@ -978,7 +1004,8 @@ function show(id){ $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id))
 let S=null, liveTimer=null;
 function startSession(opts){
   $("#layoutWarn").classList.remove("on");
-  S = Object.assign({pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
+  const again=nextAgain; nextAgain=null;
+  S = Object.assign({again, pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
   show("type");
   $("#tTitle").textContent = opts.title;
   $("#raceTracks").style.display = opts.mode==="race"||opts.mode==="ladder" ? "block" : "none";
@@ -1050,6 +1077,7 @@ function updateLive(){
 function onTypeKey(e){
   if(!S || S.done) return;
   if(e.key==="Escape"){ endSessionEarly(); return; }
+  if(e.key==="Tab"){ e.preventDefault(); if(!e.repeat) restartRun(); return; }
   if(e.metaKey || (e.ctrlKey && !e.altKey)) return;
   if(e.key==="Backspace"||e.key==="Tab"||e.key===" "||e.key==="'"||e.key==="/"){ e.preventDefault(); }
   if(e.key.length!==1) return;                 // Shift, Dead keys, arrows...
@@ -1079,6 +1107,15 @@ function onTypeKey(e){
     flashKey(k,"wrong"); beep(140,0.07);
     if(S.wrongRow===3) say("#type", pick("oops"), "oops");
   }
+}
+/* Tab in a run: stop it (nothing is saved) and start the same run again with a new text.
+   Each start function sets nextAgain just before startSession. A run without it ignores Tab. */
+let nextAgain=null;
+function restartRun(){
+  if(!S || S.done || !S.again) return;
+  const again=S.again;
+  clearInterval(liveTimer); S.done=true; if(S.onAbort) S.onAbort(); S=null;
+  again();
 }
 function endSessionEarly(){
   clearInterval(liveTimer); if(S){ S.done=true; if(S.onAbort) S.onAbort(); } S=null; goHome();
@@ -1135,6 +1172,7 @@ function lessonIntro(L){
 }
 function startLesson(i){
   const L=lessonsFlat()[i]; if(!L || !isUnlocked(i)) return;
+  nextAgain=()=>startLesson(i);
   lastLesson=i;
   startSession({mode:"lesson", title:`${i+1}. ${L.title}`, text:genForLesson(L), onFinish:res=>lessonDone(L,res)});
   say("#type", lessonIntro(L), "happy");
@@ -1237,6 +1275,7 @@ $("#rNext").onclick=()=>{ if(!resultClicksLocked() && resultActions.next) result
    SMART PRACTICE
    ========================================================================= */
 function startSmart(){
+  nextAgain=startSmart;
   const {text,weak}=genSmart();
   startSession({mode:"smart", title:"Smart Practice", text, onFinish:res=>{
     const xp=Math.round(text.length*Math.pow(res.acc/100,2)/3); state.xp+=xp;
@@ -1317,6 +1356,7 @@ $("#boostCancel").onclick=()=>$("#boostLobby").classList.remove("on");
 function startBoost(i){
   const L=lessonsFlat()[i], s=lessonRec(i)?.stars||0;
   if(!L || s<1 || s>=3) return openBoost();
+  nextAgain=()=>startBoost(i);
   const {text,focus}=genBoost(L);
   startSession({mode:"boost", title:`⚡ Booster · ${i+1}. ${L.title}`, text, onFinish:res=>boostDone(L,res)});
   const keys = focus.length ? ` Focus keys: ${focus.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}.` : "";
@@ -1388,6 +1428,7 @@ $("#clClear").onclick=()=>{ customPick=""; customDraw(); };
 $("#clCancel").onclick=()=>$("#customLobby").classList.remove("on");
 $("#clGo").onclick=()=>{ if(!customPick) return; $("#customLobby").classList.remove("on"); startCustom(customPick); };
 function startCustom(keys){
+  nextAgain=()=>startCustom(keys);
   keys=customSort(keys); if(!keys) return openCustom();
   state.custom=Object.assign({played:0}, state.custom, {keys}); save();
   const text=genCustom(keys), few=customWords(keys).length<CUSTOM_MIN_WORDS;
@@ -1425,6 +1466,7 @@ function genWarmup(){
   return out.slice(0,n).join(" ");
 }
 function startWarmup(){
+  nextAgain=startWarmup;
   startSession({mode:"warmup", title:"☀️ Daily warm-up", text:genWarmup(), noScore:true,
     onTick(){ if(S.start && !S.done && elapsed()>=WARMUP_SECS) finishSession(); },   // stop at 1 minute, also with words left
     onFinish:res=>{
@@ -1505,6 +1547,7 @@ function dailyLock(){
 function dailyDue(){ return !dailyLock(); }
 /* practice = a retry after the scored run: it does not count. */
 function startDaily(practice=false){
+  nextAgain=()=>startDaily(practice);
   const text = practice && state.daily?.text ? state.daily.text : genDaily();
   startSession({mode:"daily", title: practice ? "📜 Daily sentence · practice" : "📜 Daily sentence", text, noScore:true, onFinish:res=>{
     const d=state.daily||(state.daily={last:"",count:0,best:0});
@@ -1537,6 +1580,7 @@ function openRaceLobby(){
 }
 $("#raceCancel").onclick=()=>$("#raceLobby").classList.remove("on");
 function startRace(botWpm, label){
+  nextAgain=()=>startRace(botWpm, label);
   const allowed=learnedSet();
   const text = hasCaps() ? genSentences(2) : genWords(allowed, 16);
   let botStart=0, botDone=false;
@@ -1697,6 +1741,7 @@ function renderLadderBar(){
 }
 function startLadder(marathon){
   marathon=!!marathon;
+  nextAgain=()=>startLadder(marathon);
   const words=ladderWords(), best=ladderRef();
   LW={words, sub:0, best, marathon, wait:KEEBO_READ, ramp:0, botV:1, botTotal:0, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
   startSession({mode:"ladder", marathon, title: marathon ? "Word Marathon" : "Longest Word", text:words[0], locked:true,
@@ -2031,6 +2076,7 @@ function renderHome(){
                 secs>=600 ? `Daily goal done, ${esc(state.name)}! 🎉 Extra practice makes you even faster.` :
                 !alive && state.streak.count>0 ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
   say("#home", hello, "happy");
+  numberTiles();
 }
 $("#mContinue").onclick=()=>startLesson(currentLessonIdx());
 $("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
@@ -2228,13 +2274,41 @@ document.addEventListener("keydown", e=>{
     else if(e.key==="Enter" && e.target.id!=="clCancel"){ e.preventDefault(); $("#clGo").click(); }
     else if(!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length===1 && $(`#clKb .ckey[data-c="${CSS.escape(e.key.toLowerCase())}"]`)){ e.preventDefault(); customToggle(e.key.toLowerCase()); }
     return; }
-  if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } return; }
+  if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } else pickChoice("#boostChoices", e); return; }
+  if($("#raceLobby").classList.contains("on") && pickChoice("#raceChoices", e)) return;
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
   if(screen==="meteor") return onRainKey(e);
   if(screen==="result" && e.key==="Enter"){ e.preventDefault(); (resultActions.next||resultActions.retry)(); return; }
   if(screen==="result" && e.key==="Escape"){ goHome(); return; }
+  if(e.ctrlKey || e.metaKey || e.altKey || $$(".overlay.on").length) return;
+  const k=e.key.toLowerCase(), n=digit(e);
+  if(screen==="result"){
+    if(k==="r"){ e.preventDefault(); resultActions.retry(); }
+    else if(k==="m"){ e.preventDefault(); goHome(); }
+    return;
+  }
+  if(screen==="home"){
+    const busy=document.activeElement && document.activeElement!==document.body;   // a focused button handles Enter itself
+    if(e.key==="Enter" && !busy){ e.preventDefault(); $("#mContinue").click(); }
+    else if(n>=0){ const b=homeTiles()[n===0?9:n-1]; if(b){ e.preventDefault(); b.click(); } }
+    else if(k==="s"){ e.preventDefault(); openSettings(); }
+  }
 });
+/* Number keys by position (Digit1, Numpad1), so they also work on AZERTY without Shift. -1 = no number key. */
+function digit(e){ const m=/^(?:Digit|Numpad)(\d)$/.exec(e.code||""); return m ? +m[1] : /^\d$/.test(e.key) ? +e.key : -1; }
+/* Home tiles in screen order, without hidden tiles. Keys 1-9, then 0 for the 10th. */
+const homeTiles=()=>$$("#home .modes .mode").filter(b=>!b.hidden).slice(0,10);
+function numberTiles(){
+  $$("#home .modes .mode").forEach(b=>{ let h=b.querySelector(".hk"); if(!h){ h=document.createElement("kbd"); h.className="hk"; h.setAttribute("aria-hidden","true"); b.appendChild(h); } h.hidden=true; });
+  homeTiles().forEach((b,i)=>{ const h=b.querySelector(".hk"); h.textContent=(i+1)%10; h.hidden=false; });
+}
+/* 1-4 in a lobby: click that choice. */
+function pickChoice(sel, e){
+  const n=digit(e), c=$$(sel+" .choice")[n-1];
+  if(n<1 || !c || c.disabled) return false;
+  e.preventDefault(); c.click(); return true;
+}
 
 /* =========================================================================
    BROWSER BACK AND FORWARD
