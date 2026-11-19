@@ -1012,8 +1012,8 @@ function finishSession(){
     if(acc>=90) state.bestWpm=Math.max(state.bestWpm, Math.round(wpm));
     state.history.push({d:t,wpm:Math.round(wpm),acc:Math.round(acc)}); state.history=state.history.slice(-40);
   }
-  if(acc===100 && S.text.length>=40) state.flags.perfect=true;
-  if(state.blind>=1 && acc>=95 && S.text.length>=40) state.flags.blind=true;
+  if(acc===100 && S.pos>=40) state.flags.perfect=true;
+  if(state.blind>=1 && acc>=95 && S.pos>=40) state.flags.blind=true;
   const res={wpm,acc,secs,miss:S.miss};
   const sess=S;
   S.onFinish(res);
