@@ -1120,6 +1120,7 @@ function showResult(o){
   const main = o.next ? $("#rNext") : $("#rRetry");
   $$("#result .rbtns .btn").forEach(b=>b.classList.remove("filling")); void main.offsetWidth;
   main.style.setProperty("--lock", RESULT_KEY_LOCK+"ms"); main.classList.add("filling");
+  main.onanimationend = e => { if(e.animationName==="btnfill") main.classList.remove("filling"); };   // ready: normal colour again
   offerLayout();
 }
 let resultActions=null, lvlTimer=null;
