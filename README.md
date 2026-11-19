@@ -38,3 +38,9 @@ Smoke tests use Playwright (Chromium). GitHub Actions runs them on each pull req
 3. `npm test`
 
 The tests cover onboarding, saved progress, a full chapter, settings, the dev storage key and the hands below the keyboard.
+
+### Chromebook checks
+
+1. **Size budget:** `node tests/size.js` fails when `index.html` is over 1 MB. It prints the raw and gzip size.
+2. **Low-end CPU:** `tests/perf.spec.js` slows the CPU down 4x and types in a chapter, Longest Word and Word Marathon. Limits: key latency p95 100 ms and max 250 ms, longest task 200 ms, longest frame gap 400 ms. Set `PERF_CPU=6` to test with a 6x slower CPU.
+
