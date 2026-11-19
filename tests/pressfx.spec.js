@@ -44,3 +44,29 @@ test("reduced motion: only a short highlight, no ripple", async ({ page }) => {
   await expect(page.locator(".fx-ripple")).toHaveCount(0);
   await page.mouse.up();
 });
+
+test("border glow plays with the squish", async ({ page }) => {
+  await openApp(page, player());
+  await page.locator("#hSettings").hover();
+  await page.mouse.down();
+  const names = await page.locator("#hSettings").evaluate((el) => el.getAnimations().map((a) => a.animationName));
+  expect(names).toEqual(expect.arrayContaining(["fxSquish", "fxGlow"]));
+  await page.mouse.up();
+});
+
+test("click sound: on by default, off with the Settings switch, never during a run", async ({ page }) => {
+  await openApp(page, player());
+  await page.locator("#hSettings").click();
+  expect(await page.evaluate("window.__clicks || 0")).toBe(1);
+  await page.locator('#setClicks button[data-v="0"]').click();
+  expect((await page.evaluate(() => JSON.parse(localStorage.getItem("typo.v1")))).clicks).toBe(0);
+  const before = await page.evaluate("window.__clicks || 0");
+  await page.locator("#setClose").click();
+  expect(await page.evaluate("window.__clicks || 0")).toBe(before);
+  // Back on: still silent during a typing run.
+  await page.evaluate("state.clicks = 1; goHome()");
+  await page.locator("#mContinue").click();
+  const inRun = await page.evaluate("window.__clicks || 0");
+  await page.locator("#tBlind").click();
+  expect(await page.evaluate("window.__clicks || 0")).toBe(inRun);
+});

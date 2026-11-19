@@ -277,11 +277,12 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .toast.on{transform:translate(-50%,0)}
 .toast .i{font-size:28px}
 .toast small{display:block;font-weight:500;color:#cfd3ff;font-size:13px;margin-top:2px}
-/* Press feedback (all buttons): a short squish + a soft ripple from the press point. Big home tiles also bounce their title letters.
+/* Press feedback (all buttons): a short squish, a border glow + a soft ripple from the press point. Big home tiles also bounce their title letters.
    Never during typing runs (see pressFx). Reduced motion: only a short highlight. Opt out with data-nofx. */
 button.fx-host{position:relative}
-button.fx-press{animation:fxSquish .22s ease-out}
+button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
 @keyframes fxSquish{35%{scale:.95}100%{scale:1}}
+@keyframes fxGlow{0%{outline:2px solid #22d3eecc;outline-offset:0}100%{outline:2px solid #22d3ee00;outline-offset:5px}}
 .fx-wave{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
 .fx-ripple{position:absolute;border-radius:50%;background:currentColor;opacity:0;transform:translate(-50%,-50%) scale(0);animation:fxRipple .28s ease-out forwards}
 @keyframes fxRipple{0%{opacity:.35;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
@@ -504,6 +505,8 @@ button.fx-press{animation:fxSquish .22s ease-out}
     <button data-v="0">Off<small>no finger hint</small></button></div></div>
   <div class="field"><label>Sound</label><div class="seg" id="setSound">
     <button data-v="1">On</button><button data-v="0">Off</button></div></div>
+  <div class="field"><label>Click sound</label><div class="seg" id="setClicks">
+    <button data-v="1">On<small>soft tick on buttons</small></button><button data-v="0">Off</button></div></div>
   <div class="field"><label>Backup</label>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn ghost" id="setExport">Copy backup code</button>
@@ -669,7 +672,7 @@ const storage = {
   set(v){ try{ localStorage.setItem(STORE_KEY,v); }catch(e){ mem.v=v; } }
 };
 function freshState(){
-  return {name:"", layout:"", lang:"nl", blind:0, sound:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
+  return {name:"", layout:"", lang:"nl", blind:0, sound:1, clicks:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
     streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, flags:{}};
 }
 let state = freshState();
@@ -1802,6 +1805,7 @@ $("#hSettings").onclick=()=>{
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
+  segInit("#setClicks", state.clicks===0?0:1, v=>{ state.clicks=+v; save(); });
   renderChapterCodes();
   $("#setVersion").textContent = "Typoo "+buildVersion()+(IS_DEV && BUILD.sha ? " · "+BUILD.sha : "");
   $("#settings").classList.add("on");
@@ -1872,9 +1876,22 @@ $("#setCodeGo").onclick=()=>{
    PRESS FEEDBACK (all buttons, one shared handler)
    ========================================================================= */
 const FX_RM = matchMedia("(prefers-reduced-motion: reduce)");
+// Soft tick on press. Own switch in Settings (state.clicks, on when not set). Quiet and short.
+function clickTick(){
+  if(state.clicks===0) return;
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+    o.type="sine"; o.frequency.setValueAtTime(900,t); o.frequency.exponentialRampToValueAtTime(500,t+0.04);
+    g.gain.setValueAtTime(0.04,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+0.06);
+    window.__clicks=(window.__clicks||0)+1; // for tests
+  }catch(e){}
+}
 function pressFx(btn, x, y){
   if(!btn || btn.disabled || btn.classList.contains("locked") || btn.hasAttribute("data-nofx")) return;
   if(screen==="type" || screen==="meteor") return; // never during typing runs
+  clickTick();
   btn.classList.remove("fx-press"); void btn.offsetWidth; btn.classList.add("fx-press");
   clearTimeout(btn._fxT); btn._fxT=setTimeout(()=>btn.classList.remove("fx-press"), 300);
   if(FX_RM.matches) return;
