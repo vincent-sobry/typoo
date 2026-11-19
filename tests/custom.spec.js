@@ -86,6 +86,18 @@ test("few keys: letter groups fill the run; finish saves the pick and shows the 
   await expect(page.locator("#clKb .ckey.on")).toHaveCount(2);
 });
 
+test("first time with 5 or more learned keys: the lobby picks the learned keys", async ({ page }) => {
+  const q = {}; for (let i = 0; i < 8; i++) q[i] = { stars: 1, wpm: 12, acc: 92 };   // home row and the first top row chapters done
+  await openApp(page, player({ layout: "azerty", lessons: { qwerty: {}, azerty: q } }));
+  await page.click("#mCustom");
+  const on = await page.$$eval("#clKb .ckey.on", (els) => els.map((e) => e.dataset.c).sort().join(""));
+  const learned = await page.evaluate(() => [...learnedSet()].filter((c) => /[a-z]/.test(c)).sort().join(""));
+  expect(on).toBe(learned);                           // the current chapter keys count as learned too
+  expect(on).toContain("e");
+  const words = await page.evaluate(() => customWords(customPick).length);
+  expect(words).toBeGreaterThan(0);
+});
+
 test("home tile shows the last pick; AZERTY shows its own keys", async ({ page }) => {
   await openApp(page, player({ layout: "azerty", custom: { keys: "qsdf", played: 3 } }));
   await expect(page.locator("#mCustomText")).toContainText("Q S D F");
