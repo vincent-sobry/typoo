@@ -1808,7 +1808,7 @@ $("#obGo").onclick=()=>{
 };
 $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#obGo").click(); });
 
-$("#hSettings").onclick=()=>{
+function openSettings(){
   $("#setName").value=state.name;
   segInit("#setLayout", state.layout, v=>{ state.layout=v; save(); buildKeyboard(); renderHome(); });
   segInit("#setLang", state.lang, v=>{ state.lang=v; save(); });
@@ -1819,7 +1819,8 @@ $("#hSettings").onclick=()=>{
   renderChapterCodes();
   $("#setVersion").textContent = "Typoo "+buildVersion()+(IS_DEV && BUILD.sha ? " · "+BUILD.sha : "");
   $("#settings").classList.add("on");
-};
+}
+$("#hSettings").onclick=openSettings;
 $("#setName").addEventListener("input",e=>{ state.name=e.target.value.trim()||state.name; save(); });
 $("#setClose").onclick=()=>{ $("#settings").classList.remove("on"); renderHome(); };
 let resetArmed=false;
@@ -1942,10 +1943,56 @@ document.addEventListener("keydown", e=>{
 });
 
 /* =========================================================================
+   BROWSER BACK AND FORWARD
+   Two browser steps: the map (home or onboarding) and one screen on top of it
+   (game, result, Settings, lobby, pop-up). Moves between top screens replace the step.
+   Back from a top screen goes to the map. In a run it works like Esc: the run stops, nothing is saved.
+   Back on the map leaves the app. Forward opens Settings or a lobby again. A stopped game cannot come back.
+   ========================================================================= */
+const NAV_TOP=["badgeCard","ladderLock","boostLobby","raceLobby","rainOver","settings"];   // pop-ups first
+const NAV_REOPEN={settings:openSettings, raceLobby:openRaceLobby, boostLobby:openBoost};
+let navIdx=0, navBusy=false;
+const navView=()=>NAV_TOP.find(id=>$("#"+id).classList.contains("on")) || screen;
+const navLevel=v=>v==="home"||v==="onboard" ? 0 : 1;
+/* Make the browser step match the screen that shows now. */
+function navSync(){
+  const v=navView(); if(!v || navBusy) return;
+  const st={typoo:1, v, i:navLevel(v)}, h=history.state;
+  if(h && h.typoo && h.v===v && h.i===st.i) return;
+  if(st.i===navIdx) history.replaceState(st,"","#"+v);
+  else if(st.i>navIdx){ history.pushState(st,"","#"+v); navIdx=st.i; }
+  else { navBusy=true; history.back(); }      // back to the map step; popstate syncs again
+}
+/* Close all top screens and go to the map, like Esc. */
+function navToMap(){
+  if($("#badgeCard").classList.contains("on")) closeBadge();
+  ["ladderLock","boostLobby","raceLobby"].forEach(id=>$("#"+id).classList.remove("on"));
+  if($("#settings").classList.contains("on")){ $("#settings").classList.remove("on"); renderHome(); }
+  if($("#rainOver").classList.contains("on")){ $("#rainOver").classList.remove("on"); goHome(); }
+  if(screen==="type") endSessionEarly();
+  else if(screen==="meteor" || screen==="result") goHome();
+}
+addEventListener("popstate", e=>{
+  const st=e.state && e.state.typoo ? e.state : null;
+  navIdx = st ? st.i : 0;
+  if(navBusy){ navBusy=false; navSync(); return; }
+  if(navIdx===0) navToMap();
+  else if(navLevel(navView())===0){               // Forward from the map
+    const f=NAV_REOPEN[st.v];
+    if(f) f(); else { navBusy=true; history.back(); return; }   // a game or result cannot come back
+  }
+  navSync();
+});
+{ const mo=new MutationObserver(navSync);
+  [...$$(".screen"), ...NAV_TOP.map(id=>$("#"+id))].forEach(el=>mo.observe(el, {attributes:true, attributeFilter:["class"]})); }
+if(history.state && history.state.typoo) navIdx=history.state.i;   // reload: the app starts on the map again
+
+/* =========================================================================
    BOOT
    ========================================================================= */
 fitKeyboard();
 if(state.name && state.layout){ buildKeyboard(); goHome(); } else { startOnboarding(); }
+navSync();
 </script>
 </body>
 </html>
