@@ -1,9 +1,12 @@
 # Smoke tests (Playwright, Chromium) for every pull request to dev or main.
+# A PR to dev merges by itself when the tests pass (job "automerge").
+# A PR to main never merges by itself.
 name: Tests
 
 on:
   pull_request:
     branches: [dev, main]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -29,3 +32,47 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 7
+
+  # Merges a PR to dev when "smoke" passes. Skipped for:
+  #   - PRs to main (main stays manual)
+  #   - PRs from forks
+  #   - draft PRs, and PRs with the label "hold"
+  # A merge made with GITHUB_TOKEN does not start other workflows,
+  # so this job also starts "Deploy Pages" to publish /dev/.
+  automerge:
+    needs: smoke
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.base.ref == 'dev' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'hold')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Check labels again (label may be added after the run started)
+        id: check
+        run: |
+          labels=$(gh api "repos/$GH_REPO/issues/$PR/labels" --jq '.[].name')
+          if echo "$labels" | grep -qx hold; then
+            echo "PR #$PR has label hold, no merge"
+            echo "merge=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "merge=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Merge PR (merge commit, only the tested commit)
+        if: steps.check.outputs.merge == 'true'
+        run: |
+          gh api -X PUT "repos/$GH_REPO/pulls/$PR/merge" \
+            -f merge_method=merge -f sha="$SHA"
+      - name: Start Deploy Pages
+        if: steps.check.outputs.merge == 'true'
+        run: gh workflow run pages.yml --ref main
