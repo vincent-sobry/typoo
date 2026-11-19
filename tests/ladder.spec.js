@@ -290,6 +290,7 @@ test("hold: the finished word stays for 1.5 strokes, keys typed then go to the n
   expect(await page.evaluate("S.hold")).toBe(true);
   await expect(page.locator("#text")).toHaveClass(/held/);
   expect(await page.evaluate("S.text")).toBe(w1);                          // still the finished word
+  await expect(page.locator("#text .cur")).toHaveCount(0);                // no cursor on the held word
   await page.waitForFunction(() => LW && LW.sub === 2 && !S.hold);
   expect(await page.evaluate("S.text")).toBe(w2);
   expect(await page.evaluate("S.pos")).toBe(1);                           // the key was not lost
