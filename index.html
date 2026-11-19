@@ -168,6 +168,12 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 
 /* ---------- Result ---------- */
 .result{max-width:640px;margin:20px auto;text-align:center}
+/* Result screen: the card sits in the centre of the window. If it is taller than the window, the page scrolls. */
+#result.screen.on{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);margin-bottom:-24px}
+#result .result{margin:0 auto;width:100%}
+/* Result lock: the main button fills up while keys are locked. */
+#result .btn.filling{background-image:linear-gradient(#ffffff40,#ffffff40);background-repeat:no-repeat;background-size:0% 100%;animation:btnfill var(--lock,3s) linear forwards}
+@keyframes btnfill{to{background-size:100% 100%}}
 .bigstars{font-size:64px;letter-spacing:10px;margin:8px 0}
 .bigstars span{display:inline-block;color:#3a4277;transform:scale(.4);opacity:.3;transition:all .35s cubic-bezier(.3,1.8,.5,1)}
 .bigstars span.on{color:#ffd43b;transform:scale(1);opacity:1;text-shadow:0 0 22px #ffd43baa}
@@ -271,6 +277,22 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .toast.on{transform:translate(-50%,0)}
 .toast .i{font-size:28px}
 .toast small{display:block;font-weight:500;color:#cfd3ff;font-size:13px;margin-top:2px}
+/* Press feedback (all buttons): a short squish, a border glow + a soft ripple from the press point. Big home tiles also bounce their title letters.
+   Never during typing runs (see pressFx). Reduced motion: only a short highlight. Opt out with data-nofx. */
+button.fx-host{position:relative}
+button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
+@keyframes fxSquish{35%{scale:.95}100%{scale:1}}
+@keyframes fxGlow{0%{outline:2px solid #22d3eecc;outline-offset:0}100%{outline:2px solid #22d3ee00;outline-offset:5px}}
+.fx-wave{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.fx-ripple{position:absolute;border-radius:50%;background:currentColor;opacity:0;transform:translate(-50%,-50%) scale(0);animation:fxRipple .28s ease-out forwards}
+@keyframes fxRipple{0%{opacity:.35;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.fx-l{display:inline-block;animation:fxHop .18s ease-out both;white-space:pre}
+@keyframes fxHop{50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){
+  button.fx-press{animation:fxFlash .15s ease-out}
+  @keyframes fxFlash{0%{filter:brightness(1.3)}100%{filter:none}}
+  .fx-wave,.fx-l{animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -483,6 +505,8 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
     <button data-v="0">Off<small>no finger hint</small></button></div></div>
   <div class="field"><label>Sound</label><div class="seg" id="setSound">
     <button data-v="1">On</button><button data-v="0">Off</button></div></div>
+  <div class="field"><label>Click sound</label><div class="seg" id="setClicks">
+    <button data-v="1">On<small>soft tick on buttons</small></button><button data-v="0">Off</button></div></div>
   <div class="field"><label>Backup</label>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn ghost" id="setExport">Copy backup code</button>
@@ -648,7 +672,7 @@ const storage = {
   set(v){ try{ localStorage.setItem(STORE_KEY,v); }catch(e){ mem.v=v; } }
 };
 function freshState(){
-  return {name:"", layout:"", lang:"nl", blind:0, sound:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
+  return {name:"", layout:"", lang:"nl", blind:0, sound:1, clicks:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
     streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, flags:{}};
 }
 let state = freshState();
@@ -1073,8 +1097,15 @@ function lessonDone(L,res){
   if(stars>=1) chime();
   if(L.idx===5 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈","Tip: try Blind mode in Settings!"),1500);
 }
+/* Result lock. A player who is still typing must not start the next run by accident.
+   Keys do nothing for RESULT_KEY_LOCK ms, clicks for RESULT_CLICK_LOCK ms. The main button fills up meanwhile. */
+const RESULT_LOCK_SET = window.TYPOO_RESULT_LOCK || {};             // tests can shorten the lock
+const RESULT_KEY_LOCK = RESULT_LOCK_SET.keys ?? 3000, RESULT_CLICK_LOCK = RESULT_LOCK_SET.clicks ?? 1000;
+let resultAt = 0;
+const resultKeysLocked = () => performance.now() - resultAt < RESULT_KEY_LOCK;
+const resultClicksLocked = () => performance.now() - resultAt < RESULT_CLICK_LOCK;
 function showResult(o){
-  show("result");
+  show("result"); resultAt = performance.now();
   $("#rTitle").textContent=o.title;
   $$("#rStars span").forEach((s,i)=>{ s.className=""; if(o.stars===undefined){ s.parentElement.style.display="none"; } else { s.parentElement.style.display=""; setTimeout(()=>s.className= i<o.stars?"on":"dim", 250+i*300); } });
   $("#rWpm").textContent=Math.round(o.res.wpm);
@@ -1089,6 +1120,10 @@ function showResult(o){
   $("#rNext").style.display = o.next ? "" : "none";
   $("#rNext").textContent = o.nextLabel||"Next →";
   resultActions = o;
+  const main = o.next ? $("#rNext") : $("#rRetry");
+  $$("#result .rbtns .btn").forEach(b=>b.classList.remove("filling")); void main.offsetWidth;
+  main.style.setProperty("--lock", RESULT_KEY_LOCK+"ms"); main.classList.add("filling");
+  main.onanimationend = e => { if(e.animationName==="btnfill") main.classList.remove("filling"); };   // ready: normal colour again
   offerLayout();
 }
 let resultActions=null, lvlTimer=null;
@@ -1121,9 +1156,9 @@ function showLevel(gained, stars, party=true){
     }
   }, delay);
 }
-$("#rMap").onclick=()=>goHome();
-$("#rRetry").onclick=()=>resultActions.retry();
-$("#rNext").onclick=()=>resultActions.next && resultActions.next();
+$("#rMap").onclick=()=>{ if(!resultClicksLocked()) goHome(); };
+$("#rRetry").onclick=()=>{ if(!resultClicksLocked()) resultActions.retry(); };
+$("#rNext").onclick=()=>{ if(!resultClicksLocked() && resultActions.next) resultActions.next(); };
 
 /* =========================================================================
    SMART PRACTICE
@@ -1780,6 +1815,7 @@ $("#hSettings").onclick=()=>{
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
+  segInit("#setClicks", state.clicks===0?0:1, v=>{ state.clicks=+v; save(); });
   renderChapterCodes();
   $("#setVersion").textContent = "Typoo "+buildVersion()+(IS_DEV && BUILD.sha ? " · "+BUILD.sha : "");
   $("#settings").classList.add("on");
@@ -1847,9 +1883,54 @@ $("#setCodeGo").onclick=()=>{
 };
 
 /* =========================================================================
+   PRESS FEEDBACK (all buttons, one shared handler)
+   ========================================================================= */
+const FX_RM = matchMedia("(prefers-reduced-motion: reduce)");
+// Soft tick on press. Own switch in Settings (state.clicks, on when not set). Quiet and short.
+function clickTick(){
+  if(state.clicks===0) return;
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+    o.type="sine"; o.frequency.setValueAtTime(900,t); o.frequency.exponentialRampToValueAtTime(500,t+0.04);
+    g.gain.setValueAtTime(0.04,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+0.06);
+    window.__clicks=(window.__clicks||0)+1; // for tests
+  }catch(e){}
+}
+function pressFx(btn, x, y){
+  if(!btn || btn.disabled || btn.classList.contains("locked") || btn.hasAttribute("data-nofx")) return;
+  if(screen==="type" || screen==="meteor") return; // never during typing runs
+  clickTick();
+  btn.classList.remove("fx-press"); void btn.offsetWidth; btn.classList.add("fx-press");
+  clearTimeout(btn._fxT); btn._fxT=setTimeout(()=>btn.classList.remove("fx-press"), 300);
+  if(FX_RM.matches) return;
+  if(getComputedStyle(btn).position==="static") btn.classList.add("fx-host");
+  const r=btn.getBoundingClientRect();
+  if(x==null){ x=r.left+r.width/2; y=r.top+r.height/2; }
+  const d=2*Math.hypot(Math.max(x-r.left, r.right-x), Math.max(y-r.top, r.bottom-y));
+  const wave=document.createElement("span"); wave.className="fx-wave";
+  const rip=document.createElement("span"); rip.className="fx-ripple";
+  rip.style.cssText=`left:${x-r.left}px;top:${y-r.top}px;width:${d}px;height:${d}px`;
+  wave.appendChild(rip); btn.appendChild(wave);
+  setTimeout(()=>wave.remove(), 320);
+  // Big home tiles: the title letters hop one by one (whole wave stays under 300 ms).
+  const b = btn.classList.contains("mode") && btn.querySelector("b");
+  if(b && !b.dataset.fx){
+    const txt=b.textContent, n=[...txt].length, step=Math.min(20, 110/Math.max(1,n));
+    b.dataset.fx="1";
+    b.innerHTML=[...txt].map((c,i)=>`<span class="fx-l" style="animation-delay:${(i*step).toFixed(0)}ms">${esc(c)}</span>`).join("");
+    setTimeout(()=>{ b.textContent=txt; delete b.dataset.fx; }, 320);
+  }
+}
+document.addEventListener("pointerdown", e=>{ if(e.button===0) pressFx(e.target.closest("button"), e.clientX, e.clientY); }, true);
+document.addEventListener("click", e=>{ if(e.detail===0) pressFx(e.target.closest("button")); }, true); // keyboard (Enter/Space)
+
+/* =========================================================================
    GLOBAL KEYS
    ========================================================================= */
 document.addEventListener("keydown", e=>{
+  if(screen==="result" && resultKeysLocked()){ e.preventDefault(); return; }   // still typing: ignore all keys for a moment
   if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
   if($("#ladderLock").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); $("#ladderLock").classList.remove("on"); } return; }
   if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } return; }
