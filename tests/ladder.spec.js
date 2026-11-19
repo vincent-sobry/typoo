@@ -301,3 +301,31 @@ test("hold time: 1.5 key strokes at the reference WPM, from 250 to 600 ms", asyn
   await openApp(page, withChapters(18));
   expect(await page.evaluate(() => [ladderHold(30), ladderHold(40), ladderHold(60), ladderHold(10), ladderHold(120)])).toEqual([600, 450, 300, 600, 250]);
 });
+
+test("full-race tracks above the per-word tracks: they show the whole ladder", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  await typeRung(page, 1);
+  await waitRung(page, 2);
+  const [x, total, done] = await page.evaluate(() => {
+    const tr = document.querySelector("#fYou").parentElement.getBoundingClientRect();
+    return [(document.querySelector("#fYou").getBoundingClientRect().left - tr.left - 6) / (tr.width - 60), ladderTotal(), ladderDone()];
+  });
+  expect(done).toBe(2);                                                     // the 2-letter word is done
+  expect(x).toBeGreaterThan(done / total - 0.02);                           // not back at the start
+  expect(x).toBeLessThan(0.1);                                              // a small step on the full track
+  const ys = await page.evaluate(() => ["#fYou", "#fBot", "#rYou", "#rBot"].map(id => document.querySelector(id).getBoundingClientRect().top));
+  expect(ys[1]).toBeLessThan(ys[2]);                                        // full race above the per-word tracks
+  expect(await page.evaluate(() => document.querySelector("#rYou").style.left)).toBe("6px");   // per word: back at the start
+});
+
+test("danger cue: Keebo's lane turns red when he is about to win the word", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  await waitRung(page, 1);
+  const track = page.locator("#fBot").locator("..");
+  await expect(track).not.toHaveClass(/danger/);
+  await expect(track).toHaveClass(/danger/, { timeout: 8000 });            // Keebo near the end, you did not type
+  await page.waitForFunction(() => !LW || LW.over);                       // Keebo wins
+  await expect(track).not.toHaveClass(/danger/);
+});
