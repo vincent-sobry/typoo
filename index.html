@@ -237,6 +237,10 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .choice b{display:block;font-size:18px}
 .choice .bst{color:#ffd43b;letter-spacing:3px}
 .choice .bst i{font-style:normal;color:#3a4277}
+#boostLobby .panel{max-width:680px}
+#boostChoices .choice{display:flex;flex-direction:column;align-items:center;gap:2px}
+.blvl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:99px;margin-bottom:6px}
+.blvl.easy{background:#3ee08926;color:#3ee089}.blvl.mid{background:#ffd43b26;color:#ffd43b}.blvl.hard{background:#ff6b8b26;color:#ff6b8b}
 .count{font-size:120px;font-weight:900;color:#fff;text-shadow:0 0 40px var(--accent)}
 
 /* ---------- Meteor ---------- */
@@ -449,7 +453,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 </div></div>
 <div class="overlay" id="boostLobby"><div class="panel">
   <h2>⚡ Booster</h2>
-  <p class="muted" id="blTxt">Pick a chapter. A very good run gives it one more star.</p>
+  <p class="muted" id="blTxt">Pick a chapter: easy, medium or hard. A very good run gives it one more star.</p>
   <div class="choices" id="boostChoices"></div>
   <button class="btn ghost" id="boostCancel">Cancel</button>
 </div></div>
@@ -1142,6 +1146,20 @@ function boostList(){
   return lessonsFlat().filter(l=>{ const s=lessonRec(l.idx)?.stars||0; return s>=1 && s<3; })
     .sort((a,b)=>(lessonRec(a.idx).stars-lessonRec(b.idx).stars) || a.idx-b.idx);
 }
+/* How far the best run of chapter L is from the rule of its next star. 0 = rule already met once. */
+function boostGap(L){
+  const r=lessonRec(L.idx)||{stars:0,wpm:0,acc:0};
+  const w = r.stars<2 ? L.target : Math.ceil(L.target*1.3), a = r.stars<2 ? 94 : 97;
+  return Math.max(0,(w-r.wpm)/w) + Math.max(0,(a-r.acc)/10);
+}
+/* Three chapters for the lobby: easy (smallest gap), medium (middle gap) and hard (largest gap). */
+const BOOST_LEVELS=[{n:"Easy",c:"easy"},{n:"Medium",c:"mid"},{n:"Hard",c:"hard"}];
+function boostPicks(){
+  const L=boostList().map(l=>({l,g:boostGap(l)})).sort((a,b)=>a.g-b.g || a.l.idx-b.l.idx), n=L.length;
+  if(n>=3) return [0,1,2].map(k=>({l:L[[0,(n-1)>>1,n-1][k]].l, lvl:BOOST_LEVELS[k]}));
+  if(n===2) return [{l:L[0].l,lvl:BOOST_LEVELS[0]},{l:L[1].l,lvl:BOOST_LEVELS[2]}];
+  return L.map(x=>({l:x.l,lvl:null}));
+}
 /* The rule for the next star of chapter L, as text. */
 function boostGoal(L){
   const s=lessonRec(L.idx)?.stars||0;
@@ -1174,8 +1192,10 @@ function openBoost(){
     toast("⚡", any ? "All your chapters have ★★★. Wow! 🎉" : `Get 1 star on a ${chapterWord().toLowerCase()} first.`);
     return;
   }
-  $("#boostChoices").innerHTML=list.slice(0,6).map(l=>{ const s=lessonRec(l.idx).stars;
-    return `<button class="choice" data-i="${l.idx}"><span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
+  const picks=boostPicks();
+  $("#boostChoices").style.gridTemplateColumns=`repeat(${picks.length},1fr)`;
+  $("#boostChoices").innerHTML=picks.map(({l,lvl})=>{ const s=lessonRec(l.idx).stars;
+    return `<button class="choice" data-i="${l.idx}">${lvl?`<span class="blvl ${lvl.c}">${lvl.n}</span>`:""}<span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
       `<span class="bst">${"★".repeat(s)}<i>${"★".repeat(3-s)}</i></span><br><span class="muted" style="font-size:12px">Next star: ${boostGoal(l)}</span></button>`; }).join("");
   $$("#boostChoices .choice").forEach(b=>b.onclick=()=>{ $("#boostLobby").classList.remove("on"); startBoost(+b.dataset.i); });
   $("#boostLobby").classList.add("on");
