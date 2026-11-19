@@ -168,6 +168,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 
 /* ---------- Result ---------- */
 .result{max-width:640px;margin:20px auto;text-align:center}
+/* Result screen: the card sits in the centre of the window. If it is taller than the window, the page scrolls. */
+#result.screen.on{display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 32px);min-height:calc(100dvh - 32px);margin-bottom:-24px}
+#result .result{margin:0 auto;width:100%}
 .bigstars{font-size:64px;letter-spacing:10px;margin:8px 0}
 .bigstars span{display:inline-block;color:#3a4277;transform:scale(.4);opacity:.3;transition:all .35s cubic-bezier(.3,1.8,.5,1)}
 .bigstars span.on{color:#ffd43b;transform:scale(1);opacity:1;text-shadow:0 0 22px #ffd43baa}
