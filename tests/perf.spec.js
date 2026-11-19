@@ -111,6 +111,7 @@ test.describe("low-end CPU", () => {
       test.setTimeout(60000);
       await openApp(page, withChapters(18, { bestWpm: 10 })); // slow Keebo, so he does not win
       await page.click(btn);
+      await page.click("#lvChoices .lv-normal");               // level lobby: Normal
       await expect(page.locator("#type")).toBeVisible();
       await slowCpu(page);
       await startMeasure(page);

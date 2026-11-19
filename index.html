@@ -262,6 +262,18 @@ body.fframe #fframe{display:block}
 .choice .bst{color:#ffd43b;letter-spacing:3px}
 .choice .bst i{font-style:normal;color:#3a4277}
 #boostLobby .panel{max-width:680px}
+/* Game levels: Fun / Normal / Super Challenge */
+#levelLobby .panel,#raceLobby .panel{max-width:640px}
+.lvchoices{grid-template-columns:repeat(3,1fr)}
+.lvchoices .choice{display:flex;flex-direction:column;align-items:center;gap:2px}
+.lvchoices .choice.on,.lvrow button.on{border-color:var(--lc);box-shadow:0 0 14px color-mix(in srgb,var(--lc) 45%,transparent)}
+.lvchoices .choice:focus-visible{border-color:var(--lc)}
+.lvchoices .wpm{font-size:22px;font-weight:800;color:var(--lc)}
+.lvchoices small{font-size:12px;color:var(--muted)}
+.lv-fun{--lc:#3ee089}.lv-normal{--lc:#4dabf7}.lv-challenge{--lc:#ff6b8b}
+.lvrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 0}
+.lvrow button{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;color:inherit}
+@media (max-width:560px){.lvchoices{grid-template-columns:1fr}}
 #boostChoices .choice{display:flex;flex-direction:column;align-items:center;gap:2px}
 .blvl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:99px;margin-bottom:6px}
 .blvl.easy{background:#3ee08926;color:#3ee089}.blvl.mid{background:#ffd43b26;color:#ffd43b}.blvl.hard{background:#ff6b8b26;color:#ff6b8b}
@@ -504,6 +516,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
 <div class="overlay" id="raceLobby"><div class="panel">
   <h2>🏁 Race Keebo</h2>
   <p class="muted">Pick Keebo's speed. Win to earn bonus XP. Keebo uses only the keys you have learned.</p>
+  <div class="lvrow" id="raceLv" role="group" aria-label="Level for Match me"></div>
   <div class="choices" id="raceChoices"></div>
   <button class="btn ghost" id="raceCancel">Cancel</button>
 </div></div>
@@ -512,6 +525,12 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <p class="muted" id="llTxt"></p>
   <ol class="missing" id="llList"></ol>
   <button class="btn" id="llClose">OK</button>
+</div></div>
+<div class="overlay" id="levelLobby"><div class="panel">
+  <h2 id="lvTitle">Pick a level</h2>
+  <p class="muted" id="lvTxt">Fun is more relaxed. Normal is the game as you know it. Super Challenge is harder.</p>
+  <div class="choices lvchoices" id="lvChoices"></div>
+  <button class="btn ghost" id="lvCancel">Cancel</button>
 </div></div>
 <div class="overlay" id="boostLobby"><div class="panel">
   <h2>⚡ Booster</h2>
@@ -1529,8 +1548,12 @@ function startDaily(practice=false){
    ========================================================================= */
 const BOT_SPEEDS=[{n:"Chill",w:12,i:"🐢"},{n:"Steady",w:20,i:"🚲"},{n:"Fast",w:30,i:"🛵"},{n:"Turbo",w:42,i:"🏎️"},{n:"Insane",w:60,i:"🚀"}];
 function openRaceLobby(){
-  const avg = avgWpm();
-  const opts=[...BOT_SPEEDS]; if(avg>0) opts.unshift({n:"Match me",w:Math.max(8,avg+2),i:"🎯"});
+  const avg = avgWpm(), lv=levelOf("race");
+  // "Match me" follows the player's WPM, so it has a level. The fixed speeds do not.
+  const opts=[...BOT_SPEEDS]; if(avg>0) opts.unshift({n: lv==="normal" ? "Match me" : `Match me · ${levelInfoOf(lv).n}`, w:Math.max(8,levelWpm(avg,lv)+2), i: levelInfoOf(lv).i});
+  $("#raceLv").style.display = avg>0 ? "" : "none";
+  $("#raceLv").innerHTML = LEVELS.map(L=>`<button class="lv-${L.id}${L.id===lv?" on":""}" data-lv="${L.id}" aria-pressed="${L.id===lv}">${L.i} ${L.n} · ${Math.max(8,levelWpm(avg,L.id)+2)} WPM</button>`).join("");
+  $$("#raceLv button").forEach(b=>b.onclick=()=>{ setLevel("race", b.dataset.lv); openRaceLobby(); });
   $("#raceChoices").innerHTML=opts.map((o,i)=>`<button class="choice" data-w="${o.w}" data-n="${o.n}"><span style="font-size:28px">${o.i}</span><b>${o.n}</b><span class="muted">${o.w} WPM</span></button>`).join("");
   $$("#raceChoices .choice").forEach(b=>b.onclick=()=>{ $("#raceLobby").classList.remove("on"); startRace(+b.dataset.w, b.dataset.n); });
   $("#raceLobby").classList.add("on");
@@ -1581,6 +1604,63 @@ function countIn(go){
 }
 function stopLights(){ $("#lights").classList.remove("on"); $$("#lights i").forEach(l=>l.classList.remove("on")); $("#text").classList.remove("wait"); }
 function avgWpm(){ const h=state.history.slice(-10); return h.length? Math.round(h.reduce((a,b)=>a+b.wpm,0)/h.length) : 0; }
+
+/* =========================================================================
+   GAME LEVELS: Fun / Normal / Super Challenge
+   The paced games take a reference WPM from the player. Fun makes it lower, Super Challenge higher.
+   The step comes from the spread of the last 10 runs (best, average, worst):
+     Fun       = avg - 50% of (avg - worst)
+     Challenge = avg + 50% of (best - avg)
+   Each step is 5% to 25% of avg. Fewer than 5 runs: a fixed step of 10%.
+   Normal = the game as before. The last choice is kept per game. Records are kept per level.
+   ========================================================================= */
+const LEVELS=[{id:"fun",n:"Fun",i:"😎"},{id:"normal",n:"Normal",i:"🎯"},{id:"challenge",n:"Super Challenge",i:"🔥"}];
+const LEVEL_SHARE=0.5, LEVEL_MIN=0.05, LEVEL_MAX=0.25, LEVEL_FIXED=0.10, LEVEL_RUNS=5;
+/* The two steps as a part of avg: {down, up}. */
+function levelSteps(){
+  const h=state.history.slice(-10).map(r=>r.wpm), fixed={down:LEVEL_FIXED, up:LEVEL_FIXED};
+  if(h.length<LEVEL_RUNS) return fixed;
+  const avg=h.reduce((a,b)=>a+b,0)/h.length; if(!(avg>0)) return fixed;
+  const cl=x=>Math.min(LEVEL_MAX, Math.max(LEVEL_MIN, x));
+  return {down:cl(LEVEL_SHARE*(avg-Math.min(...h))/avg), up:cl(LEVEL_SHARE*(Math.max(...h)-avg)/avg)};
+}
+function levelFactor(lv){ const s=levelSteps(); return lv==="fun" ? 1-s.down : lv==="challenge" ? 1+s.up : 1; }
+function levelWpm(base, lv){ return Math.round(base*levelFactor(lv)); }
+function levelInfoOf(lv){ return LEVELS.find(x=>x.id===lv)||LEVELS[1]; }
+function levelOf(game){ const l=(state.gameLv||{})[game]; return LEVELS.some(x=>x.id===l) ? l : "normal"; }
+function setLevel(game, lv){ (state.gameLv||(state.gameLv={}))[game]=lv; save(); }
+/* "😎 Fun" for a level other than Normal, else "". */
+function levelTag(lv){ const L=levelInfoOf(lv); return lv==="normal" ? "" : `${L.i} ${L.n}`; }
+/* Level lobby for Longest Word, Word Marathon and Word Rain. */
+const LEVEL_GAMES={
+  ladder:  {t:"🪜 Longest Word", base:()=>ladderRef(), sub:lv=>`Keebo starts at ${ladderPace(levelWpm(ladderRef(),lv),1)} WPM`,
+            rec:lv=>{ const b=ladderRecOf("ladder",lv).best; return b ? `Record: ${b} of ${LADDER_SUBS}` : "No record yet"; }, go:lv=>startLadder(false,lv)},
+  marathon:{t:"🏃 Word Marathon", base:()=>ladderRef(), sub:lv=>`Keebo starts at ${ladderPace(levelWpm(ladderRef(),lv),1)} WPM`,
+            rec:lv=>{ const b=ladderRecOf("marathon",lv).best; return b ? `Record: ${b} of ${LADDER_SUBS}` : "No record yet"; }, go:lv=>startLadder(true,lv)},
+  rain:    {t:"☄️ Word Rain", base:()=>avgWpm()||state.bestWpm||0,
+            sub:lv=>{ const p=Math.round(Math.abs(levelFactor(lv)-1)*100); return lv==="normal" ? "Meteors at normal speed" : `Meteors ${p}% ${lv==="fun"?"slower":"faster"}`; },
+            rec:lv=>{ const b=rainBestOf(lv); return b ? `Record: ${b}` : "No record yet"; }, go:lv=>startRain(lv)},
+};
+let LVG="ladder";
+function openLevelLobby(game){
+  const G=LEVEL_GAMES[game]; LVG=game;
+  const base=G.base(), cur=levelOf(game);
+  $("#lvTitle").textContent=G.t;
+  $("#lvChoices").innerHTML=LEVELS.map((L,k)=>`<button class="choice lv-${L.id}${L.id===cur?" on":""}" data-lv="${L.id}" title="Key ${k+1}">
+    <span style="font-size:28px">${L.i}</span><b>${L.n}</b>${base>0?`<span class="wpm">${levelWpm(base,L.id)} WPM</span>`:""}<small>${G.sub(L.id)}</small><small>${G.rec(L.id)}</small></button>`).join("");
+  $$("#lvChoices .choice").forEach(b=>b.onclick=()=>{ $("#levelLobby").classList.remove("on"); setLevel(game, b.dataset.lv); G.go(b.dataset.lv); });
+  $("#levelLobby").classList.add("on");
+  setTimeout(()=>$(`#lvChoices .choice[data-lv="${cur}"]`)?.focus(),30);
+}
+$("#lvCancel").onclick=()=>$("#levelLobby").classList.remove("on");
+/* Records of Longest Word / Word Marathon for a level. Normal stays in state.ladder / state.marathon. */
+function ladderRecOf(key, lv, make){
+  let L=state[key]; if(!L){ if(!make) return {best:0,played:0,boss:0}; L=state[key]={best:0,played:0,boss:0}; }
+  if(lv==="normal") return L;
+  if(!L.lv){ if(!make) return {best:0,played:0,boss:0}; L.lv={}; }
+  return L.lv[lv] || (make ? (L.lv[lv]={best:0,played:0,boss:0}) : {best:0,played:0,boss:0});
+}
+function rainBestOf(lv){ return lv==="normal" ? state.rainBest||0 : (state.rainLv||{})[lv]||0; }
 
 /* =========================================================================
    LONGEST WORD (word ladder against Keebo)
@@ -1655,7 +1735,7 @@ function ladderMissing(){
 }
 function openLadder(marathon){
   const miss=ladderMissing();
-  if(!miss.length) return startLadder(!!marathon);
+  if(!miss.length) return openLevelLobby(marathon ? "marathon" : "ladder");
   $("#llTxt").textContent=`Learn all the letters first. Get at least 1 star on each ${chapterWord().toLowerCase()} up to the end of the Bottom Row. You still need ${miss.length}:`;
   $("#llList").innerHTML=miss.map(l=>`<li value="${l.idx+1}">${esc(l.title)}</li>`).join("");
   $("#ladderLock").classList.add("on");
@@ -1695,10 +1775,10 @@ function ladderDanger(on){ $("#fBot").parentElement.classList.toggle("danger", !
 function renderLadderBar(){
   $("#ladder").innerHTML=LW.words.map((w,i)=>`<i class="${i<LW.sub-1?"done":i===LW.sub-1?"cur":""}" title="${i===LW.words.length-1?"Boss word":w.length+" letters"}">${i===LW.words.length-1?"👑":w.length}</i>`).join("");
 }
-function startLadder(marathon){
-  marathon=!!marathon;
-  const words=ladderWords(), best=ladderRef();
-  LW={words, sub:0, best, marathon, wait:KEEBO_READ, ramp:0, botV:1, botTotal:0, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
+function startLadder(marathon, level){
+  marathon=!!marathon; level=level||levelOf(marathon ? "marathon" : "ladder");
+  const words=ladderWords(), best=levelWpm(ladderRef(), level);
+  LW={words, sub:0, best, marathon, level, wait:KEEBO_READ, ramp:0, botV:1, botTotal:0, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
   startSession({mode:"ladder", marathon, title: marathon ? "Word Marathon" : "Longest Word", text:words[0], locked:true,
     onTick(){
       if(!LW || LW.over || !S) return;
@@ -1743,7 +1823,7 @@ function ladderNext(){
   // Preview of the next word, so the player can read ahead.
   const nx=LW.words[LW.sub];
   if(nx){ const pk=document.createElement("span"); pk.className="peek"; pk.id="ladderPeek"; pk.textContent=nx; pk.title="Next word"; $("#text").append(pk); }
-  const name = LW.marathon ? "Word Marathon" : "Longest Word";
+  const name = (LW.level!=="normal" ? levelInfoOf(LW.level).i+" " : "") + (LW.marathon ? "Word Marathon" : "Longest Word");
   $("#tTitle").textContent = boss ? `${name} · 👑 Boss word (${LW.sub}/${LADDER_SUBS})` : `${name} · ${w.length} letters (${LW.sub}/${LADDER_SUBS})`;
   $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
@@ -1784,8 +1864,8 @@ function ladderOver(won){
   if(!won){ $("#rBot").style.left="calc(100% - 54px)"; $("#text").classList.add("lost"); }
   ladderDanger(false);
   const cleared = won ? LW.words.length : LW.sub-1;  // sublevels done
-  const key = LW.marathon ? "marathon" : "ladder";        // each version has its own records
-  const L=state[key] || (state[key]={best:0,played:0,boss:0});
+  const key = LW.marathon ? "marathon" : "ladder";        // each version and each level has its own records
+  const L=ladderRecOf(key, LW.level, true);
   const record = cleared>L.best;
   L.played++; L.best=Math.max(L.best,cleared); if(won) L.boss++;
   const xp = LW.words.slice(0,cleared).reduce((a,w)=>a+w.length,0) + (won?50:0);
@@ -1797,14 +1877,14 @@ function ladderOver(won){
   const res={wpm: LW.secs>0 ? (LW.chars/5)/(LW.secs/60) : 0, acc, secs:LW.secs, miss:S.miss};
   const last=LW.words[LW.sub-1];
   save(); checkBadges();
-  const lw=LW, sess=S, again=()=>startLadder(lw.marathon); LW=null;
+  const lw=LW, sess=S, again=()=>startLadder(lw.marathon, lw.level); LW=null;
   setTimeout(()=>{
     if(S!==sess || screen!=="type") return;      // the player left during the pause
     showResult({title: won ? (lw.marathon ? "You won the Word Marathon! 👑" : "You beat the longest word! 👑") : (lw.marathon ? `Keebo passed you at ${last.length} letters` : `Keebo wins at ${last.length} letters`), res, xp,
       mood: won ? "wow" : "happy",
       msg: won ? "WHAT?! Even the boss word! You are a word ladder legend! 🤖💜" :
            cleared ? `You climbed ${cleared} ${cleared===1?"rung":"rungs"}. ${record?"New record! 🏆":"Rematch?"}` : "I was faster on the first word. Try again!",
-      need: `Sublevels: ${cleared} of ${lw.words.length} · Record: ${L.best} · Last word: ${last}`,
+      need: (lw.level!=="normal" ? `${levelTag(lw.level)} · ` : "") + `Sublevels: ${cleared} of ${lw.words.length} · Record: ${L.best} · Last word: ${last}`,
       retry: again, next: null});
     if(won||record){ chime(); confetti(won?200:80); }
   }, won ? 300 : 600);
@@ -1815,15 +1895,17 @@ function ladderOver(won){
    WORD RAIN (meteor game)
    ========================================================================= */
 let M=null;
-function startRain(){
+function startRain(level){
+  level=level||levelOf("rain");
   show("meteor"); $("#layoutWarn").classList.remove("on");
   const sky=$("#sky"); $$("#sky .met,#sky .star").forEach(e=>e.remove());
   for(let i=0;i<40;i++){ const s=document.createElement("div"); s.className="star"; s.style.left=Math.random()*100+"%"; s.style.top=Math.random()*85+"%"; sky.appendChild(s); }
   const allowed=learnedSet();
   let pool=wordList().filter(w=>fits(w,allowed) && w.length>=2 && w.length<=9);
   if(pool.length<15) pool=genWords(allowed,40).split(" ");
-  M={words:[],score:0,lives:3,speed:28,spawn:0,interval:2.4,last:0,target:null,pool,running:true,kills:0,t0:performance.now()};
-  $("#mBest").textContent=state.rainBest; updateRainHud();
+  const f=levelFactor(level);                       // Fun: slower meteors, Super Challenge: faster
+  M={words:[],score:0,lives:3,speed:28*f,spawn:0,interval:2.4/f,last:0,target:null,pool,running:true,kills:0,t0:performance.now(),level,f};
+  $("#mBest").textContent=rainBestOf(level); $("#meteor h2").textContent = "Word Rain" + (level!=="normal" ? " · "+levelTag(level) : ""); updateRainHud();
   requestAnimationFrame(rainLoop);
 }
 function updateRainHud(){ $("#mScore").textContent=M.score; $("#mLives").textContent="❤️".repeat(M.lives)+"🖤".repeat(3-M.lives); }
@@ -1867,7 +1949,7 @@ function onRainKey(e){
     w.typed++; renderMet(w); (state.keys[k]||(state.keys[k]={h:0,m:0})).h++;
     if(w.typed>=w.text.length){
       M.score+=w.text.length*10; M.kills++;
-      M.speed=Math.min(110, M.speed+1.6); M.interval=Math.max(0.85, M.interval-0.06);
+      M.speed=Math.min(110*M.f, M.speed+1.6*M.f); M.interval=Math.max(0.85/M.f, M.interval-0.06/M.f);
       w.el.style.setProperty("--t",`translate(${w.x}px,${w.y}px)`); w.el.classList.add("boom");
       setTimeout(()=>w.el.remove(),300); M.words=M.words.filter(x=>x!==w); M.target=null;
       beep(660,0.06,"sine",0.05); updateRainHud();
@@ -1877,7 +1959,9 @@ function onRainKey(e){
 function rainOver(){
   M.running=false;
   const secs=(performance.now()-M.t0)/1000;
-  const best=M.score>state.rainBest; state.rainBest=Math.max(state.rainBest,M.score);
+  const best=M.score>rainBestOf(M.level);
+  if(M.level==="normal") state.rainBest=Math.max(state.rainBest,M.score);
+  else (state.rainLv||(state.rainLv={}))[M.level]=Math.max(rainBestOf(M.level),M.score);
   const xp=Math.round(M.score/15); state.xp+=xp;
   const t=todayStr(); const goal=addToday(secs); goalPending=false;
   if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
@@ -1889,7 +1973,7 @@ function rainOver(){
   if(lv.lvl>lb.lvl){ $("#rainTxt").innerHTML+=`<br><b>🎉 Level up! Level ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
   if(goal){ $("#rainTxt").innerHTML+=`<br><b class="goalok">🎯 Daily goal reached! 10 minutes today.</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
 }
-$("#rainAgain").onclick=()=>{ $("#rainOver").classList.remove("on"); startRain(); };
+$("#rainAgain").onclick=()=>{ $("#rainOver").classList.remove("on"); startRain(M&&M.level); };
 $("#rainMap").onclick=()=>{ $("#rainOver").classList.remove("on"); goHome(); };
 $("#mBack").onclick=()=>{ if(M) M.running=false; goHome(); };
 
@@ -1989,12 +2073,12 @@ function renderHome(){
   $("#sBest").textContent=state.bestWpm; $("#sAvg").textContent=avgWpm(); $("#sStars").textContent=totalStars();
   const cur=currentLessonIdx(); const L=lessonsFlat();
   $("#mContText").textContent=`${cur+1}. ${L[cur].title}`;
-  const lmiss=ladderMissing().length, lrec=state.ladder?.best||0;
+  const lmiss=ladderMissing().length, llv=levelOf("ladder"), mlv=levelOf("marathon"), lrec=ladderRecOf("ladder",llv).best;
   $("#mLadder").classList.toggle("locked", lmiss>0);
-  const mrec=state.marathon?.best||0;
+  const mrec=ladderRecOf("marathon",mlv).best;
   $("#mMarathon").classList.toggle("locked", lmiss>0);
-  $("#mMarathonText").textContent = lmiss ? `Locked: finish the Bottom Row first` : mrec ? `Record: ${mrec} of ${LADDER_SUBS} · stay ahead of Keebo` : "Type the ladder at your own pace. Stay ahead of Keebo";
-  $("#mLadderText").textContent = lmiss ? `Locked: finish the Bottom Row first` : lrec ? `Record: ${lrec} of ${LADDER_SUBS} · climb against Keebo` : "Climb the word ladder against Keebo";
+  $("#mMarathonText").textContent = lmiss ? `Locked: finish the Bottom Row first` : mrec ? `${mlv!=="normal"?levelInfoOf(mlv).i+" ":""}Record: ${mrec} of ${LADDER_SUBS} · stay ahead of Keebo` : "Type the ladder at your own pace. Stay ahead of Keebo";
+  $("#mLadderText").textContent = lmiss ? `Locked: finish the Bottom Row first` : lrec ? `${llv!=="normal"?levelInfoOf(llv).i+" ":""}Record: ${lrec} of ${LADDER_SUBS} · climb against Keebo` : "Climb the word ladder against Keebo";
   const bn=boostList().length, bany=L.some(l=>(lessonRec(l.idx)?.stars||0)>=1);
   $("#mBoost").classList.toggle("locked", !bn);
   $("#mBoostText").textContent = bn ? `${bn} ${bn===1?chapterWord().toLowerCase():state.lang==="nl"?"hoofdstukken":"chapters"} can get more stars` : bany ? "All chapters have ★★★ 🎉" : "Locked: get 1 star on a chapter first";
@@ -2038,7 +2122,7 @@ $("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
 $("#mDaily").onclick=()=>{ const dl=dailyLock(); if(!dl) return startDaily();
   toast("📜", currentLessonIdx()===0 ? `The daily sentence opens after ${chapterWord().toLowerCase()} 1.` : "Today's sentence is done. A new one comes tomorrow!"); };
 $("#mRace").onclick=openRaceLobby;
-$("#mRain").onclick=startRain;
+$("#mRain").onclick=()=>openLevelLobby("rain");
 $("#mSmart").onclick=startSmart;
 $("#mCustom").onclick=openCustom;
 $("#mLadder").onclick=()=>openLadder(false);
@@ -2228,6 +2312,13 @@ document.addEventListener("keydown", e=>{
     else if(e.key==="Enter" && e.target.id!=="clCancel"){ e.preventDefault(); $("#clGo").click(); }
     else if(!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length===1 && $(`#clKb .ckey[data-c="${CSS.escape(e.key.toLowerCase())}"]`)){ e.preventDefault(); customToggle(e.key.toLowerCase()); }
     return; }
+  if($("#levelLobby").classList.contains("on")){
+    const bs=$$("#lvChoices .choice"), i=bs.indexOf(document.activeElement);
+    if(e.key==="Escape"){ e.preventDefault(); $("#levelLobby").classList.remove("on"); }
+    else if(e.key>="1" && e.key<="3"){ e.preventDefault(); bs[+e.key-1].click(); }
+    else if(e.key==="ArrowRight"||e.key==="ArrowDown"){ e.preventDefault(); bs[(i+1)%bs.length].focus(); }
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){ e.preventDefault(); bs[(i+bs.length-1)%bs.length].focus(); }
+    return; }
   if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } return; }
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
@@ -2243,8 +2334,8 @@ document.addEventListener("keydown", e=>{
    Back from a top screen goes to the map. In a run it works like Esc: the run stops, nothing is saved.
    Back on the map leaves the app. Forward opens Settings or a lobby again. A stopped game cannot come back.
    ========================================================================= */
-const NAV_TOP=["badgeCard","ladderLock","boostLobby","customLobby","raceLobby","rainOver","settings"];   // pop-ups first
-const NAV_REOPEN={settings:openSettings, raceLobby:openRaceLobby, boostLobby:openBoost, customLobby:openCustom};
+const NAV_TOP=["badgeCard","ladderLock","levelLobby","boostLobby","customLobby","raceLobby","rainOver","settings"];   // pop-ups first
+const NAV_REOPEN={settings:openSettings, levelLobby:()=>openLevelLobby(LVG), raceLobby:openRaceLobby, boostLobby:openBoost, customLobby:openCustom};
 let navIdx=0, navBusy=false;
 const navView=()=>NAV_TOP.find(id=>$("#"+id).classList.contains("on")) || screen;
 const navLevel=v=>v==="home"||v==="onboard" ? 0 : 1;
@@ -2260,7 +2351,7 @@ function navSync(){
 /* Close all top screens and go to the map, like Esc. */
 function navToMap(){
   if($("#badgeCard").classList.contains("on")) closeBadge();
-  ["ladderLock","boostLobby","customLobby","raceLobby"].forEach(id=>$("#"+id).classList.remove("on"));
+  ["ladderLock","levelLobby","boostLobby","customLobby","raceLobby"].forEach(id=>$("#"+id).classList.remove("on"));
   if($("#settings").classList.contains("on")){ $("#settings").classList.remove("on"); renderHome(); }
   if($("#rainOver").classList.contains("on")){ $("#rainOver").classList.remove("on"); goHome(); }
   if(screen==="type") endSessionEarly();
