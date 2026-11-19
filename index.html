@@ -199,6 +199,19 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .ladder i.cur{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 12px #7c5cff88}
 #raceTracks.compact .track{height:32px;margin:4px 0}
 #raceTracks.compact .runner{font-size:22px;top:2px}
+/* Longest Word: Keebo's lane turns red when he is about to win the current word. */
+.track.danger{border-color:var(--bad);box-shadow:0 0 0 2px #ff5d7355;animation:dangerpulse .6s ease-in-out infinite alternate}
+.track.danger .lane{background:linear-gradient(90deg,#ff5d7322,#ff5d7344)}
+@keyframes dangerpulse{to{box-shadow:0 0 0 4px #ff5d7333}}
+@media (prefers-reduced-motion:reduce){.track.danger{animation:none}}
+#type.lwmode .track.full .who{left:auto;right:44px}       /* labels at the right: the runners start on the left */
+.track.full{display:none}
+#type.lwmode .track.full{display:block}
+/* Four thin tracks in Longest Word (full race + per word), so the keyboard still fits. */
+#type.lwmode #raceTracks .track{height:24px;margin:3px 0;border-radius:10px}
+#type.lwmode #raceTracks .runner{font-size:17px;top:1px}
+#type.lwmode #raceTracks .who{top:4px;font-size:11px}
+#type.lwmode #raceTracks .fin{font-size:14px}
 #raceTracks.compact .who{top:7px}
 #raceTracks.compact .fin{font-size:18px}
 /* F1 start lights: 5 red lights go on, then all go off = GO. Over the text box, no dark overlay. */
@@ -397,6 +410,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <button class="btn ghost" id="tBlind" title="Change how much of the keyboard you see">👀 Keys: on</button>
     </div>
     <div id="raceTracks" style="display:none">
+      <div class="track full"><div class="lane"></div><div class="runner" id="fYou">🧑‍💻</div><div class="who">You · full race</div><div class="fin">🏁</div></div>
+      <div class="track full"><div class="lane"></div><div class="runner" id="fBot">🤖</div><div class="who">Keebo · full race</div><div class="fin">🏁</div></div>
       <div class="track"><div class="lane"></div><div class="runner" id="rYou">🧑‍💻</div><div class="who" id="rYouLbl">You</div><div class="fin">🏁</div></div>
       <div class="track"><div class="lane"></div><div class="runner" id="rBot">🤖</div><div class="who" id="rBotLbl">Keebo</div><div class="fin">🏁</div></div>
     </div>
@@ -893,7 +908,7 @@ function fitKeyboard(){
   // Race tracks and the word ladder take extra room on the typing screen.
   const extra = screen==="type" ? $("#raceTracks").offsetHeight+$("#ladder").offsetHeight : 0;
   const byH=(window.innerHeight-(window.innerHeight<=700?350:400)-extra)/(5.7+(hands?2.3:0));
-  const u=Math.max(30, Math.min(54, (w-110)/15, byH));
+  const u=Math.max(screen==="type" && S && S.mode==="ladder" ? 24 : 30, Math.min(54, (w-110)/15, byH));   // Longest Word has 4 tracks: allow smaller keys
   document.documentElement.style.setProperty("--u", u+"px");
 }
 window.addEventListener("resize", ()=>{ fitKeyboard(); if(screen==="type" && S){ balanceLines(); updateCursor(); } });
@@ -1440,6 +1455,12 @@ function openLadder(){
 }
 $("#llClose").onclick=()=>$("#ladderLock").classList.remove("on");
 let LW=null;
+/* Longest Word tracks show the whole ladder: the place is letters done in all words / letters of all words. */
+const LADDER_DANGER = 0.6;                                // Keebo's word part from which the danger cue can show
+function ladderPlace(el, frac){ const f=Math.max(0,Math.min(1,frac)); el.style.left=`calc(${f*100}% - ${f*60}px + 6px)`; }
+function ladderDone(){ return LW.words.slice(0, LW.sub-1).reduce((a,w)=>a+w.length,0); }   // letters of the finished words
+function ladderTotal(){ return LW.total || (LW.total=LW.words.reduce((a,w)=>a+w.length,0)); }
+function ladderDanger(on){ $("#fBot").parentElement.classList.toggle("danger", !!on); }
 function renderLadderBar(){
   $("#ladder").innerHTML=LW.words.map((w,i)=>`<i class="${i<LW.sub-1?"done":i===LW.sub-1?"cur":""}" title="${i===LW.words.length-1?"Boss word":w.length+" letters"}">${i===LW.words.length-1?"👑":w.length}</i>`).join("");
 }
@@ -1450,14 +1471,16 @@ function startLadder(){
     onTick(){
       if(!LW || LW.over || !LW.botStart || !S) return;
       const t=(performance.now()-LW.botStart)/1000;
-      const bp=Math.max(0,Math.min(1,keeboChars(t,LW.botV,LW.ramp)/S.text.length)), yp=S.pos/S.text.length;
-      $("#rBot").style.left=`calc(${bp*100}% - ${bp*60}px + 6px)`;
-      $("#rYou").style.left=`calc(${yp*100}% - ${yp*60}px + 6px)`;
+      const bc=Math.min(S.text.length, keeboChars(t,LW.botV,LW.ramp)), bp=bc/S.text.length;
+      const done=ladderDone(), tot=ladderTotal();
+      ladderPlace($("#rBot"), bp); ladderPlace($("#rYou"), S.pos/S.text.length);           // per word
+      ladderPlace($("#fBot"), (done+bc)/tot); ladderPlace($("#fYou"), (done+S.pos)/tot);   // full race
+      ladderDanger(bp>=LADDER_DANGER && bc>=S.pos);           // Keebo is close to the end of the word, and not behind you
       $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`+(t<LW.ramp?" · 🐢 speeding up":"");
       if(bp>=1 && !S.locked) ladderOver(false);
     },
     onWord(){ ladderWordDone(); },
-    onAbort(){ stopLights(); if(LW) LW.over=true; LW=null; }
+    onAbort(){ stopLights(); ladderDanger(false); if(LW) LW.over=true; LW=null; }
   });
   $("#rYouLbl").textContent="You";
   say("#type",`Type each word before I do. Errors do not count, only time. My start pace is <b>${ladderPace(best,1)} WPM</b>. Ready?`,"think");
@@ -1479,6 +1502,7 @@ function ladderNext(){
   $("#tTitle").textContent = boss ? `Longest Word · 👑 Boss word (${LW.sub}/${LADDER_SUBS})` : `Longest Word · ${w.length} letters (${LW.sub}/${LADDER_SUBS})`;
   $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
+  const f=ladderDone()/ladderTotal(); ladderPlace($("#fBot"), f); ladderPlace($("#fYou"), f); ladderDanger(false);
 }
 function ladderWordDone(){
   if(!LW || LW.over) return;
@@ -1487,6 +1511,7 @@ function ladderWordDone(){
   if(keeboDone(now)) return ladderOver(false);
   LW.chars+=S.text.length; LW.secs+=(now-LW.wordStart)/1000;
   $("#rYou").style.left="calc(100% - 54px)";
+  ladderPlace($("#fYou"), (ladderDone()+S.text.length)/ladderTotal()); ladderDanger(false);
   if(LW.sub>=LW.words.length) return ladderOver(true);
   // Hold the finished word (green) for a moment. Keebo waits too. Keys typed now are kept for the next word.
   beep(660,0.06,"sine",0.05);
@@ -1510,7 +1535,8 @@ function ladderWordDone(){
 function ladderOver(won){
   if(!LW || LW.over) return;
   LW.over=true; S.done=true; S.end=performance.now(); clearInterval(liveTimer); clearHighlights();
-  if(!won){ $("#rBot").style.left="calc(100% - 54px)"; $("#text").classList.add("lost"); }
+  if(!won){ $("#rBot").style.left="calc(100% - 54px)"; ladderPlace($("#fBot"), (ladderDone()+S.text.length)/ladderTotal()); $("#text").classList.add("lost"); }
+  ladderDanger(false);
   const cleared = won ? LW.words.length : LW.sub-1;  // sublevels done
   const L=state.ladder || (state.ladder={best:0,played:0,boss:0});
   const record = cleared>L.best;
