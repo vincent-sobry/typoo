@@ -73,6 +73,23 @@ h1,h2,h3{margin:0}
 .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .badge{width:44px;height:44px;border-radius:12px;background:var(--bg2);display:grid;place-items:center;font-size:22px;filter:grayscale(1);opacity:.35;position:relative}
 .badge.got{filter:none;opacity:1;background:#2c2560;box-shadow:inset 0 0 0 1px #7c5cff}
+button.badge{cursor:pointer;transition:transform .1s}
+button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline:2px solid var(--accent2);outline-offset:1px}
+/* Badge card */
+.bcard .bic{font-size:64px;line-height:1;margin:4px 0 8px}
+.bcard .bic.off{filter:grayscale(1);opacity:.45}
+.bcard .rule{font-size:17px;margin:6px 0 12px}
+.bcard .bprog{font-weight:800;margin-top:6px}
+.bcard .bdate{margin-top:10px;font-size:14px}
+/* Level on the result screen */
+.rlvl{margin:14px auto 0;max-width:420px;text-align:left}
+.rlvl .row{font-size:14px}
+.lvlup{display:none;margin:14px auto 0;padding:12px 16px;border-radius:16px;background:linear-gradient(90deg,#7c5cff,#22d3ee);color:#fff;font-weight:900;font-size:22px;box-shadow:0 0 30px #7c5cff88}
+.lvlup small{display:block;font-size:14px;font-weight:700;opacity:.95}
+.lvlup.on{display:block;animation:pop .6s cubic-bezier(.3,1.8,.5,1)}
+@keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90}
+@media (prefers-reduced-motion:reduce){.lvlup.on{animation:none}}
 .tips{margin-top:14px;font-size:14px}
 .tips li{margin:4px 0;color:#cdd2f5}
 
@@ -197,6 +214,7 @@ h1,h2,h3{margin:0}
 .toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-140%);background:#2c2560;border:1px solid var(--accent);border-radius:14px;padding:12px 18px;font-weight:700;z-index:80;transition:transform .35s;display:flex;gap:10px;align-items:center}
 .toast.on{transform:translate(-50%,0)}
 .toast .i{font-size:28px}
+.toast small{display:block;font-weight:500;color:#cfd3ff;font-size:13px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -332,6 +350,11 @@ h1,h2,h3{margin:0}
         <div class="stat"><b id="rXp">+0</b><small>XP</small></div>
       </div>
       <div class="need" id="rNeed"></div>
+      <div class="rlvl" id="rLvl">
+        <div class="row"><b id="rLvlName">Level 1</b><div class="spacer"></div><span class="muted" id="rLvlXp"></span></div>
+        <div class="bar"><i id="rLvlBar" style="width:0"></i></div>
+      </div>
+      <div class="lvlup" id="rLvlUp"></div>
       <div class="weak" id="rWeak"></div>
       <div class="rbtns">
         <button class="btn ghost" id="rMap">Map</button>
@@ -404,6 +427,16 @@ h1,h2,h3{margin:0}
   </div>
   <div class="row" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose">Done</button></div>
 </div></div>
+<div class="overlay" id="badgeCard"><div class="panel bcard" role="dialog" aria-modal="true" aria-labelledby="bcName">
+  <div class="bic" id="bcIcon">🏅</div>
+  <h2 id="bcName">Badge</h2>
+  <div class="rule" id="bcRule"></div>
+  <div class="bar" id="bcBarW"><i id="bcBar" style="width:0"></i></div>
+  <div class="bprog" id="bcProg"></div>
+  <div class="bdate muted" id="bcDate"></div>
+  <div class="rbtns"><button class="btn" id="bcClose">OK</button></div>
+</div></div>
+<canvas id="confetti" width="0" height="0"></canvas>
 <div class="toast" id="toast"><span class="i" id="toastI">🏅</span><span id="toastT"></span></div>
 
 <script>
@@ -956,6 +989,7 @@ function showResult(o){
   $("#rAcc").textContent=Math.round(o.res.acc)+"%";
   $("#rTime").textContent=o.res.secs<60?Math.round(o.res.secs)+"s":fmtTime(o.res.secs);
   $("#rXp").textContent="+"+o.xp;
+  showLevel(o.xp, o.stars);
   $("#rNeed").textContent=o.need||"";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   $("#rWeak").innerHTML = weak.length ? "Tricky keys: "+weak.map(([c,n])=>`<kbd>${c===" "?"space":esc(c)}</kbd>×${n}`).join(" ") : "No mistakes. Wow! 💎";
@@ -964,7 +998,36 @@ function showResult(o){
   $("#rNext").textContent = o.nextLabel||"Next →";
   resultActions = o;
 }
-let resultActions=null;
+let resultActions=null, lvlTimer=null;
+/* XP sum after the summary. A new level gets a celebration. */
+function showLevel(gained, stars){
+  const now=levelInfo(state.xp), before=levelInfo(state.xp-gained);
+  const up=now.lvl>before.lvl, newTitle=now.title!==before.title;
+  clearTimeout(lvlTimer); $("#rLvlUp").classList.remove("on");
+  $("#rLvlName").textContent=`Level ${before.lvl} · ${before.title}`;
+  $("#rLvlXp").textContent=`${before.into} / ${before.need} XP`;
+  const bar=$("#rLvlBar"); bar.style.transition="none"; bar.style.width=(before.into/before.need*100)+"%"; void bar.offsetWidth; bar.style.transition="";
+  const delay = stars===undefined ? 300 : 1300; // after the stars
+  lvlTimer=setTimeout(()=>{
+    if(up){
+      bar.style.width="100%";
+      lvlTimer=setTimeout(()=>{
+        bar.style.transition="none"; bar.style.width="0"; void bar.offsetWidth; bar.style.transition="";
+        bar.style.width=(now.into/now.need*100)+"%";
+        $("#rLvlName").textContent=`Level ${now.lvl} · ${now.title}`;
+        $("#rLvlXp").textContent=`${now.into} / ${now.need} XP`;
+        $("#rLvlUp").innerHTML=`🎉 Level up! Level ${now.lvl}<small>${newTitle?`New title: ${esc(now.title)}`:`${now.need-now.into} XP to level ${now.lvl+1}`}</small>`;
+        $("#rLvlUp").classList.add("on");
+        say("#result", newTitle ? `Level ${now.lvl}! You are now a <b>${esc(now.title)}</b>! 🤖💃` : `Level ${now.lvl}! Keep going! 🚀`, "wow");
+        confetti(160); chime();
+      },650);
+    } else {
+      bar.style.width=(now.into/now.need*100)+"%";
+      $("#rLvlXp").textContent=`${now.into} / ${now.need} XP`;
+      if(stars>=1) confetti(stars>=3?90:40);
+    }
+  }, delay);
+}
 $("#rMap").onclick=()=>goHome();
 $("#rRetry").onclick=()=>resultActions.retry();
 $("#rNext").onclick=()=>resultActions.next && resultActions.next();
@@ -1102,6 +1165,8 @@ function rainOver(){
   $("#rainTitle").textContent= best ? "New record! 🏆" : "Game over";
   $("#rainTxt").innerHTML=`Score <b>${M.score}</b> · ${M.kills} meteors stopped · +${xp} XP`;
   $("#rainOver").classList.add("on");
+  const lv=levelInfo(state.xp), lb=levelInfo(state.xp-xp);
+  if(lv.lvl>lb.lvl){ $("#rainTxt").innerHTML+=`<br><b>🎉 Level up! Level ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
 }
 $("#rainAgain").onclick=()=>{ $("#rainOver").classList.remove("on"); startRain(); };
 $("#rainMap").onclick=()=>{ $("#rainOver").classList.remove("on"); goHome(); };
@@ -1115,38 +1180,78 @@ function levelInfo(xp){ let lvl=1, need=100, base=0; while(xp>=base+need){ base+
 function totalStars(){ let s=0; Object.values(state.lessons).forEach(L=>Object.values(L).forEach(r=>s+=r.stars||0)); return s; }
 function stageDone(si){ const L=lessonsFlat().filter(l=>l.stage===si); return L.every(l=>(lessonRec(l.idx)?.stars||0)>=1); }
 const BADGES=[
-  {id:"first",i:"🎯",n:"First Steps",d:"Finish your first chapter",t:()=>totalStars()>=1},
-  {id:"home",i:"🏠",n:"Home Row Hero",d:"Finish the Home Row",t:()=>stageDone(0)},
-  {id:"top",i:"⛰️",n:"Top Row Climber",d:"Finish the Top Row",t:()=>stageDone(1)},
-  {id:"bottom",i:"🤿",n:"Bottom Row Diver",d:"Finish the Bottom Row",t:()=>stageDone(2)},
-  {id:"caps",i:"🔠",n:"Shift Master",d:"Finish Capitals & Sentences",t:()=>stageDone(3)},
-  {id:"nums",i:"🔢",n:"Number Cruncher",d:"Finish Numbers",t:()=>stageDone(4)},
-  {id:"boss",i:"👑",n:"Boss Slayer",d:"Finish the Speed Lab",t:()=>stageDone(5)},
-  {id:"perfect",i:"💎",n:"Flawless",d:"100% accuracy in a full run",t:()=>state.flags.perfect},
-  {id:"blind",i:"🙈",n:"No Peeking",d:"95%+ accuracy in Blind mode",t:()=>state.flags.blind},
-  {id:"w20",i:"🚲",n:"20 WPM",d:"Type 20 WPM (90%+ accuracy)",t:()=>state.bestWpm>=20},
-  {id:"w30",i:"🛵",n:"30 WPM",d:"Type 30 WPM",t:()=>state.bestWpm>=30},
-  {id:"w40",i:"🏎️",n:"40 WPM",d:"Type 40 WPM",t:()=>state.bestWpm>=40},
-  {id:"w60",i:"🚀",n:"60 WPM",d:"Type 60 WPM",t:()=>state.bestWpm>=60},
-  {id:"bot1",i:"🤖",n:"Bot Beater",d:"Win a race against Keebo",t:()=>state.races.won>=1},
-  {id:"bot10",i:"🦾",n:"Bot Boss",d:"Win 10 races",t:()=>state.races.won>=10},
-  {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",t:()=>state.streak.count>=3},
-  {id:"s7",i:"🌋",n:"Unstoppable",d:"7-day streak",t:()=>state.streak.count>=7},
-  {id:"rain",i:"☄️",n:"Meteor Shield",d:"Score 500 in Word Rain",t:()=>state.rainBest>=500},
-  {id:"stars30",i:"⭐",n:"Star Collector",d:"Collect 30 stars",t:()=>totalStars()>=30}
+  {id:"first",i:"🎯",n:"First Steps",d:"Finish your first chapter",t:()=>totalStars()>=1,p:()=>[totalStars(),1,"star"]},
+  {id:"home",i:"🏠",n:"Home Row Hero",d:"Finish the Home Row",t:()=>stageDone(0),p:()=>stageProg(0)},
+  {id:"top",i:"⛰️",n:"Top Row Climber",d:"Finish the Top Row",t:()=>stageDone(1),p:()=>stageProg(1)},
+  {id:"bottom",i:"🤿",n:"Bottom Row Diver",d:"Finish the Bottom Row",t:()=>stageDone(2),p:()=>stageProg(2)},
+  {id:"caps",i:"🔠",n:"Shift Master",d:"Finish Capitals & Sentences",t:()=>stageDone(3),p:()=>stageProg(3)},
+  {id:"nums",i:"🔢",n:"Number Cruncher",d:"Finish Numbers",t:()=>stageDone(4),p:()=>stageProg(4)},
+  {id:"boss",i:"👑",n:"Boss Slayer",d:"Finish the Speed Lab",t:()=>stageDone(5),p:()=>stageProg(5)},
+  {id:"perfect",i:"💎",n:"Flawless",d:"100% accuracy in a full run",t:()=>state.flags.perfect,p:()=>[state.flags.perfect?1:0,1,"run"]},
+  {id:"blind",i:"🙈",n:"No Peeking",d:"95%+ accuracy in Blind mode",t:()=>state.flags.blind,p:()=>[state.flags.blind?1:0,1,"run"]},
+  {id:"w20",i:"🚲",n:"20 WPM",d:"Type 20 WPM (90%+ accuracy)",t:()=>state.bestWpm>=20,p:()=>[state.bestWpm,20,"WPM"]},
+  {id:"w30",i:"🛵",n:"30 WPM",d:"Type 30 WPM",t:()=>state.bestWpm>=30,p:()=>[state.bestWpm,30,"WPM"]},
+  {id:"w40",i:"🏎️",n:"40 WPM",d:"Type 40 WPM",t:()=>state.bestWpm>=40,p:()=>[state.bestWpm,40,"WPM"]},
+  {id:"w60",i:"🚀",n:"60 WPM",d:"Type 60 WPM",t:()=>state.bestWpm>=60,p:()=>[state.bestWpm,60,"WPM"]},
+  {id:"bot1",i:"🤖",n:"Bot Beater",d:"Win a race against Keebo",t:()=>state.races.won>=1,p:()=>[state.races.won,1,"race"]},
+  {id:"bot10",i:"🦾",n:"Bot Boss",d:"Win 10 races",t:()=>state.races.won>=10,p:()=>[state.races.won,10,"races"]},
+  {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",t:()=>state.streak.count>=3,p:()=>[streakNow(),3,"days"]},
+  {id:"s7",i:"🌋",n:"Unstoppable",d:"7-day streak",t:()=>state.streak.count>=7,p:()=>[streakNow(),7,"days"]},
+  {id:"rain",i:"☄️",n:"Meteor Shield",d:"Score 500 in Word Rain",t:()=>state.rainBest>=500,p:()=>[state.rainBest,500,"points"]},
+  {id:"stars30",i:"⭐",n:"Star Collector",d:"Collect 30 stars",t:()=>totalStars()>=30,p:()=>[totalStars(),30,"stars"]}
 ];
+function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si); return [L.filter(l=>(lessonRec(l.idx)?.stars||0)>=1).length, L.length, "chapters"]; }
+function streakNow(){ const t=todayStr(), y=new Date(); y.setDate(y.getDate()-1); return state.streak.last===t||state.streak.last===todayStr(y) ? state.streak.count : 0; }
 function checkBadges(){
   const fresh=BADGES.filter(b=>!state.badges[b.id] && b.t());
-  fresh.forEach((b,i)=>{ state.badges[b.id]=todayStr(); setTimeout(()=>toast(b.i,`Badge unlocked: <b>${b.n}</b>`), 900+i*2600); });
+  fresh.forEach((b,i)=>{ state.badges[b.id]=todayStr(); setTimeout(()=>toast(b.i,`Badge unlocked: <b>${esc(b.n)}</b><small>${esc(b.d)}</small>`,3200), 900+i*3500); });
   if(fresh.length) save();
 }
 let toastT=null;
-function toast(icon, html){ $("#toastI").textContent=icon; $("#toastT").innerHTML=html; $("#toast").classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>$("#toast").classList.remove("on"),2400); }
+function toast(icon, html, ms=2400){ $("#toastI").textContent=icon; $("#toastT").innerHTML=html; $("#toast").classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>$("#toast").classList.remove("on"),ms); }
+
+/* Badge card: tap or click a badge to see its rule, progress and date. Works on touch. */
+function fmtDay(d){ const x=new Date(d+"T12:00:00"); return isNaN(x) ? d : x.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"}); }
+function openBadge(id){
+  const b=BADGES.find(x=>x.id===id); if(!b) return;
+  const got=state.badges[b.id];
+  const [cur,goal,unit]=b.p(); const c=Math.min(cur,goal);
+  $("#bcIcon").textContent=b.i; $("#bcIcon").classList.toggle("off",!got);
+  $("#bcName").textContent=b.n;
+  $("#bcRule").textContent=b.d+".";
+  $("#bcBar").style.width=(got?100:c/goal*100)+"%";
+  $("#bcProg").textContent= got ? "Done! ✅" : goal===1 && unit==="run" ? "Not yet" : `${c} of ${goal} ${unit}`;
+  $("#bcDate").textContent= got ? "Earned on "+fmtDay(got) : "Not earned yet. You can do it!";
+  $("#badgeCard").classList.add("on");
+  setTimeout(()=>$("#bcClose").focus(),30);
+}
+function closeBadge(){ $("#badgeCard").classList.remove("on"); }
+$("#bcClose").onclick=closeBadge;
+$("#badgeCard").addEventListener("click",e=>{ if(e.target.id==="badgeCard") closeBadge(); });
+
+/* Confetti (canvas, no library). Skipped when the system asks for less motion. */
+let confParts=[], confRaf=0;
+function confetti(n=80){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv=$("#confetti"); cv.width=innerWidth; cv.height=innerHeight;
+  const cols=["#7c5cff","#22d3ee","#3ee089","#ffd43b","#ff6b8b","#ffa94d"];
+  for(let i=0;i<n;i++) confParts.push({x:innerWidth*(.2+Math.random()*.6), y:innerHeight*.35, vx:(Math.random()-.5)*14, vy:-6-Math.random()*10,
+    s:5+Math.random()*6, r:Math.random()*6, vr:(Math.random()-.5)*.4, c:rnd(cols), life:0});
+  if(!confRaf) confRaf=requestAnimationFrame(confStep);
+}
+function confStep(){
+  const cv=$("#confetti"), g=cv.getContext("2d"); g.clearRect(0,0,cv.width,cv.height);
+  confParts=confParts.filter(p=>p.y<cv.height+20 && p.life<240);
+  confParts.forEach(p=>{ p.life++; p.vy+=.35; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+    g.save(); g.translate(p.x,p.y); g.rotate(p.r); g.fillStyle=p.c; g.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); g.restore(); });
+  confRaf = confParts.length ? requestAnimationFrame(confStep) : 0;
+  if(!confRaf) g.clearRect(0,0,cv.width,cv.height);
+}
 
 /* =========================================================================
    HOME
    ========================================================================= */
-function goHome(){ if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); }
+function goHome(){ clearTimeout(lvlTimer); if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); }
 function renderHome(){
   const li=levelInfo(state.xp);
   $("#pName").textContent=state.name||"Player";
@@ -1180,7 +1285,8 @@ function renderHome(){
   map.innerHTML=html;
   $$("#map .lesson").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(isUnlocked(i)) startLesson(i); });
   // badges
-  $("#badges").innerHTML=BADGES.map(b=>`<div class="badge ${state.badges[b.id]?"got":""}" title="${esc(b.n)}: ${esc(b.d)}">${b.i}</div>`).join("");
+  $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(b.n)}: ${esc(b.d)}" aria-label="${esc(b.n)}">${b.i}</button>`).join("");
+  $$("#badges .badge").forEach(e=>e.onclick=()=>openBadge(e.dataset.id));
   $("#bCount").textContent=`${Object.keys(state.badges).length} / ${BADGES.length}`;
   const hello = secs>=600 ? `Daily goal done, ${esc(state.name)}! 🎉 Extra practice makes you even faster.` :
                 !alive && state.streak.count>0 ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
@@ -1302,6 +1408,7 @@ $("#setCodeGo").onclick=()=>{
    GLOBAL KEYS
    ========================================================================= */
 document.addEventListener("keydown", e=>{
+  if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
   if(screen==="meteor") return onRainKey(e);
