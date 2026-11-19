@@ -1,0 +1,11 @@
+{
+  "name": "typoo",
+  "private": true,
+  "description": "Typoo app tests. The app itself is index.html and needs no build.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}
