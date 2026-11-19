@@ -1364,7 +1364,8 @@ function genCustom(keys){
 }
 let customPick="";
 function openCustom(){
-  customPick=customSort(state.custom?.keys || customHome());
+  const learned=customSort([...learnedSet()].join(""));
+  customPick=customSort(state.custom?.keys || (learned.length>=5 ? learned : customHome()));   // first time: learned keys, so there are real words (the AZERTY home row has no vowels)
   $("#clKb").innerHTML=customRows().map((row,ri)=>`<div class="ckrow" style="margin-left:calc(min(44px,8vw) * ${ri*0.5})">`+
     row.map(k=>`<button class="ckey${k.c==="f"||k.c==="j"?" bump":""}" data-c="${k.c}" style="--fc:${FINGER_COLORS[k.f]}" aria-pressed="false">${k.c}</button>`).join("")+`</div>`).join("");
   $$("#clKb .ckey").forEach(b=>b.onclick=()=>customToggle(b.dataset.c));
