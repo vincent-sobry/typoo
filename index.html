@@ -263,6 +263,19 @@ body.fframe #fframe{display:block}
 #boostChoices .choice.easy{--lc:#3ee089}#boostChoices .choice.mid{--lc:#ffd43b}#boostChoices .choice.hard{--lc:#ff6b8b}
 #boostChoices .choice[class*=" "]{border-color:color-mix(in srgb,var(--lc) 55%,transparent)}
 #boostChoices .choice[class*=" "]:hover,#boostChoices .choice[class*=" "]:focus-visible{border-color:var(--lc);box-shadow:0 0 14px color-mix(in srgb,var(--lc) 45%,transparent)}
+/* Custom Letters lobby: the player picks keys on an on-screen keyboard */
+#customLobby .panel{max-width:640px}
+.ckb{display:flex;flex-direction:column;gap:6px;align-items:flex-start;width:max-content;max-width:100%;margin:14px auto 8px}
+.ckrow{display:flex;gap:6px}
+.ckey{--fc:#666;width:min(44px,8vw);height:min(44px,8vw);padding:0;border-radius:9px;border:0;background:#22284f;box-shadow:inset 0 -4px 0 var(--fc);
+  font-family:var(--mono);font-size:min(18px,4vw);font-weight:700;color:#8e96c8;text-transform:uppercase}
+.ckey:hover{color:#dfe3ff}
+.ckey.on{background:var(--fc);color:#111;box-shadow:0 0 12px color-mix(in srgb,var(--fc) 60%,transparent)}
+.ckey.bump::after{content:"";display:block;width:10px;height:3px;border-radius:2px;background:currentColor;margin:2px auto 0;opacity:.6}
+.cquick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.cquick .btn{padding:6px 12px;font-size:13px}
+#clInfo{min-height:20px;font-size:14px;margin:10px 0}
+#clGo:disabled{opacity:.45;cursor:not-allowed}
 .count{font-size:120px;font-weight:900;color:#fff;text-shadow:0 0 40px var(--accent)}
 
 /* ---------- Meteor ---------- */
@@ -375,6 +388,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
             <button class="mode" id="mLadder"><span class="ic">🪜</span><span><b>Longest Word</b><small id="mLadderText">Climb the word ladder against Keebo</small></span></button>
             <button class="mode" id="mMarathon"><span class="ic">🏃</span><span><b>Word Marathon</b><small id="mMarathonText">Type the ladder at your own pace. Stay ahead of Keebo</small></span></button>
             <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b>Smart Practice</b><small>Train your weakest keys</small></span></button>
+            <button class="mode" id="mCustom"><span class="ic">🔤</span><span><b>Custom Letters</b><small id="mCustomText">Pick the keys you want to practise</small></span></button>
             <button class="mode" id="mBoost"><span class="ic">⚡</span><span><b>Booster</b><small id="mBoostText">Get more stars on a chapter</small></span></button>
           </div>
         </div>
@@ -497,6 +511,14 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <p class="muted" id="blTxt">Pick a chapter: easy, medium or hard. A very good run gives it one more star.</p>
   <div class="choices" id="boostChoices"></div>
   <button class="btn ghost" id="boostCancel">Cancel</button>
+</div></div>
+<div class="overlay" id="customLobby"><div class="panel">
+  <h2>🔤 Custom Letters</h2>
+  <p class="muted">Click the keys to practise, or press them on your keyboard. You get real words with only these letters.</p>
+  <div class="ckb" id="clKb"></div>
+  <div class="cquick"><button class="btn ghost" id="clHome">Home row</button><button class="btn ghost" id="clLearned">Learned keys</button><button class="btn ghost" id="clClear">Clear</button></div>
+  <div id="clInfo" class="muted"></div>
+  <div class="rbtns"><button class="btn ghost" id="clCancel">Cancel</button><button class="btn" id="clGo">Start ▶</button></div>
 </div></div>
 <div class="overlay" id="rainOver"><div class="panel">
   <h2 id="rainTitle">Game over</h2>
@@ -1292,6 +1314,70 @@ function boostDone(L,res){
 }
 
 /* =========================================================================
+   CUSTOM LETTERS
+   The player picks keys on an on-screen keyboard. The run has real words with
+   only those letters. With few real words, letter groups fill the run.
+   ========================================================================= */
+const CUSTOM_N = 24;                                  // words and letter groups per run
+const CUSTOM_MIN_WORDS = 12;                          // fewer real words than this: add letter groups
+/* The letter keys of the layout, per row: [{c, f}] with f = finger. */
+function customRows(){
+  return LAYOUTS[state.layout].rows.slice(1).map(r=>[...r.base].map((c,i)=>({c, f:+r.fingers[i]})).filter(k=>/[a-z]/.test(k.c)));
+}
+const customHome = () => customRows()[1].map(k=>k.c).join("");
+const customSort = keys => { const order=customRows().flat().map(k=>k.c).join(""); return [...new Set(keys)].filter(c=>order.includes(c)).sort((a,b)=>order.indexOf(a)-order.indexOf(b)).join(""); };
+const customLabel = keys => keys.toUpperCase().split("").join(" ");
+function customWords(keys){ const set=new Set(keys); return wordList().filter(w=>w.length>=2 && fits(w,set)); }
+function genCustom(keys){
+  const ks=[...keys], words=customWords(keys), intro=[];
+  if(ks.length<=4) ks.forEach(k=>intro.push(k.repeat(3)));          // a short start on each key
+  const room=CUSTOM_N-intro.length;
+  const nWords = words.length>=CUSTOM_MIN_WORDS ? room : Math.min(room, words.length*2);
+  let w=[]; while(words.length && w.length<nWords) w.push(...shuffle(words)); w=w.slice(0,nWords);
+  const groups=[]; while(w.length+groups.length<room){ const len=2+Math.floor(Math.random()*3); let g=""; for(let j=0;j<len;j++) g+=rnd(ks); groups.push(g); }
+  return [...intro, ...shuffle([...w, ...groups])].join(" ");
+}
+let customPick="";
+function openCustom(){
+  customPick=customSort(state.custom?.keys || customHome());
+  $("#clKb").innerHTML=customRows().map((row,ri)=>`<div class="ckrow" style="margin-left:calc(min(44px,8vw) * ${ri*0.5})">`+
+    row.map(k=>`<button class="ckey${k.c==="f"||k.c==="j"?" bump":""}" data-c="${k.c}" style="--fc:${FINGER_COLORS[k.f]}" aria-pressed="false">${k.c}</button>`).join("")+`</div>`).join("");
+  $$("#clKb .ckey").forEach(b=>b.onclick=()=>customToggle(b.dataset.c));
+  customDraw();
+  $("#customLobby").classList.add("on");
+}
+function customToggle(c){
+  customPick = customPick.includes(c) ? customPick.replace(c,"") : customSort(customPick+c);
+  customDraw();
+}
+function customDraw(){
+  $$("#clKb .ckey").forEach(b=>{ const on=customPick.includes(b.dataset.c); b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); });
+  const n=customPick.length, w=n?customWords(customPick).length:0;
+  $("#clInfo").innerHTML = !n ? "Pick at least 1 key." :
+    `<b>${n}</b> ${n===1?"key":"keys"} · <b>${w}</b> real ${w===1?"word":"words"}` + (w<CUSTOM_MIN_WORDS ? " · Keebo adds letter groups" : "");
+  $("#clGo").disabled = !n;
+}
+$("#clHome").onclick=()=>{ customPick=customSort(customHome()); customDraw(); };
+$("#clLearned").onclick=()=>{ customPick=customSort([...learnedSet()].join("")); customDraw(); };
+$("#clClear").onclick=()=>{ customPick=""; customDraw(); };
+$("#clCancel").onclick=()=>$("#customLobby").classList.remove("on");
+$("#clGo").onclick=()=>{ if(!customPick) return; $("#customLobby").classList.remove("on"); startCustom(customPick); };
+function startCustom(keys){
+  keys=customSort(keys); if(!keys) return openCustom();
+  state.custom=Object.assign({played:0}, state.custom, {keys}); save();
+  const text=genCustom(keys), few=customWords(keys).length<CUSTOM_MIN_WORDS;
+  startSession({mode:"custom", title:`🔤 Custom Letters · ${keys.length>10 ? keys.length+" keys" : customLabel(keys)}`, text, onFinish:res=>{
+    state.custom.played=(state.custom.played||0)+1;
+    const xp=Math.round(text.length*Math.pow(res.acc/100,2)/3); state.xp+=xp;
+    showResult({title:"🔤 Custom Letters", res, xp, mood:"happy",
+      msg: res.acc>=95 ? "Your keys are getting stronger! 💪" : "Good training. Accuracy first, then speed.",
+      need:`Keys: ${customLabel(keys)}`,
+      retry:()=>startCustom(keys), next:openCustom, nextLabel:"Pick other keys"});
+  }});
+  say("#type", `Your keys: ${[...keys].map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}.` + (few ? " Few real words with these letters, so I added letter groups." : " Eyes on the screen!"), "think");
+}
+
+/* =========================================================================
    DAILY WARM-UP (1 to 2 minutes, easy words, all learned keys, no score)
    ========================================================================= */
 const WARMUP_SECS = 60;                               // the run stops after 1 minute; the text fits 1 minute at the normal pace
@@ -1820,6 +1906,8 @@ function renderHome(){
   $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(b.n)}: ${esc(b.d)}" aria-label="${esc(b.n)}">${b.i}</button>`).join("");
   $$("#badges .badge").forEach(e=>e.onclick=()=>openBadge(e.dataset.id));
   $("#bCount").textContent=`${Object.keys(state.badges).length} / ${BADGES.length}`;
+  const ck=state.custom?.keys||"";
+  $("#mCustomText").textContent = ck ? `Last: ${ck.length>8 ? ck.length+" keys" : customLabel(ck)} · pick your keys` : "Pick the keys you want to practise";
   const wl=warmupLock();
   $("#mWarm").classList.toggle("locked", !!wl);
   $("#mWarmText").textContent = wl || "1 minute · easy words · no score";
@@ -1834,6 +1922,7 @@ $("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
 $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=startRain;
 $("#mSmart").onclick=startSmart;
+$("#mCustom").onclick=openCustom;
 $("#mLadder").onclick=()=>openLadder(false);
 $("#mMarathon").onclick=()=>openLadder(true);
 $("#mBoost").onclick=openBoost;
@@ -2015,6 +2104,11 @@ document.addEventListener("keydown", e=>{
   if(screen==="result" && resultKeysLocked()){ e.preventDefault(); return; }   // still typing: ignore all keys for a moment
   if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
   if($("#ladderLock").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); $("#ladderLock").classList.remove("on"); } return; }
+  if($("#customLobby").classList.contains("on")){
+    if(e.key==="Escape"){ e.preventDefault(); $("#customLobby").classList.remove("on"); }
+    else if(e.key==="Enter" && e.target.id!=="clCancel"){ e.preventDefault(); $("#clGo").click(); }
+    else if(!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length===1 && $(`#clKb .ckey[data-c="${CSS.escape(e.key.toLowerCase())}"]`)){ e.preventDefault(); customToggle(e.key.toLowerCase()); }
+    return; }
   if($("#boostLobby").classList.contains("on")){ if(e.key==="Escape"){ e.preventDefault(); $("#boostLobby").classList.remove("on"); } return; }
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
@@ -2030,8 +2124,8 @@ document.addEventListener("keydown", e=>{
    Back from a top screen goes to the map. In a run it works like Esc: the run stops, nothing is saved.
    Back on the map leaves the app. Forward opens Settings or a lobby again. A stopped game cannot come back.
    ========================================================================= */
-const NAV_TOP=["badgeCard","ladderLock","boostLobby","raceLobby","rainOver","settings"];   // pop-ups first
-const NAV_REOPEN={settings:openSettings, raceLobby:openRaceLobby, boostLobby:openBoost};
+const NAV_TOP=["badgeCard","ladderLock","boostLobby","customLobby","raceLobby","rainOver","settings"];   // pop-ups first
+const NAV_REOPEN={settings:openSettings, raceLobby:openRaceLobby, boostLobby:openBoost, customLobby:openCustom};
 let navIdx=0, navBusy=false;
 const navView=()=>NAV_TOP.find(id=>$("#"+id).classList.contains("on")) || screen;
 const navLevel=v=>v==="home"||v==="onboard" ? 0 : 1;
@@ -2047,7 +2141,7 @@ function navSync(){
 /* Close all top screens and go to the map, like Esc. */
 function navToMap(){
   if($("#badgeCard").classList.contains("on")) closeBadge();
-  ["ladderLock","boostLobby","raceLobby"].forEach(id=>$("#"+id).classList.remove("on"));
+  ["ladderLock","boostLobby","customLobby","raceLobby"].forEach(id=>$("#"+id).classList.remove("on"));
   if($("#settings").classList.contains("on")){ $("#settings").classList.remove("on"); renderHome(); }
   if($("#rainOver").classList.contains("on")){ $("#rainOver").classList.remove("on"); goHome(); }
   if(screen==="type") endSessionEarly();
