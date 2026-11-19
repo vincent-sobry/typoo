@@ -69,6 +69,9 @@ test("lobby: 3 chapters in one row, easy / medium / hard by the gap to the next 
   await expect(c).toHaveCount(3);
   expect(await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).toEqual([0, 3, 4]);
   expect(await c.locator(".blvl").allTextContents()).toEqual(["Easy", "Medium", "Hard"]);
+  expect(await c.evaluateAll((b) => b.map((x) => x.classList.contains("easy") || x.classList.contains("mid") || x.classList.contains("hard")))).toEqual([true, true, true]);
+  const borders = await c.evaluateAll((b) => b.map((x) => getComputedStyle(x).borderTopColor));
+  expect(new Set(borders).size).toBe(3);             // each level has its own border colour
   const tops = await c.evaluateAll((b) => b.map((x) => Math.round(x.getBoundingClientRect().top)));
   expect(new Set(tops).size).toBe(1);                // one row
 });
