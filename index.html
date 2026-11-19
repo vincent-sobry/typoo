@@ -203,7 +203,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .lights i.on{background:#ff2d3d;border-color:#ff6b78;box-shadow:0 0 18px #ff2d3d,0 0 4px #fff inset}
 /* Longest Word: the word in the centre of the box, the start lights just below it. */
 #type.lwmode #text{text-align:center;padding-top:20px}
-#type.lwmode .lights{top:auto;bottom:14px;transform:translateX(-50%)}
+#type.lwmode .lights{top:auto;bottom:8px;transform:translateX(-50%);gap:9px;padding:7px 12px}
+#type.lwmode .lights i{width:30px;height:30px}
+.layoutwarn .btn{white-space:nowrap}
 #text.wait{filter:blur(1.5px);opacity:.85}
 #text.go{animation:go .6s ease-out}
 @keyframes go{0%{border-color:var(--good);box-shadow:0 0 0 6px #3ee089aa}100%{border-color:var(--line);box-shadow:none}}
