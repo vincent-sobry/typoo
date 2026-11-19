@@ -1,4 +1,5 @@
 # Smoke tests (Playwright, Chromium) for every pull request to dev or main.
+# Also a size budget for index.html and a low-end CPU test (tests/perf.spec.js).
 # A PR to dev merges by itself when the tests pass (job "automerge").
 # A PR to main never merges by itself.
 name: Tests
@@ -21,6 +22,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Size budget (index.html max 1 MB)
+        run: node tests/size.js
       - run: npm ci
       - run: npx playwright test
       - name: Upload report (on failure)
