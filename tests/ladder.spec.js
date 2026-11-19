@@ -302,30 +302,54 @@ test("hold time: 1.5 key strokes at the reference WPM, from 250 to 600 ms", asyn
   expect(await page.evaluate(() => [ladderHold(30), ladderHold(40), ladderHold(60), ladderHold(10), ladderHold(120)])).toEqual([600, 450, 300, 600, 250]);
 });
 
-test("full-race tracks above the per-word tracks: they show the whole ladder", async ({ page }) => {
-  await openApp(page, withChapters(18, { bestWpm: 10 }));
-  await page.click("#mLadder");
-  await typeRung(page, 1);
-  await waitRung(page, 2);
-  const [x, total, done] = await page.evaluate(() => {
-    const tr = document.querySelector("#fYou").parentElement.getBoundingClientRect();
-    return [(document.querySelector("#fYou").getBoundingClientRect().left - tr.left - 6) / (tr.width - 60), ladderTotal(), ladderDone()];
-  });
-  expect(done).toBe(2);                                                     // the 2-letter word is done
-  expect(x).toBeGreaterThan(done / total - 0.02);                           // not back at the start
-  expect(x).toBeLessThan(0.1);                                              // a small step on the full track
-  const ys = await page.evaluate(() => ["#fYou", "#fBot", "#rYou", "#rBot"].map(id => document.querySelector(id).getBoundingClientRect().top));
-  expect(ys[1]).toBeLessThan(ys[2]);                                        // full race above the per-word tracks
-  expect(await page.evaluate(() => document.querySelector("#rYou").style.left)).toBe("6px");   // per word: back at the start
-});
-
-test("danger cue: Keebo's lane turns red when he is about to win the word", async ({ page }) => {
+test("Longest Word: only the per-word tracks show", async ({ page }) => {
   await openApp(page, withChapters(18, { bestWpm: 10 }));
   await page.click("#mLadder");
   await waitRung(page, 1);
+  await expect(page.locator("#rYou")).toBeVisible();
+  await expect(page.locator("#fYou")).toBeHidden();
+});
+
+test("Word Marathon: locked before the Bottom Row", async ({ page }) => {
+  await openApp(page, withChapters(15));
+  await expect(page.locator("#mMarathon")).toHaveClass(/locked/);
+  await page.click("#mMarathon");
+  await expect(page.locator("#ladderLock")).toBeVisible();
+});
+
+test("Word Marathon: one full-race track, Keebo runs on between words", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mMarathon");
+  await waitRung(page, 1);
+  await expect(page.locator("#tTitle")).toContainText("Word Marathon");
+  await expect(page.locator("#fYou")).toBeVisible();
+  await expect(page.locator("#rYou")).toBeHidden();
+  await page.keyboard.type(await page.evaluate("S.text"), { delay: 1 });
+  expect(await page.evaluate("S.hold")).toBe(true);
+  const t0 = await page.evaluate(() => marathonKeebo((performance.now() - LW.mStart) / 1000).c);
+  await page.waitForTimeout(200);
+  const t1 = await page.evaluate(() => marathonKeebo((performance.now() - LW.mStart) / 1000).c);
+  expect(t1).toBeGreaterThan(t0);                                           // Keebo does not wait during the hold
+  await waitRung(page, 2);
+  const x = await page.evaluate(() => parseFloat(document.querySelector("#fYou").style.left.match(/calc\(([\d.]+)%/)[1]));
+  expect(x).toBeGreaterThan(0);                                             // your marker is not back at the start
+});
+
+test("Word Marathon: a lead lets you be slow on a word, Keebo wins only when he passes you", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mMarathon");
+  for (let n = 1; n <= 3; n++) await typeRung(page, n);                     // a fast start: a lead
+  await waitRung(page, 4);
+  const [lead, keeboAt] = await page.evaluate(() => { const k = marathonKeebo((performance.now() - LW.mStart) / 1000).c; return [ladderDone() - k, k]; });
+  expect(lead).toBeGreaterThan(3);
+  await page.waitForTimeout(1000);                                          // slow on word 4: no problem yet
+  expect(await page.evaluate("LW && !LW.over")).toBe(true);
   const track = page.locator("#fBot").locator("..");
-  await expect(track).not.toHaveClass(/danger/);
-  await expect(track).toHaveClass(/danger/, { timeout: 8000 });            // Keebo near the end, you did not type
-  await page.waitForFunction(() => !LW || LW.over);                       // Keebo wins
-  await expect(track).not.toHaveClass(/danger/);
+  await expect(track).toHaveClass(/danger/, { timeout: 15000 });           // Keebo is close behind
+  await expect(page.locator("#result")).toBeVisible({ timeout: 15000 });  // he passes you
+  await expect(page.locator("#rTitle")).toContainText("Keebo passed you");
+  const st = await saved(page);
+  expect(st.marathon.best).toBe(3);
+  expect(st.marathon.played).toBe(1);
+  expect(st.ladder?.played || 0).toBe(0);                                   // own records, apart from Longest Word
 });
