@@ -117,3 +117,18 @@ test("the run stops after 1 minute, also with words left", async ({ page }) => {
   expect(st.warmup.count).toBe(1);
   expect(st.flags.perfect, "a few letters do not give the Flawless badge").toBeFalsy();
 });
+
+test("test tool 'new day': dates move back 1 day, the warm-up shows again, the streak goes on", async ({ page }) => {
+  const d = today();
+  await openApp(page, withChapters(3, { warmup: { last: d, count: 1 }, today: { date: d, secs: 300 }, streak: { count: 4, last: d } }));
+  await expect(page.locator("#mWarm")).toBeHidden();
+  await page.click("#hSettings");
+  await expect(page.locator("#setNewDay"), "only on the dev preview").toBeHidden();
+  const r = await page.evaluate(() => { newDay(); goHome(); return { st: state, streak: streakNow(), y: dayBefore(todayStr()), tile: !$("#mWarm").hidden }; });
+  expect(r.st.warmup.last).toBe(r.y);
+  expect(r.st.today.date).toBe(r.y);
+  expect(r.st.streak.last).toBe(r.y);
+  expect(r.streak).toBe(4);
+  expect(r.tile).toBe(true);
+  await expect(page.locator("#gTxt")).toHaveText("0 / 10 min");
+});
