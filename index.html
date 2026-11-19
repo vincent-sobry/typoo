@@ -387,6 +387,10 @@ h1,h2,h3{margin:0}
     <textarea id="setCode" rows="3" style="display:none;width:100%;margin-top:8px;border-radius:10px;background:var(--bg2);color:var(--text);border:1px solid var(--line);padding:8px;font-family:var(--mono);font-size:11px"></textarea>
     <div class="row" id="setCodeRow" style="display:none;margin-top:6px"><span class="muted" id="setCodeMsg" style="font-size:13px"></span><div class="spacer"></div><button class="btn" id="setCodeGo">Restore</button></div>
   </div>
+  <div class="field" id="setChapters" style="display:none"><label>Chapter codes <small class="muted">(test)</small></label>
+    <div class="muted" style="font-size:12px;margin-bottom:6px">A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in "Restore from code", or click Go.</div>
+    <div id="setChList" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px"></div>
+  </div>
   <div style="text-align:right"><button class="btn" id="setClose">Done</button></div>
 </div></div>
 <div class="toast" id="toast"><span class="i" id="toastI">🏅</span><span id="toastT"></span></div>
@@ -1215,6 +1219,7 @@ $("#hSettings").onclick=()=>{
   segInit("#setLang", state.lang, v=>{ state.lang=v; save(); });
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
+  renderChapterCodes();
   $("#settings").classList.add("on");
 };
 $("#setName").addEventListener("input",e=>{ state.name=e.target.value.trim()||state.name; save(); });
@@ -1231,10 +1236,39 @@ $("#setExport").onclick=async()=>{
   catch(e){ $("#setCode").select(); toast("💾","Copy the code in the box (Ctrl+C)."); }
 };
 $("#setImport").onclick=()=>{
-  $("#setCode").style.display=""; $("#setCode").value=""; $("#setCode").placeholder="Paste your backup code here"; $("#setCode").focus();
+  $("#setCode").style.display=""; $("#setCode").value=""; $("#setCode").placeholder="Paste your backup code or chapter code here"; $("#setCode").focus();
   $("#setCodeRow").style.display=""; $("#setCodeMsg").textContent="";
 };
+/* Chapter codes: jump to any chapter to test it. Format CH-<A|Q><nn>-<check>. */
+function chapterCode(layout,i){
+  const base=layout[0].toUpperCase()+String(i+1).padStart(2,"0");
+  let h=7; for(const c of "typoo|"+base) h=Math.imul(h^c.charCodeAt(0),2654435761)>>>0;
+  return "CH-"+base+"-"+(h%1296).toString(36).toUpperCase().padStart(2,"0");
+}
+function parseChapterCode(txt){
+  const m=/^CH-([AQ])(\d{2})-[0-9A-Z]{2}$/.exec(txt.trim().toUpperCase()); if(!m) return null;
+  const layout=m[1]==="A"?"azerty":"qwerty", i=+m[2]-1;
+  if(i<0 || i>=lessonsFlat(layout).length || chapterCode(layout,i)!==m[0]) return null;
+  return {layout,i};
+}
+function applyChapterCode(c){
+  state.layout=c.layout;
+  const old=state.lessons[c.layout]||{}, recs={};
+  for(let k=0;k<c.i;k++) recs[k] = old[k]?.stars>=1 ? old[k] : {stars:1,wpm:0,acc:0};
+  state.lessons[c.layout]=recs;
+  save(); buildKeyboard();
+  $("#setCode").style.display="none"; $("#setCodeRow").style.display="none"; $("#settings").classList.remove("on"); goHome();
+  toast("🧪",`${chapterWord()} ${c.i+1} is open (${c.layout.toUpperCase()}).`);
+}
+function renderChapterCodes(){
+  $("#setChapters").style.display = IS_DEV ? "" : "none"; if(!IS_DEV) return;
+  $("#setChList").innerHTML=["azerty","qwerty"].map(lay=>`<div style="font-weight:800;margin:6px 0 2px">${lay.toUpperCase()}</div>`+
+    lessonsFlat(lay).map(l=>`<div class="row" style="gap:8px;margin:2px 0"><span style="font-family:var(--mono)">${chapterCode(lay,l.idx)}</span>
+      <span class="muted" style="flex:1">${l.idx+1}. ${esc(l.title)}</span><button class="btn ghost" style="padding:2px 10px" data-l="${lay}" data-i="${l.idx}">Go</button></div>`).join("")).join("");
+  $$("#setChList button").forEach(b=>b.onclick=()=>applyChapterCode({layout:b.dataset.l, i:+b.dataset.i}));
+}
 $("#setCodeGo").onclick=()=>{
+  const cc=parseChapterCode($("#setCode").value); if(cc) return applyChapterCode(cc);
   try{ state=Object.assign(freshState(), JSON.parse(decodeURIComponent(escape(atob($("#setCode").value.trim()))))); save(); buildKeyboard();
     $("#setCode").style.display="none"; $("#setCodeRow").style.display="none"; $("#settings").classList.remove("on"); goHome(); toast("✅","Progress restored!"); }
   catch(e){ $("#setCodeMsg").textContent="That code does not work. Check that you copied all of it."; }
