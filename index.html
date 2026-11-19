@@ -250,7 +250,7 @@ h1,h2,h3{margin:0}
             <div class="stat"><b id="sStars">0</b><small>Stars</small></div>
           </div>
           <div class="modes">
-            <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b>Continue</b><small id="mContText">Next lesson</small></span></button>
+            <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b>Continue</b><small id="mContText">Next chapter</small></span></button>
             <button class="mode" id="mRace"><span class="ic">🏁</span><span><b>Race Keebo</b><small>Beat the bot in a typing race</small></span></button>
             <button class="mode" id="mRain"><span class="ic">☄️</span><span><b>Word Rain</b><small>Stop the meteors before they land</small></span></button>
             <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b>Smart Practice</b><small>Train your weakest keys</small></span></button>
@@ -280,7 +280,7 @@ h1,h2,h3{margin:0}
   <section id="type" class="screen">
     <div class="tbar">
       <button class="btn ghost" id="tBack">← Map</button>
-      <h2 id="tTitle">Lesson</h2>
+      <h2 id="tTitle">Chapter</h2>
       <div class="spacer"></div>
       <div class="live">
         <div class="pill">⚡ <span id="lWpm">0</span> WPM</div>
@@ -315,7 +315,7 @@ h1,h2,h3{margin:0}
         <svg class="bot" viewBox="0 0 120 120"></svg>
         <div class="bubble" id="rBubble">…</div>
       </div>
-      <h2 id="rTitle" style="margin-top:12px">Lesson complete</h2>
+      <h2 id="rTitle" style="margin-top:12px">Chapter complete</h2>
       <div class="bigstars" id="rStars"><span>★</span><span>★</span><span>★</span></div>
       <div class="rstats">
         <div class="stat"><b id="rWpm">0</b><small>WPM</small></div>
@@ -369,7 +369,7 @@ h1,h2,h3{margin:0}
   <div class="field"><label>Keyboard</label><div class="seg" id="setLayout">
     <button data-v="azerty">AZERTY<small>Belgian / French</small></button>
     <button data-v="qwerty">QWERTY<small>US / UK / Dutch</small></button></div>
-    <div class="muted" style="font-size:12px;margin-top:4px">Each keyboard has its own lesson progress.</div></div>
+    <div class="muted" style="font-size:12px;margin-top:4px">Each keyboard has its own chapter progress.</div></div>
   <div class="field"><label>Practice words</label><div class="seg" id="setLang">
     <button data-v="nl">Nederlands</button><button data-v="en">English</button></div></div>
   <div class="field"><label>Keyboard help on screen</label><div class="seg" id="setBlind">
@@ -541,6 +541,8 @@ function lessonsFlat(layout=state.layout){
     out.push({idx:out.length, stage:si, stageName:st.stage, keys:l[0], title:l[1], target:l[2]||st.target, tip:st.tip});
   })); return out;
 }
+/* UI label for one lesson. Internal names and saved data keep "lesson". */
+function chapterWord(){ return state.lang==="nl" ? "Hoofdstuk" : "Chapter"; }
 function lessonRec(i){ return (state.lessons[state.layout]||{})[i]; }
 function isUnlocked(i){ return i===0 || (lessonRec(i-1)?.stars||0)>=1; }
 function currentLessonIdx(){
@@ -908,7 +910,7 @@ function lessonDone(L,res){
   state.xp+=gained;
   const msg = stars===3 ? "PERFECT! Three stars! You're a typing machine! 🤖💜" :
               stars===2 ? "Great job! Two stars. Want to go for three?" :
-              stars===1 ? "Lesson passed! Next time, try a bit faster." :
+              stars===1 ? `${chapterWord()} passed! Next time, try a bit faster.` :
               "Almost! Get 90% accuracy to pass. Go slower, and be precise.";
   let need="";
   if(stars<1) need=`Need: 90% accuracy to pass.`;
@@ -916,7 +918,7 @@ function lessonDone(L,res){
   else if(stars<3) need=`For ★★★: 97% accuracy and ${Math.ceil(L.target*1.3)} WPM.`;
   const L2=lessonsFlat(); const hasNext = L.idx+1<L2.length && isUnlocked(L.idx+1);
   showResult({title:L.title, stars, res, xp:gained, msg, mood:stars>=2?"wow":stars===1?"happy":"oops", need,
-    next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:"Next lesson →"});
+    next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:`Next ${chapterWord().toLowerCase()} →`});
   if(stars>=1) chime();
   if(L.idx===5 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈","Tip: try Blind mode in Settings!"),1500);
 }
@@ -1087,7 +1089,7 @@ function levelInfo(xp){ let lvl=1, need=100, base=0; while(xp>=base+need){ base+
 function totalStars(){ let s=0; Object.values(state.lessons).forEach(L=>Object.values(L).forEach(r=>s+=r.stars||0)); return s; }
 function stageDone(si){ const L=lessonsFlat().filter(l=>l.stage===si); return L.every(l=>(lessonRec(l.idx)?.stars||0)>=1); }
 const BADGES=[
-  {id:"first",i:"🎯",n:"First Steps",d:"Finish your first lesson",t:()=>totalStars()>=1},
+  {id:"first",i:"🎯",n:"First Steps",d:"Finish your first chapter",t:()=>totalStars()>=1},
   {id:"home",i:"🏠",n:"Home Row Hero",d:"Finish the Home Row",t:()=>stageDone(0)},
   {id:"top",i:"⛰️",n:"Top Row Climber",d:"Finish the Top Row",t:()=>stageDone(1)},
   {id:"bottom",i:"🤿",n:"Bottom Row Diver",d:"Finish the Bottom Row",t:()=>stageDone(2)},
@@ -1143,7 +1145,7 @@ function renderHome(){
       const r=lessonRec(l.idx); const st2=r?.stars||0; const un=isUnlocked(l.idx);
       const keys = l.keys[0]==="*" ? "" : `<span class="muted" style="font-family:var(--mono)"> ${esc(l.keys.toUpperCase().split("").join(" "))}</span>`;
       html+=`<button class="lesson ${un?"":"locked"} ${l.idx===cur&&un?"current":""}" data-i="${l.idx}">
-        <div class="n">LESSON ${l.idx+1}${keys}</div><div class="t">${esc(l.title)}</div>
+        <div class="n">${chapterWord().toUpperCase()} ${l.idx+1}${keys}</div><div class="t">${esc(l.title)}</div>
         <div class="s">${[0,1,2].map(i=>`<span class="${i<st2?"on":""}">★</span>`).join("")}</div>
         ${r?`<div class="muted" style="font-size:12px">${r.wpm} WPM · ${r.acc}%</div>`:""}</button>`;
     });
