@@ -28,3 +28,13 @@ It is one file (`index.html`). It needs no install, no account and no server.
 ## Use the app
 
 Open https://vincent-sobry.github.io/typoo/ in a browser. Progress is saved in the browser (local storage). Nothing is sent to a server.
+
+## Tests
+
+Smoke tests use Playwright (Chromium). GitHub Actions runs them on each pull request to `dev` and `main`.
+
+1. `npm ci`
+2. `npx playwright install chromium`
+3. `npm test`
+
+The tests cover onboarding, saved progress, a full chapter, settings, the dev storage key and the hands below the keyboard.
