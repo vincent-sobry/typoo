@@ -190,6 +190,12 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 #raceTracks.compact .runner{font-size:22px;top:2px}
 #raceTracks.compact .who{top:7px}
 #raceTracks.compact .fin{font-size:18px}
+#text.rung{animation:rung .35s ease-out}
+@keyframes rung{0%{border-color:var(--good);box-shadow:0 0 0 3px #3ee08988}100%{border-color:var(--line);box-shadow:none}}
+#text .peek{color:var(--muted);opacity:.45;font-size:.8em}
+#text .peek::before{content:"next → ";font-family:system-ui,sans-serif;font-size:.6em;letter-spacing:.5px}
+#text.lost{border-color:var(--bad);box-shadow:0 0 0 3px #ff5d7366}
+@media (prefers-reduced-motion:reduce){#text.rung{animation:none}}
 .mode.locked{opacity:.55}
 .mode.locked .ic::after{content:"🔒";font-size:14px;position:relative;left:-6px;top:10px}
 .missing{text-align:left;margin:10px auto;max-width:420px;font-size:14px;max-height:40vh;overflow:auto}
@@ -925,6 +931,7 @@ function onTypeKey(e){
   detectLayout(e);
   if(!S.start){ S.start=performance.now(); }
   const exp=S.text[S.pos]; const k=e.key;
+  if(S.mode==="ladder" && k===" " && exp!==" ") return;   // a space after a word is not an error
   S.keystrokes++;
   const st = state.keys[exp] || (state.keys[exp]={h:0,m:0});
   if(k===exp){
@@ -1157,10 +1164,10 @@ const LADDER_WORDS = {
 const LADDER_BOSS = { en:"supercalifragilisticexpialidocious", nl:"hottentottententententoonstelling" };
 const LADDER_MIN = 2, LADDER_MAX = 15;
 const LADDER_SUBS = LADDER_MAX - LADDER_MIN + 2;      // 14 word lengths + the boss word
-const KEEBO_READ = 0.6;                               // seconds Keebo waits to read the new word
-const LADDER_PAUSE = 700;                             // ms between two words
-/* Keebo's pace: 80% of the all-time top WPM, plus 3% per sublevel. Minimum 10 WPM. */
-function ladderPace(best, sub){ return Math.max(10, Math.round(best*(0.80+0.03*(sub-1)))); }
+const KEEBO_READ = 1.2;                               // seconds Keebo waits to read the new word
+const LADDER_START = 0.60, LADDER_STEP = 0.03;        // Keebo's pace: 60% of the top WPM, plus 3% per sublevel
+/* Keebo's pace for a sublevel (1 = first word). Minimum 10 WPM. */
+function ladderPace(best, sub){ return Math.max(10, Math.round(best*(LADDER_START+LADDER_STEP*(sub-1)))); }
 /* One random word per length, then the boss word. Each run is different. */
 function ladderWords(lang=state.lang){
   const L=LADDER_WORDS[lang]||LADDER_WORDS.en, out=[];
@@ -1213,7 +1220,11 @@ function ladderNext(){
   LW.botWpm=ladderPace(LW.best, LW.sub);
   LW.botSecs=w.length*12/LW.botWpm;                // 5 chars per word: secs per char = 60/(wpm*5)
   S.text=w; S.pos=0; S.errAt=new Set(); S.wrongRow=0;
+  $("#text").classList.remove("lost");
   renderText(); updateCursor(); renderLadderBar();
+  // Preview of the next word, so the player can read ahead.
+  const nx=LW.words[LW.sub];
+  if(nx){ const pk=document.createElement("span"); pk.className="peek"; pk.id="ladderPeek"; pk.textContent=nx; pk.title="Next word"; $("#text").append("   ", pk); }
   $("#tTitle").textContent = boss ? `Longest Word · 👑 Boss word (${LW.sub}/${LADDER_SUBS})` : `Longest Word · ${w.length} letters (${LW.sub}/${LADDER_SUBS})`;
   $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
@@ -1226,20 +1237,18 @@ function ladderWordDone(){
   LW.chars+=S.text.length; LW.secs+=(now-LW.wordStart)/1000;
   $("#rYou").style.left="calc(100% - 54px)";
   if(LW.sub>=LW.words.length) return ladderOver(true);
-  S.locked=true; beep(660,0.06,"sine",0.05);
-  say("#type", rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
-  const lw=LW;
-  setTimeout(()=>{
-    if(LW!==lw || LW.over || !S) return;
-    ladderNext();
-    if(LW.sub===LW.words.length) say("#type","👑 BOSS WORD! The longest word I know. Go!","wow");
-    S.locked=false; LW.botStart=S.start=LW.wordStart=performance.now();
-  }, LADDER_PAUSE);
+  // The next word comes at once. No pause, so no typed key is lost.
+  beep(660,0.06,"sine",0.05);
+  ladderNext();
+  LW.botStart=S.start=LW.wordStart=performance.now();
+  const box=$("#text"); box.classList.remove("rung"); void box.offsetWidth; box.classList.add("rung");
+  say("#type", LW.sub===LW.words.length ? "👑 BOSS WORD! The longest word I know. Go!" :
+    rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
 }
 function ladderOver(won){
   if(!LW || LW.over) return;
   LW.over=true; S.done=true; S.end=performance.now(); clearInterval(liveTimer); clearHighlights();
-  if(!won) $("#rBot").style.left="calc(100% - 54px)";
+  if(!won){ $("#rBot").style.left="calc(100% - 54px)"; $("#text").classList.add("lost"); }
   const cleared = won ? LW.words.length : LW.sub-1;  // sublevels done
   const L=state.ladder || (state.ladder={best:0,played:0,boss:0});
   const record = cleared>L.best;
@@ -1263,7 +1272,7 @@ function ladderOver(won){
       need: `Sublevels: ${cleared} of ${lw.words.length} · Record: ${L.best} · Last word: ${last}`,
       retry: startLadder, next: null});
     if(won||record){ chime(); confetti(won?200:80); }
-  }, won ? 300 : 900);
+  }, won ? 300 : 600);
   if(!won) say("#type","Beep! I finished that word first.","wow");
 }
 
