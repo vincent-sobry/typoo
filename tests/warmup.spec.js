@@ -21,21 +21,29 @@ const today = () => {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 };
 
-test("hidden for a new player who did not pass chapter 1", async ({ page }) => {
+test("locked for a new player who did not pass chapter 1", async ({ page }) => {
   await openApp(page, player());
+  await expect(page.locator("#mWarm")).toBeVisible();
+  await expect(page.locator("#mWarm")).toHaveClass(/locked/);
+  await expect(page.locator("#mWarmText")).toContainText("chapter 1");
+  await page.click("#mWarm");
   await expect(page.locator("#home")).toBeVisible();
-  await expect(page.locator("#mWarm")).toBeHidden();
+  await expect(page.locator("#toast")).toContainText("after chapter 1");
 });
 
-test("hidden when the warm-up is done today", async ({ page }) => {
+test("locked when the warm-up is done today: it says it unlocks tomorrow", async ({ page }) => {
   await openApp(page, withChapters(4, { warmup: { last: today(), count: 3 } }));
-  await expect(page.locator("#mContinue")).toBeVisible();
-  await expect(page.locator("#mWarm")).toBeHidden();
+  await expect(page.locator("#mWarm")).toBeVisible();
+  await expect(page.locator("#mWarm")).toHaveClass(/locked/);
+  await expect(page.locator("#mWarmText")).toHaveText("Done today ✓ · unlocks again tomorrow");
+  await page.click("#mWarm");
+  await expect(page.locator("#home")).toBeVisible();
+  await expect(page.locator("#toast")).toContainText("tomorrow");
 });
 
 test("shows on a new day and Keebo suggests it", async ({ page }) => {
   await openApp(page, withChapters(4, { warmup: { last: "2020-01-01", count: 1 } }));
-  await expect(page.locator("#mWarm")).toBeVisible();
+  await expect(page.locator("#mWarm")).not.toHaveClass(/locked/);
   await expect(page.locator("#homeBubble")).toContainText("warm-up");
 });
 
@@ -85,7 +93,7 @@ test("a run: no live score, no stars, no change to top WPM or history; then it h
   expect(st.streak.last).toBe(today());
   expect(st.xp).toBeGreaterThan(0);
   await page.click("#rMap");
-  await expect(page.locator("#mWarm")).toBeHidden();
+  await expect(page.locator("#mWarm")).toHaveClass(/locked/);
 });
 
 test("Next on the result opens the current chapter; live score is back", async ({ page }) => {
@@ -102,7 +110,7 @@ test("Escape stops the warm-up; it stays on the home screen", async ({ page }) =
   await page.click("#mWarm");
   await page.keyboard.press("Escape");
   await expect(page.locator("#home")).toBeVisible();
-  await expect(page.locator("#mWarm")).toBeVisible();
+  await expect(page.locator("#mWarm")).not.toHaveClass(/locked/);
   expect((await saved(page))?.warmup?.last || "").toBe("");
 });
 
@@ -121,10 +129,10 @@ test("the run stops after 1 minute, also with words left", async ({ page }) => {
 test("test tool 'new day': dates move back 1 day, the warm-up shows again, the streak goes on", async ({ page }) => {
   const d = today();
   await openApp(page, withChapters(3, { warmup: { last: d, count: 1 }, today: { date: d, secs: 300 }, streak: { count: 4, last: d } }));
-  await expect(page.locator("#mWarm")).toBeHidden();
+  await expect(page.locator("#mWarm")).toHaveClass(/locked/);
   await page.click("#hSettings");
   await expect(page.locator("#setNewDay"), "only on the dev preview").toBeHidden();
-  const r = await page.evaluate(() => { newDay(); goHome(); return { st: state, streak: streakNow(), y: dayBefore(todayStr()), tile: !$("#mWarm").hidden }; });
+  const r = await page.evaluate(() => { newDay(); goHome(); return { st: state, streak: streakNow(), y: dayBefore(todayStr()), tile: !$("#mWarm").classList.contains("locked") }; });
   expect(r.st.warmup.last).toBe(r.y);
   expect(r.st.today.date).toBe(r.y);
   expect(r.st.streak.last).toBe(r.y);
