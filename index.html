@@ -190,6 +190,16 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 #raceTracks.compact .runner{font-size:22px;top:2px}
 #raceTracks.compact .who{top:7px}
 #raceTracks.compact .fin{font-size:18px}
+/* F1 start lights: 5 red lights go on, then all go off = GO. Over the text box, no dark overlay. */
+.tbwrap{position:relative}
+.lights{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:none;gap:12px;padding:10px 16px;background:#0b0e20ee;border:1px solid var(--line);border-radius:18px;z-index:5;pointer-events:none}
+.lights.on{display:flex}
+.lights i{width:40px;height:40px;border-radius:50%;background:#2a1520;border:3px solid #3a2030;transition:background .08s,box-shadow .08s}
+.lights i.on{background:#ff2d3d;border-color:#ff6b78;box-shadow:0 0 18px #ff2d3d,0 0 4px #fff inset}
+#text.wait{filter:blur(1.5px);opacity:.85}
+#text.go{animation:go .6s ease-out}
+@keyframes go{0%{border-color:var(--good);box-shadow:0 0 0 6px #3ee089aa}100%{border-color:var(--line);box-shadow:none}}
+@media (prefers-reduced-motion:reduce){#text.go{animation:none}}
 #text.rung{animation:rung .35s ease-out}
 @keyframes rung{0%{border-color:var(--good);box-shadow:0 0 0 3px #3ee08988}100%{border-color:var(--line);box-shadow:none}}
 #text .peek{color:var(--muted);opacity:.45;font-size:.8em}
@@ -347,7 +357,8 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
     </div>
     <div class="layoutwarn" id="layoutWarn"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn" id="layoutFix">Switch</button></div>
     <div class="capswarn" id="capsWarn">⚠️ Caps Lock is ON. Turn it off.</div>
-    <div class="textbox" id="text"></div>
+    <div class="tbwrap"><div class="textbox" id="text"></div>
+      <div class="lights" id="lights" aria-label="Start lights"><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="prog"><i id="tProg"></i></div>
     <div class="kbwrap" id="kbwrap">
       <div class="fingerlbl" id="fingerLbl"></div>
@@ -415,7 +426,6 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
   <ol class="missing" id="llList"></ol>
   <button class="btn" id="llClose">OK</button>
 </div></div>
-<div class="overlay" id="countdown"><div class="count" id="countNum">3</div></div>
 <div class="overlay" id="rainOver"><div class="panel">
   <h2 id="rainTitle">Game over</h2>
   <div class="bigstars" style="font-size:44px">☄️</div>
@@ -1117,22 +1127,29 @@ function startRace(botWpm, label){
         retry:()=>startRace(botWpm,label), next:openRaceLobby, nextLabel:"Pick speed"});
       if(won) chime();
     },
-    onAbort(){ $("#countdown").classList.remove("on"); }
+    onAbort(){ stopLights(); }
   });
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
   say("#type","Get ready… Fingers on the home row!","think");
   countIn(()=>{ S.locked=false; S.start=performance.now(); botStart=performance.now(); say("#type","GO! 🏁","wow"); });
 }
-/* 3-2-1 countdown, then go(). Stops when the session ends. */
+/* F1 start lights, then go(). The text stays visible (light blur), so the player can read it.
+   Lights go on one by one, every 0.6 s. When all 5 go off: GO. Stops when the session ends. */
+const LIGHT_STEP = 600;
 function countIn(go){
-  let n=3; $("#countNum").textContent=n; $("#countdown").classList.add("on"); beep(440,0.1,"sine");
-  const sess=S;
-  const iv=setInterval(()=>{
-    n--; if(!S || S.done || S!==sess){ clearInterval(iv); $("#countdown").classList.remove("on"); return; }
-    if(n>0){ $("#countNum").textContent=n; beep(440,0.1,"sine"); }
-    else { clearInterval(iv); $("#countdown").classList.remove("on"); beep(880,0.2,"sine"); go(); }
-  },800);
+  const L=$$("#lights i"), box=$("#text"), sess=S;
+  stopLights(); $("#lights").classList.add("on"); box.classList.add("wait"); box.classList.remove("go");
+  let n=0;
+  const step=()=>{
+    if(!S || S.done || S!==sess){ clearInterval(iv); stopLights(); return; }
+    if(n<5){ L[n].classList.add("on"); beep(440,0.1,"sine"); n++; return; }
+    clearInterval(iv); stopLights(); beep(880,0.25,"sine");
+    void box.offsetWidth; box.classList.add("go");
+    go();
+  };
+  const iv=setInterval(step, LIGHT_STEP); step();
 }
+function stopLights(){ $("#lights").classList.remove("on"); $$("#lights i").forEach(l=>l.classList.remove("on")); $("#text").classList.remove("wait"); }
 function avgWpm(){ const h=state.history.slice(-10); return h.length? Math.round(h.reduce((a,b)=>a+b.wpm,0)/h.length) : 0; }
 
 /* =========================================================================
@@ -1165,9 +1182,12 @@ const LADDER_BOSS = { en:"supercalifragilisticexpialidocious", nl:"hottentottent
 const LADDER_MIN = 2, LADDER_MAX = 15;
 const LADDER_SUBS = LADDER_MAX - LADDER_MIN + 2;      // 14 word lengths + the boss word
 const KEEBO_READ = 1.2;                               // seconds Keebo waits to read the new word
-const LADDER_START = 0.60, LADDER_STEP = 0.03;        // Keebo's pace: 60% of the top WPM, plus 3% per sublevel
+const LADDER_BREATH = 0.6;                            // extra seconds Keebo waits after each finished word
+const LADDER_START = 0.80, LADDER_STEP = 0.03;        // Keebo's pace: 80% of the reference WPM, plus 3% per sublevel
 /* Keebo's pace for a sublevel (1 = first word). Minimum 10 WPM. */
-function ladderPace(best, sub){ return Math.max(10, Math.round(best*(LADDER_START+LADDER_STEP*(sub-1)))); }
+function ladderPace(ref, sub){ return Math.max(10, Math.round(ref*(LADDER_START+LADDER_STEP*(sub-1)))); }
+/* Reference speed: the average WPM of the last 10 runs (as "Match me" in Race). No runs yet: the top WPM. */
+function ladderRef(){ return avgWpm() || state.bestWpm || 0; }
 /* One random word per length, then the boss word. Each run is different. */
 function ladderWords(lang=state.lang){
   const L=LADDER_WORDS[lang]||LADDER_WORDS.en, out=[];
@@ -1194,19 +1214,20 @@ function renderLadderBar(){
   $("#ladder").innerHTML=LW.words.map((w,i)=>`<i class="${i<LW.sub-1?"done":i===LW.sub-1?"cur":""}" title="${i===LW.words.length-1?"Boss word":w.length+" letters"}">${i===LW.words.length-1?"👑":w.length}</i>`).join("");
 }
 function startLadder(){
-  const words=ladderWords(), best=state.bestWpm||0;
-  LW={words, sub:0, best, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
+  const words=ladderWords(), best=ladderRef();
+  LW={words, sub:0, best, wait:KEEBO_READ, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
   startSession({mode:"ladder", title:"Longest Word", text:words[0], locked:true,
     onTick(){
       if(!LW || LW.over || !LW.botStart || !S) return;
-      const t=(performance.now()-LW.botStart)/1000-KEEBO_READ;
+      const t=(performance.now()-LW.botStart)/1000-LW.wait;
       const bp=Math.max(0,Math.min(1,t/LW.botSecs)), yp=S.pos/S.text.length;
       $("#rBot").style.left=`calc(${bp*100}% - ${bp*60}px + 6px)`;
       $("#rYou").style.left=`calc(${yp*100}% - ${yp*60}px + 6px)`;
+      $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`+(t<0?" · 👀 reading":"");
       if(bp>=1 && !S.locked) ladderOver(false);
     },
     onWord(){ ladderWordDone(); },
-    onAbort(){ $("#countdown").classList.remove("on"); if(LW) LW.over=true; LW=null; }
+    onAbort(){ stopLights(); if(LW) LW.over=true; LW=null; }
   });
   $("#rYouLbl").textContent="You";
   say("#type",`Type each word before I do. Errors do not count, only time. My start pace is <b>${ladderPace(best,1)} WPM</b>. Ready?`,"think");
@@ -1233,14 +1254,15 @@ function ladderWordDone(){
   if(!LW || LW.over) return;
   const now=performance.now();
   // Keebo was first if his time ran out before this last key.
-  if((now-LW.botStart)/1000-KEEBO_READ >= LW.botSecs) return ladderOver(false);
+  if((now-LW.botStart)/1000-LW.wait >= LW.botSecs) return ladderOver(false);
   LW.chars+=S.text.length; LW.secs+=(now-LW.wordStart)/1000;
   $("#rYou").style.left="calc(100% - 54px)";
   if(LW.sub>=LW.words.length) return ladderOver(true);
   // The next word comes at once. No pause, so no typed key is lost.
   beep(660,0.06,"sine",0.05);
   ladderNext();
-  LW.botStart=S.start=LW.wordStart=performance.now();
+  // A short breath: Keebo waits a bit longer before the new word. The player can type at once.
+  LW.botStart=S.start=LW.wordStart=performance.now(); LW.wait=KEEBO_READ+LADDER_BREATH;
   const box=$("#text"); box.classList.remove("rung"); void box.offsetWidth; box.classList.add("rung");
   say("#type", LW.sub===LW.words.length ? "👑 BOSS WORD! The longest word I know. Go!" :
     rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
@@ -1255,7 +1277,7 @@ function ladderOver(won){
   L.played++; L.best=Math.max(L.best,cleared); if(won) L.boss++;
   const xp = LW.words.slice(0,cleared).reduce((a,w)=>a+w.length,0) + (won?50:0);
   state.xp+=xp;
-  // time and streak count, like the other games. The top WPM does not change, so Keebo's pace stays fair.
+  // time and streak count, like the other games. The game adds no run to the history, so the reference WPM does not change.
   const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0}; state.today.secs+=LW.secs;
   if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
   const acc = S.keystrokes ? (S.keystrokes-S.errors)/S.keystrokes*100 : 100;
