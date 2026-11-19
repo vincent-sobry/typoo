@@ -240,6 +240,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 #boostChoices .choice{display:flex;flex-direction:column;align-items:center;gap:2px}
 .blvl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 10px;border-radius:99px;margin-bottom:6px}
 .blvl.easy{background:#3ee08926;color:#3ee089}.blvl.mid{background:#ffd43b26;color:#ffd43b}.blvl.hard{background:#ff6b8b26;color:#ff6b8b}
+#boostChoices .choice.easy{--lc:#3ee089}#boostChoices .choice.mid{--lc:#ffd43b}#boostChoices .choice.hard{--lc:#ff6b8b}
+#boostChoices .choice[class*=" "]{border-color:color-mix(in srgb,var(--lc) 55%,transparent)}
+#boostChoices .choice[class*=" "]:hover,#boostChoices .choice[class*=" "]:focus-visible{border-color:var(--lc);box-shadow:0 0 14px color-mix(in srgb,var(--lc) 45%,transparent)}
 .count{font-size:120px;font-weight:900;color:#fff;text-shadow:0 0 40px var(--accent)}
 
 /* ---------- Meteor ---------- */
@@ -1194,7 +1197,7 @@ function openBoost(){
   const picks=boostPicks();
   $("#boostChoices").style.gridTemplateColumns=`repeat(${picks.length},1fr)`;
   $("#boostChoices").innerHTML=picks.map(({l,lvl})=>{ const s=lessonRec(l.idx).stars;
-    return `<button class="choice" data-i="${l.idx}">${lvl?`<span class="blvl ${lvl.c}">${lvl.n}</span>`:""}<span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
+    return `<button class="choice${lvl?" "+lvl.c:""}" data-i="${l.idx}">${lvl?`<span class="blvl ${lvl.c}">${lvl.n}</span>`:""}<span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
       `<span class="bst">${"★".repeat(s)}<i>${"★".repeat(3-s)}</i></span><br><span class="muted" style="font-size:12px">Next star: ${boostGoal(l)}</span></button>`; }).join("");
   $$("#boostChoices .choice").forEach(b=>b.onclick=()=>{ $("#boostLobby").classList.remove("on"); startBoost(+b.dataset.i); });
   $("#boostLobby").classList.add("on");
