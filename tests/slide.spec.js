@@ -1,0 +1,70 @@
+// Sliding text (test mode): one row, the cursor stays at the same place and the text slides.
+const { test, expect } = require("@playwright/test");
+const { player, openApp, saved, typeAll } = require("./helpers");
+
+test.beforeEach(async ({ page }) => {
+  page.errors = [];
+  page.on("pageerror", (e) => page.errors.push(e.message));
+});
+test.afterEach(async ({ page }) => {
+  expect(page.errors, "no JavaScript errors").toEqual([]);
+});
+
+/** x of the cursor on the screen, after the slide is done. */
+async function cursorX(page) {
+  await page.waitForTimeout(500);
+  return page.evaluate(() => Math.round(document.querySelector("#text .cur").getBoundingClientRect().left));
+}
+
+test("off by default: rows of text", async ({ page }) => {
+  await openApp(page, player());
+  await page.click("#mContinue");
+  await expect(page.locator("#text")).not.toHaveClass(/slidemode/);
+});
+
+test("on: one row, the cursor stays in place while the text slides", async ({ page }) => {
+  await openApp(page, player({ slide: 1 }));
+  await page.click("#mContinue");
+  const box = page.locator("#text");
+  await expect(box).toHaveClass(/slidemode/);
+  expect(await box.locator("br").count()).toBe(0);
+  const h = await box.evaluate((b) => b.clientHeight);
+  const lh = await box.evaluate((b) => parseFloat(getComputedStyle(b).lineHeight));
+  expect(h).toBeLessThan(lh * 2);                 // one row
+  const x0 = await cursorX(page);
+  const bx = await box.boundingBox();
+  expect(Math.abs(x0 - (bx.x + bx.width * 0.35))).toBeLessThan(40);   // cursor at about 1/3 of the box
+  await page.keyboard.type(await page.evaluate("S.text.slice(0,12)"), { delay: 5 });
+  const x1 = await cursorX(page);
+  expect(Math.abs(x1 - x0)).toBeLessThanOrEqual(2);
+  expect(await box.evaluate((b) => b.scrollLeft)).toBeGreaterThan(50);
+  await page.keyboard.type(await page.evaluate("S.text.slice(S.pos)"), { delay: 2 });
+  await expect(page.locator("#result")).toBeVisible();
+});
+
+test("Longest Word keeps its own one-word view", async ({ page }) => {
+  const q = {}; for (let i = 0; i < 18; i++) q[i] = { stars: 1, wpm: 12, acc: 95 };
+  await openApp(page, player({ slide: 1, lessons: { qwerty: q, azerty: {} }, bestWpm: 20 }));
+  await page.click("#mLadder");
+  await expect(page.locator("#text")).not.toHaveClass(/slidemode/);
+});
+
+test("Settings switch", async ({ page }) => {
+  await openApp(page, player());
+  await page.click("#hSettings");
+  await expect(page.locator("#setSlide [data-v='0']")).toHaveClass(/on/);
+  await page.click("#setSlide [data-v='1']");
+  await page.click("#setClose");
+  expect((await saved(page)).slide).toBe(1);
+  await page.click("#mContinue");
+  await expect(page.locator("#text")).toHaveClass(/slidemode/);
+});
+
+test("short screen (1366x657): the cursor is still at about 1/3 of the box", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 657 });
+  await openApp(page, player({ slide: 1 }));
+  await page.click("#mContinue");
+  const bx = await page.locator("#text").boundingBox();
+  const x0 = await cursorX(page);
+  expect(Math.abs(x0 - (bx.x + bx.width * 0.35))).toBeLessThan(40);
+});

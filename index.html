@@ -131,6 +131,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .textbox{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:14px 22px;font-family:var(--mono);font-size:26px;line-height:1.55;
   height:calc(4.65em + 28px);overflow:hidden;white-space:pre-wrap;word-break:normal;margin:10px 0}
 .textbox span{border-radius:4px;transition:background .1s}
+/* Sliding text (test, Settings switch): one row. The cursor stays at the same place, the text slides to the left. */
+#type #text.slidemode{white-space:pre;height:calc(1.55em + 28px);padding-left:35%;padding-right:65%;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){#type #text.slidemode{scroll-behavior:auto}}
 .textbox .ok{color:#56607f}
 .textbox .fx{color:#c08a3a}
 .textbox .cur{background:var(--accent);color:#fff;box-shadow:0 0 0 2px var(--accent)}
@@ -557,6 +560,9 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="field"><label>Hands below the keyboard</label><div class="seg" id="setHands">
     <button data-v="1">On<small>show which finger</small></button>
     <button data-v="0">Off<small>no finger hint</small></button></div></div>
+  <div class="field"><label>Sliding text <small class="muted">(test)</small></label><div class="seg" id="setSlide">
+    <button data-v="1">On<small>one row, the text slides</small></button>
+    <button data-v="0">Off<small>rows of text</small></button></div></div>
   <div class="field"><label>Finger colour frame</label><div class="seg" id="setFrame">
     <button data-v="1">On<small>screen border in the finger colour</small></button>
     <button data-v="0">Off<small>no frame</small></button></div></div>
@@ -1017,6 +1023,7 @@ function startSession(opts){
   fitKeyboard();
   $("#lTimeP").style.display = "";
   $("#capsWarn").classList.remove("on");
+  $("#text").classList.toggle("slidemode", state.slide===1 && opts.mode!=="ladder");   // Longest Word has its own one-word view
   renderText();
   updateCursor();
   updateLive();
@@ -1026,12 +1033,12 @@ function renderText(){
   const box=$("#text"); box.innerHTML="";
   const frag=document.createDocumentFragment();
   [...S.text].forEach((c,i)=>{ const sp=document.createElement("span"); sp.textContent=c; if(c===" ") sp.className="sp"; sp.id="c"+i; frag.appendChild(sp); });
-  box.appendChild(frag); balanceLines(); box.scrollTop=0;
+  box.appendChild(frag); balanceLines(); box.scrollTo({top:0, left:0, behavior:"instant"});
 }
 /* Break the text into rows of near-equal length (no short last row).
    Find the narrowest row width that still gives the same number of rows as normal wrapping. */
 function balanceLines(){
-  const box=$("#text"); if(!S || !box.firstChild) return;
+  const box=$("#text"); if(!S || !box.firstChild || box.classList.contains("slidemode")) return;
   box.querySelectorAll("br").forEach(b=>b.remove());
   const cs=getComputedStyle(box);
   const avail=box.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
@@ -1053,9 +1060,13 @@ function updateCursor(){
   const prev=$("#text .cur"); if(prev) prev.classList.remove("cur");
   if(S.pos<S.text.length){
     const el=document.getElementById("c"+S.pos); el.classList.add("cur");
-    const box=$("#text"); const lh=parseFloat(getComputedStyle(box).lineHeight)||40;
-    const top=el.offsetTop - 14; // relative to the padded box
-    if(top > box.scrollTop + lh*1.2 || top < box.scrollTop) box.scrollTop = Math.max(0, top - lh);
+    const box=$("#text");
+    if(box.classList.contains("slidemode")) box.scrollLeft = el.offsetLeft - box.firstChild.offsetLeft;   // cursor stays put, text slides
+    else {
+      const lh=parseFloat(getComputedStyle(box).lineHeight)||40;
+      const top=el.offsetTop - 14; // relative to the padded box
+      if(top > box.scrollTop + lh*1.2 || top < box.scrollTop) box.scrollTop = Math.max(0, top - lh);
+    }
     highlightChar(S.text[S.pos]);
   } else clearHighlights();
   $("#tProg").style.width = (S.pos/S.text.length*100)+"%";
@@ -2147,6 +2158,7 @@ function openSettings(){
   segInit("#setLang", state.lang, v=>{ state.lang=v; save(); });
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });
+  segInit("#setSlide", state.slide===1?1:0, v=>{ state.slide=+v; save(); });
   segInit("#setFrame", state.frame===0?0:1, v=>{ state.frame=+v; save(); applyFrame(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
   segInit("#setClicks", state.clicks===0?0:1, v=>{ state.clicks=+v; save(); });
