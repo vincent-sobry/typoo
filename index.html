@@ -196,6 +196,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .lights.on{display:flex}
 .lights i{width:40px;height:40px;border-radius:50%;background:#2a1520;border:3px solid #3a2030;transition:background .08s,box-shadow .08s}
 .lights i.on{background:#ff2d3d;border-color:#ff6b78;box-shadow:0 0 18px #ff2d3d,0 0 4px #fff inset}
+/* Longest Word: the word in the centre of the box, the start lights just below it. */
+#type.lwmode #text{text-align:center;padding-top:20px}
+#type.lwmode .lights{top:auto;bottom:14px;transform:translateX(-50%)}
 #text.wait{filter:blur(1.5px);opacity:.85}
 #text.go{animation:go .6s ease-out}
 @keyframes go{0%{border-color:var(--good);box-shadow:0 0 0 6px #3ee089aa}100%{border-color:var(--line);box-shadow:none}}
@@ -868,6 +871,7 @@ function startSession(opts){
   $("#raceTracks").style.display = opts.mode==="race"||opts.mode==="ladder" ? "block" : "none";
   $("#ladder").classList.toggle("on", opts.mode==="ladder");
   $("#raceTracks").classList.toggle("compact", opts.mode==="ladder");
+  $("#type").classList.toggle("lwmode", opts.mode==="ladder");
   fitKeyboard();
   $("#lTimeP").style.display = "";
   $("#capsWarn").classList.remove("on");

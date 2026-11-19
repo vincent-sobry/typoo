@@ -252,6 +252,27 @@ test("Keebo speeds up along an S-curve and keeps the same time per word", async 
   await page.click("#mLadder");
   await waitRung(page, 1);
   await page.waitForTimeout(800);
-  const left = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector("#rBot")).left));
-  expect(left).toBeGreaterThan(6);
+  const done = await page.evaluate(() => keeboChars((performance.now() - LW.botStart) / 1000, LW.botV, LW.ramp));
+  expect(done).toBeGreaterThan(0);                     // he already moves
+  expect(done).toBeLessThan(1);                        // but very slowly
+});
+
+test("the word is in the centre of the box, above the start lights", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 657 });
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  await expect(page.locator("#lights")).toBeVisible();
+  const box = await page.locator("#text").boundingBox();
+  const cur = await page.locator("#c0").boundingBox();
+  const lights = await page.locator("#lights").boundingBox();
+  const peek = await page.locator("#ladderPeek").boundingBox();
+  const mid = (cur.x + peek.x + peek.width) / 2;                                          // centre of the line
+  expect(Math.abs(mid - (box.x + box.width / 2))).toBeLessThan(20);
+  expect(cur.y + cur.height).toBeLessThanOrEqual(lights.y);                              // word above the lights
+  expect(lights.y + lights.height).toBeLessThanOrEqual(box.y + box.height);
+  // Race keeps left-aligned text.
+  await page.keyboard.press("Escape");
+  await page.click("#mRace");
+  await page.locator("#raceChoices .choice").first().click();
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector("#text")).textAlign)).not.toBe("center");
 });
