@@ -95,9 +95,11 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .lvlup{display:none;margin:14px auto 0;padding:12px 16px;border-radius:16px;background:linear-gradient(90deg,#7c5cff,#22d3ee);color:#fff;font-weight:900;font-size:22px;box-shadow:0 0 30px #7c5cff88}
 .lvlup small{display:block;font-size:14px;font-weight:700;opacity:.95}
 .lvlup.on{display:block;animation:pop .6s cubic-bezier(.3,1.8,.5,1)}
+.lvlup.goal{background:linear-gradient(90deg,#1fb86b,#22d3ee);box-shadow:0 0 30px #1fb86b88}
+.goalok{color:var(--good);font-weight:800}
 @keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90}
-@media (prefers-reduced-motion:reduce){.lvlup.on{animation:none}}
+@media (prefers-reduced-motion:reduce){.lvlup.on,.lvlup.goal.on{animation:none}}
 .tips{margin-top:14px;font-size:14px}
 .tips li{margin:4px 0;color:#cdd2f5}
 
@@ -472,6 +474,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
         <div class="bar"><i id="rLvlBar" style="width:0"></i></div>
       </div>
       <div class="lvlup" id="rLvlUp"></div>
+      <div class="lvlup goal" id="rGoal" role="status"></div>
       <div class="weak" id="rWeak"></div>
       <div class="rbtns">
         <button class="btn ghost" id="rMap">Map</button>
@@ -1080,14 +1083,22 @@ function onTypeKey(e){
 function endSessionEarly(){
   clearInterval(liveTimer); if(S){ S.done=true; if(S.onAbort) S.onAbort(); } S=null; goHome();
 }
+/* Today's practice time. Returns true when this run reaches the daily goal (10 min) for the first time today. */
+const GOAL_SECS=600;
+let goalPending=false;
+function addToday(secs){
+  const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0};
+  const before=state.today.secs; state.today.secs+=secs;
+  if(before<GOAL_SECS && state.today.secs>=GOAL_SECS && !state.today.goal){ state.today.goal=1; goalPending=true; return true; }
+  return false;
+}
 function finishSession(){
   S.done=true; S.end=performance.now(); clearInterval(liveTimer); updateLive(); clearHighlights();
   $("#tProg").style.width="100%";
   const secs=elapsed(), wpm=curWpm(), acc=curAcc();
   // bookkeeping
   const t=todayStr();
-  if(state.today.date!==t){ state.today={date:t,secs:0}; }
-  state.today.secs += secs;
+  addToday(secs);
   if(state.streak.last!==t){
     const y=new Date(); y.setDate(y.getDate()-1);
     state.streak.count = state.streak.last===todayStr(y) ? state.streak.count+1 : 1;
@@ -1178,16 +1189,26 @@ function showResult(o){
   main.onanimationend = e => { if(e.animationName==="btnfill") main.classList.remove("filling"); };   // ready: normal colour again
   offerLayout();
 }
-let resultActions=null, lvlTimer=null;
+let resultActions=null, lvlTimer=null, goalTimer=null;
+/* Daily goal moment on the result screen: one time per day, after the stars and the level. Never during a run. */
+function showGoal(){
+  goalPending=false;
+  const name=state.name ? `, ${esc(state.name)}` : "";
+  $("#rGoal").innerHTML=`🎯 Daily goal reached!<small>10 minutes of practice today. You can stop now, or go on for extra speed.</small>`;
+  $("#rGoal").classList.add("on");
+  say("#result", `Daily goal done${name}! 🎉 Same time tomorrow?`, "wow");
+  confetti(160); chime();
+}
 /* XP sum after the summary. A new level gets a celebration. */
 function showLevel(gained, stars, party=true){
   const now=levelInfo(state.xp), before=levelInfo(state.xp-gained);
   const up=now.lvl>before.lvl, newTitle=now.title!==before.title;
-  clearTimeout(lvlTimer); $("#rLvlUp").classList.remove("on");
+  clearTimeout(lvlTimer); clearTimeout(goalTimer); $("#rLvlUp").classList.remove("on"); $("#rGoal").classList.remove("on");
   $("#rLvlName").textContent=`Level ${before.lvl} · ${before.title}`;
   $("#rLvlXp").textContent=`${before.into} / ${before.need} XP`;
   const bar=$("#rLvlBar"); bar.style.transition="none"; bar.style.width=(before.into/before.need*100)+"%"; void bar.offsetWidth; bar.style.transition="";
   const delay = stars===undefined ? 300 : 1300; // after the stars
+  if(goalPending) goalTimer=setTimeout(showGoal, delay + (up ? 1700 : 500));
   lvlTimer=setTimeout(()=>{
     if(up){
       bar.style.width="100%";
@@ -1770,7 +1791,7 @@ function ladderOver(won){
   const xp = LW.words.slice(0,cleared).reduce((a,w)=>a+w.length,0) + (won?50:0);
   state.xp+=xp;
   // time and streak count, like the other games. The game adds no run to the history, so the reference WPM does not change.
-  const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0}; state.today.secs+=LW.secs;
+  const t=todayStr(); addToday(LW.secs);
   if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
   const acc = S.keystrokes ? (S.keystrokes-S.errors)/S.keystrokes*100 : 100;
   const res={wpm: LW.secs>0 ? (LW.chars/5)/(LW.secs/60) : 0, acc, secs:LW.secs, miss:S.miss};
@@ -1858,7 +1879,7 @@ function rainOver(){
   const secs=(performance.now()-M.t0)/1000;
   const best=M.score>state.rainBest; state.rainBest=Math.max(state.rainBest,M.score);
   const xp=Math.round(M.score/15); state.xp+=xp;
-  const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0}; state.today.secs+=secs;
+  const t=todayStr(); const goal=addToday(secs); goalPending=false;
   if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
   save(); checkBadges();
   $("#rainTitle").textContent= best ? "New record! 🏆" : "Game over";
@@ -1866,6 +1887,7 @@ function rainOver(){
   $("#rainOver").classList.add("on");
   const lv=levelInfo(state.xp), lb=levelInfo(state.xp-xp);
   if(lv.lvl>lb.lvl){ $("#rainTxt").innerHTML+=`<br><b>🎉 Level up! Level ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
+  if(goal){ $("#rainTxt").innerHTML+=`<br><b class="goalok">🎯 Daily goal reached! 10 minutes today.</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
 }
 $("#rainAgain").onclick=()=>{ $("#rainOver").classList.remove("on"); startRain(); };
 $("#rainMap").onclick=()=>{ $("#rainOver").classList.remove("on"); goHome(); };
@@ -1950,7 +1972,7 @@ function confStep(){
 /* =========================================================================
    HOME
    ========================================================================= */
-function goHome(){ clearTimeout(lvlTimer); if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); offerLayout(); }
+function goHome(){ clearTimeout(lvlTimer); clearTimeout(goalTimer); goalPending=false; if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); offerLayout(); }
 function renderHome(){
   const li=levelInfo(state.xp);
   $("#pName").textContent=state.name||"Player";
@@ -1962,7 +1984,7 @@ function renderHome(){
   const y=new Date(); y.setDate(y.getDate()-1);
   const alive = state.streak.last===t || state.streak.last===todayStr(y);
   $("#hStreak").textContent="🔥 "+(alive?state.streak.count:0)+" day"+((alive?state.streak.count:0)===1?"":"s");
-  $("#gTxt").textContent=`${Math.min(10,Math.floor(secs/60))} / 10 min`;
+  $("#gTxt").textContent=`${Math.min(10,Math.floor(secs/60))} / 10 min`+(secs>=GOAL_SECS?" ✅":"");
   $("#gBar").style.width=Math.min(100,secs/600*100)+"%";
   $("#sBest").textContent=state.bestWpm; $("#sAvg").textContent=avgWpm(); $("#sStars").textContent=totalStars();
   const cur=currentLessonIdx(); const L=lessonsFlat();
