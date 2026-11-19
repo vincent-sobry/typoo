@@ -14,17 +14,16 @@ permissions:
 
 jobs:
   smoke:
-    runs-on: ubuntu-24.04
-    # The official Playwright image has Node, Chromium and all system packages.
-    # Before, "playwright install --with-deps" ran apt on each run: up to 9 min, and the job hit its time limit.
-    # Keep the tag equal to the @playwright/test version in package.json.
-    container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
-      options: --user 1001
-    timeout-minutes: 15
+    runs-on: ubuntu-24.04   # ubuntu-latest (26.04) lacks the fonts that "playwright install --with-deps" needs
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npx playwright test
       - name: Upload report (on failure)
         if: failure()
