@@ -157,6 +157,11 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .hands .f{fill:#2a3061;stroke:#4a5390;stroke-width:1.5;transition:fill .12s}
 .hands .palm{fill:#20264f;stroke:#4a5390;stroke-width:1.5}
 .hands .f.on{stroke:#fff;stroke-width:2.5}
+/* Finger frame: the screen border has the colour of the finger for the next key. Typing screen only. Off in Pro mode and with the Settings switch. */
+#fframe{position:fixed;inset:0;pointer-events:none;z-index:40;border:6px solid var(--ff,transparent);box-shadow:inset 0 0 22px -8px var(--ff,transparent);
+  display:none;transition:border-color .12s,box-shadow .12s}
+body.fframe #fframe{display:block}
+@media (prefers-reduced-motion:reduce){#fframe{transition:none}}
 .fingerlbl{font-weight:700;font-size:14px;color:var(--muted);text-align:center;min-height:20px}
 /* Short screens: smaller text box and coach, so keyboard and hands fit without scrolling. */
 @media (max-height:700px){
@@ -515,6 +520,9 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="field"><label>Hands below the keyboard</label><div class="seg" id="setHands">
     <button data-v="1">On<small>show which finger</small></button>
     <button data-v="0">Off<small>no finger hint</small></button></div></div>
+  <div class="field"><label>Finger colour frame</label><div class="seg" id="setFrame">
+    <button data-v="1">On<small>screen border in the finger colour</small></button>
+    <button data-v="0">Off<small>no frame</small></button></div></div>
   <div class="field"><label>Sound</label><div class="seg" id="setSound">
     <button data-v="1">On</button><button data-v="0">Off</button></div></div>
   <div class="field"><label>Click sound</label><div class="seg" id="setClicks">
@@ -546,6 +554,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="bdate muted" id="bcDate"></div>
   <div class="rbtns"><button class="btn" id="bcClose">OK</button></div>
 </div></div>
+<div id="fframe" aria-hidden="true"></div>
 <canvas id="confetti" width="0" height="0"></canvas>
 <div class="layoutwarn" id="layoutWarn" role="status"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn ghost" id="layoutLater">Not now</button><button class="btn" id="layoutFix">Switch</button></div>
 <div class="toast" id="toast"><span class="i" id="toastI">🏅</span><span id="toastT"></span></div>
@@ -867,6 +876,7 @@ function buildHands(){
   $$("#hands .f").forEach(e=>e.style.fill="");
 }
 function clearHighlights(){
+  $("#fframe").style.setProperty("--ff", "transparent");
   $$(".key.next").forEach(k=>k.classList.remove("next"));
   $$("#hands .f").forEach(e=>{ e.classList.remove("on"); e.style.fill=""; });
 }
@@ -874,6 +884,7 @@ function highlightChar(ch){
   clearHighlights();
   const m=CHARMAP[ch]; if(!m){ $("#fingerLbl").textContent=""; return; }
   const el=document.getElementById(m.id); if(el) el.classList.add("next");
+  $("#fframe").style.setProperty("--ff", FINGER_COLORS[m.finger]);
   const fingers=[m.finger];
   let txt = ch===" " ? "Space: thumb" : `${FINGER_NAMES[m.finger][0].toUpperCase()+FINGER_NAMES[m.finger].slice(1)}`;
   if(m.shift){
@@ -896,7 +907,9 @@ function applyBlind(){
   $("#kb").classList.toggle("nolabels", state.blind===1);
   $("#type").classList.toggle("blind2", state.blind===2);
   $("#tBlind").textContent = ["👀 Keys: on","🙈 Keys: blind","😎 Keys: hidden"][state.blind];
+  applyFrame();
 }
+function applyFrame(){ document.body.classList.toggle("fframe", screen==="type" && state.frame!==0 && state.blind!==2); }
 function fitKeyboard(){
   const w=Math.min(window.innerWidth-40, 1140);
   const hands=state.hands!==0;
@@ -928,7 +941,7 @@ function chime(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.15,"
    SCREENS
    ========================================================================= */
 let screen="";
-function show(id){ $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id)); screen=id; window.scrollTo(0,0); }
+function show(id){ $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id)); screen=id; window.scrollTo(0,0); applyFrame(); }
 
 /* =========================================================================
    TYPING SESSION
@@ -1881,6 +1894,7 @@ function openSettings(){
   segInit("#setLang", state.lang, v=>{ state.lang=v; save(); });
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });
+  segInit("#setFrame", state.frame===0?0:1, v=>{ state.frame=+v; save(); applyFrame(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
   segInit("#setClicks", state.clicks===0?0:1, v=>{ state.clicks=+v; save(); });
   renderChapterCodes();
