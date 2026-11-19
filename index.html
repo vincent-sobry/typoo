@@ -499,7 +499,7 @@ nl: [
 /* =========================================================================
    STATE & STORAGE
    ========================================================================= */
-/* The dev preview (/typoo/dev/) uses its own key, so tests never touch the kids' progress. */
+/* The dev preview (/typoo/dev/) uses its own key, so tests never touch the stable progress. */
 const IS_DEV = /\/dev\/?$/.test(location.pathname.replace(/index\.html$/,""));
 const STORE_KEY = IS_DEV ? "typo.dev.v1" : "typo.v1";
 if(IS_DEV) document.addEventListener("DOMContentLoaded",()=>{

@@ -1,5 +1,5 @@
 # Publishes the site to GitHub Pages:
-#   main -> https://vincent-sobry.github.io/typoo/      (stable, for the kids)
+#   main -> https://vincent-sobry.github.io/typoo/      (stable)
 #   dev  -> https://vincent-sobry.github.io/typoo/dev/  (preview, for testing)
 # Pages source must be set to "GitHub Actions" in Settings > Pages.
 name: Deploy Pages
