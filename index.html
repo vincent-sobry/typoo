@@ -59,6 +59,9 @@ h1,h2,h3{margin:0}
 /* Daily warm-up: shows on the home screen until the player does it today. No live score during the run. */
 .mode.warm:not(.locked){border-color:#1fb86b;box-shadow:0 0 0 1px #1fb86b55,0 0 18px #1fb86b33}
 .mode.warm:not(.locked):hover{border-color:#a3f7bf}
+/* Daily sentence: one new sentence each day, one scored run. */
+.mode.daily:not(.locked){border-color:#f5b83d;box-shadow:0 0 0 1px #f5b83d55,0 0 18px #f5b83d33}
+.mode.daily:not(.locked):hover{border-color:#ffe2a3}
 .mode[hidden]{display:none}
 #type.wumode .live{display:none}
 .stage{margin-bottom:18px}
@@ -382,6 +385,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
           </div>
           <div class="modes">
             <button class="mode warm" id="mWarm"><span class="ic">☀️</span><span><b>Daily warm-up</b><small id="mWarmText">1 minute · easy words · no score</small></span></button>
+            <button class="mode daily" id="mDaily"><span class="ic">📜</span><span><b>Daily sentence</b><small id="mDailyText">One new sentence each day</small></span></button>
             <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b>Continue</b><small id="mContText">Next chapter</small></span></button>
             <button class="mode" id="mRace"><span class="ic">🏁</span><span><b>Race Keebo</b><small>Beat the bot in a typing race</small></span></button>
             <button class="mode" id="mRain"><span class="ic">☄️</span><span><b>Word Rain</b><small>Stop the meteors before they land</small></span></button>
@@ -563,7 +567,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div id="setChList" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px"></div>
   </div>
   <div class="field" id="setNewDay" style="display:none"><label>New day <small class="muted">(test)</small></label>
-    <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1">Moves the saved dates back 1 day: the daily warm-up shows again, today's goal starts at 0, the streak goes on.</span>
+    <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1">Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.</span>
     <button class="btn ghost" id="setNewDayGo">Start a new day</button></div></div>
   <div class="row" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose">Done</button></div>
 </div></div>
@@ -716,7 +720,7 @@ const storage = {
 };
 function freshState(){
   return {name:"", layout:"", lang:"nl", blind:0, sound:1, clicks:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
-    streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, flags:{}};
+    streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, flags:{}};
 }
 let state = freshState();
 try{ const raw = storage.get(); if(raw) state = Object.assign(freshState(), JSON.parse(raw)); }catch(e){}
@@ -1414,6 +1418,92 @@ function startWarmup(){
 }
 
 /* =========================================================================
+   DAILY SENTENCE (one new sentence each day, one scored run, retries do not count)
+   ========================================================================= */
+const DAILY_SENTENCES = {
+en: [
+"the sun is up and the birds sing","a little frog sat on a log by the pond","we play outside after school today",
+"my robot likes to dance in the kitchen","the cat sleeps on the warm windowsill","quiet hands type fast and true",
+"the rocket flew high over the dark sea","grandma bakes cookies every sunday","we found a shell on the sandy beach",
+"the dog dug a big hole in the garden","a brave knight rode a white horse","my friend tells the best jokes",
+"the moon looks like a silver coin","rain taps softly on the roof","we built a fort out of old boxes",
+"the bus was late, so we ran to school","a happy song makes the day better","the owl hoots in the tall oak tree",
+"pizza night is the best night","the river runs down to the ocean","keep your eyes on the screen",
+"a tiny ant can carry a big leaf","the train goes fast through the hills","we read a story about a dragon",
+"my sister plays the drums very loud","the wind blew my hat away","snow fell all night, and the world is white",
+"the team won the game in the last minute","a good typist never looks down","the bees are busy in the flowers",
+"we ate ice cream in the park","the stars shine bright over the lake","my shoes are wet from the rain",
+"the clown juggles five red balls","a fox ran across the quiet road","the library has a book for everyone",
+"slow and steady wins the race","the baker sells warm bread at dawn","my plant grows a little every day",
+"we waved at the ship in the harbour"
+],
+nl: [
+"de zon is op en de vogels zingen","een kleine kikker zit op een steen","we spelen buiten na school",
+"mijn robot danst graag in de keuken","de kat slaapt op de warme vensterbank","rustige handen typen snel en goed",
+"de raket vloog hoog over de zee","oma bakt elke zondag koekjes","we vonden een schelp op het strand",
+"de hond graaft een groot gat in de tuin","een dappere ridder rijdt op een wit paard","mijn vriend vertelt de beste moppen",
+"de maan lijkt op een zilveren munt","de regen tikt zacht op het dak","we bouwden een hut van oude dozen",
+"de bus was te laat, dus we liepen snel","een vrolijk lied maakt de dag beter","de uil roept in de hoge boom",
+"pizza op vrijdag is altijd feest","de rivier stroomt naar de zee","hou je ogen op het scherm",
+"een kleine mier draagt een groot blad","de trein rijdt snel door de heuvels","we lezen een verhaal over een draak",
+"mijn zus speelt heel luid op de drums","de wind blies mijn pet weg","het sneeuwde de hele nacht, alles is wit",
+"het team won in de laatste minuut","een goede typist kijkt nooit naar beneden","de bijen zijn druk bij de bloemen",
+"we aten een ijsje in het park","de sterren schijnen boven het meer","mijn schoenen zijn nat van de regen",
+"de clown jongleert met vijf rode ballen","een vos liep over de stille weg","de bib heeft een boek voor iedereen",
+"rustig en precies wint de race","de bakker verkoopt warm brood","mijn plant groeit elke dag een beetje",
+"we zwaaiden naar de boot in de haven"
+]};
+const DAILY_WORDS = 7;                                 // words in the sentence when no sentence fits the learned keys
+/* A number from a text. The same day gives the same number, so the sentence is the same all day. */
+function hashStr(t){ let h=2166136261; for(const c of t){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; }
+function seededRnd(seed){ let a=seed||1; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+/* Make a sentence fit the keys: no capitals before the Capitals chapter, no punctuation that is not learned. "" = it does not fit. */
+function dailyFit(t, allowed, caps){
+  if(caps) return t[0].toUpperCase()+t.slice(1)+".";          // after the Capitals chapter: a full sentence
+  if(![...t].every(c=>allowed.has(c) || !/[a-z]/.test(c))) return "";
+  return [...t].filter(c=>allowed.has(c)).join("").replace(/ +/g," ").trim();
+}
+/* Today's sentence for the keys the player knows. */
+function genDaily(day=todayStr(), lang=state.lang){
+  const allowed=learnedSet(), caps=hasCaps(), seed=hashStr(day+"|"+lang);
+  const fit=(DAILY_SENTENCES[lang]||DAILY_SENTENCES.en).map(t=>dailyFit(t,allowed,caps)).filter(Boolean);
+  if(fit.length>=3) return fit[seed%fit.length];          // with fewer, the same sentence would come back each day
+  // Early chapters: a short line of real words with only the learned keys.
+  const r=seededRnd(seed), words=wordList().filter(w=>w.length>=2 && fits(w,allowed)).sort();
+  if(words.length<3) return genWords(allowed, DAILY_WORDS);
+  const out=[]; for(let i=0;i<DAILY_WORDS;i++) out.push(words[Math.floor(r()*words.length)]);
+  return out.join(" ");
+}
+/* Why the daily sentence is locked: "" = open. */
+function dailyLock(){
+  if(currentLessonIdx()===0) return `Locked: pass ${chapterWord().toLowerCase()} 1 first`;
+  const d=state.daily||{};
+  if(d.last===todayStr()) return `Done today ✓ · ${d.wpm||0} WPM · back tomorrow`;
+  return "";
+}
+function dailyDue(){ return !dailyLock(); }
+/* practice = a retry after the scored run: it does not count. */
+function startDaily(practice=false){
+  const text = practice && state.daily?.text ? state.daily.text : genDaily();
+  startSession({mode:"daily", title: practice ? "📜 Daily sentence · practice" : "📜 Daily sentence", text, noScore:true, onFinish:res=>{
+    const d=state.daily||(state.daily={last:"",count:0,best:0});
+    let xp=0, msg;
+    if(practice){ msg="Practice run. Only the first run of the day counts."; }
+    else{
+      const wpm=Math.round(res.wpm), acc=Math.round(res.acc), rec=acc>=90 && wpm>(d.best||0);
+      Object.assign(d, {last:todayStr(), count:(d.count||0)+1, wpm, acc, text});
+      if(rec) d.best=wpm;
+      xp=Math.round(text.length*Math.pow(res.acc/100,2)/3) + (acc===100?10:0); state.xp+=xp;
+      msg = acc===100 ? "Flawless sentence! 💎 Come back tomorrow for a new one." :
+            rec ? `New daily record: ${wpm} WPM! 🏆 A new sentence waits tomorrow.` : "Today's sentence is done. A new one waits tomorrow!";
+    }
+    showResult({title: practice ? "Daily sentence · practice" : "Daily sentence done 📜", res, xp, mood: practice?"happy":"wow", msg,
+      need: practice ? "" : `Your record: ${d.best||0} WPM.`, retry:()=>startDaily(true), next:null, party:!practice});
+  }});
+  say("#type", practice ? "Practice run. It does not change today's score." : "One sentence, one try that counts. Calm and precise!", "happy");
+}
+
+/* =========================================================================
    RACE
    ========================================================================= */
 const BOT_SPEEDS=[{n:"Chill",w:12,i:"🐢"},{n:"Steady",w:20,i:"🚲"},{n:"Fast",w:30,i:"🛵"},{n:"Turbo",w:42,i:"🏎️"},{n:"Insane",w:60,i:"🚀"}];
@@ -1911,7 +2001,11 @@ function renderHome(){
   const wl=warmupLock();
   $("#mWarm").classList.toggle("locked", !!wl);
   $("#mWarmText").textContent = wl || "1 minute · easy words · no score";
+  const dl=dailyLock();
+  $("#mDaily").classList.toggle("locked", !!dl);
+  $("#mDailyText").textContent = dl || "One new sentence each day";
   const hello = warmupDue() ? `Hi ${esc(state.name)}! Start the day with a 1-minute warm-up? ☀️` :
+                dailyDue() ? `Today's sentence is ready, ${esc(state.name)}. One try counts! 📜` :
                 secs>=600 ? `Daily goal done, ${esc(state.name)}! 🎉 Extra practice makes you even faster.` :
                 !alive && state.streak.count>0 ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
   say("#home", hello, "happy");
@@ -1919,6 +2013,8 @@ function renderHome(){
 $("#mContinue").onclick=()=>startLesson(currentLessonIdx());
 $("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
   toast("☀️", currentLessonIdx()===0 ? `The warm-up opens after ${chapterWord().toLowerCase()} 1.` : "Warm-up done for today. It unlocks again tomorrow!"); };
+$("#mDaily").onclick=()=>{ const dl=dailyLock(); if(!dl) return startDaily();
+  toast("📜", currentLessonIdx()===0 ? `The daily sentence opens after ${chapterWord().toLowerCase()} 1.` : "Today's sentence is done. A new one comes tomorrow!"); };
 $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=startRain;
 $("#mSmart").onclick=startSmart;
@@ -2035,9 +2131,10 @@ function newDay(){
   if(state.today.date) state.today.date=dayBefore(state.today.date);
   if(state.streak.last) state.streak.last=dayBefore(state.streak.last);
   if(state.warmup?.last) state.warmup.last=dayBefore(state.warmup.last);
+  if(state.daily?.last) state.daily.last=dayBefore(state.daily.last);
   save();
 }
-$("#setNewDayGo").onclick=()=>{ newDay(); $("#settings").classList.remove("on"); goHome(); toast("🌅","New day! The warm-up is back."); };
+$("#setNewDayGo").onclick=()=>{ newDay(); $("#settings").classList.remove("on"); goHome(); toast("🌅","New day! The warm-up and the daily sentence are back."); };
 function renderChapterCodes(){
   $("#setNewDay").style.display = IS_DEV ? "" : "none";
   $("#setChapters").style.display = IS_DEV ? "" : "none"; if(!IS_DEV) return;
