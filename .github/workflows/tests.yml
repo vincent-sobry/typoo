@@ -14,16 +14,14 @@ permissions:
 
 jobs:
   smoke:
-    runs-on: ubuntu-24.04   # ubuntu-latest (26.04) lacks the fonts that "playwright install --with-deps" needs
+    runs-on: ubuntu-latest
+    # Official Playwright image: Chromium and its system packages are already inside.
+    # No "playwright install --with-deps", so no slow or broken apt step. Keep the tag = @playwright/test version.
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       - run: npx playwright test
       - name: Upload report (on failure)
         if: failure()
