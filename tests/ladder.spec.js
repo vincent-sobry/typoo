@@ -217,7 +217,7 @@ test("breath: after a word, Keebo waits longer before the next word", async ({ p
   await page.keyboard.type(await page.evaluate("S.text"), { delay: 5 });
   await page.waitForFunction(() => LW && LW.sub === 2);
   expect(await page.evaluate("LW.wait")).toBeCloseTo(1.8);
-  await expect(page.locator("#rBotLbl")).toContainText("reading");
+  await expect(page.locator("#rBotLbl")).toContainText("speeding up");
   expect(await page.evaluate("S.locked")).toBe(false);             // the player can type at once
 });
 
@@ -228,4 +228,30 @@ test("Race uses the start lights too", async ({ page }) => {
   await expect(page.locator("#lights")).toBeVisible();
   await page.waitForFunction(() => S && !S.locked, null, { timeout: 5000 });
   await expect(page.locator("#lights")).toBeHidden();
+});
+
+test("Keebo speeds up along an S-curve and keeps the same time per word", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 40 }));
+  const r = await page.evaluate(() => {
+    const out = [];
+    for (const [L, wpm, wait] of [[2, 32, 1.2], [8, 40, 1.8], [15, 50, 1.8], [34, 60, 1.8]]) {
+      const v = wpm * 5 / 60, T = wait + L / v, R = keeboRamp(L, v, T);
+      out.push({ T, R, atT: keeboChars(T, v, R), L,
+        early: keeboChars(0.2, v, R) / (v * 0.2),              // speed factor near the start: slow
+        mono: [0.25, 0.5, 0.75].every((u, i, a) => i === 0 || smooth(u) > smooth(a[i - 1])) });
+    }
+    return out;
+  });
+  for (const x of r) {
+    expect(x.atT).toBeCloseTo(x.L, 3);       // finishes at the same time as before
+    expect(x.R).toBeGreaterThan(0);
+    expect(x.early).toBeLessThan(0.2);       // starts very slow
+    expect(x.mono).toBe(true);
+  }
+  // Keebo moves before the old wait time ends.
+  await page.click("#mLadder");
+  await waitRung(page, 1);
+  await page.waitForTimeout(800);
+  const left = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector("#rBot")).left));
+  expect(left).toBeGreaterThan(6);
 });
