@@ -1423,6 +1423,8 @@ function ladderWordDone(){
   // Hold the finished word (green) for a moment. Keebo waits too. Keys typed now are kept for the next word.
   beep(660,0.06,"sine",0.05);
   const box=$("#text"); box.classList.add("held"); clearHighlights();
+  box.querySelectorAll(".cur").forEach(el=>el.classList.remove("cur"));   // no cursor on the held word
+  $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
   LW.botStart=0; S.hold=true; S.buf=[];
   say("#type", LW.sub+1===LW.words.length ? "👑 BOSS WORD next! The longest word I know." :
     rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
