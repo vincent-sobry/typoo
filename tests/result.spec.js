@@ -50,6 +50,7 @@ test("result lock: keys do nothing for 3 s, clicks for 1 s, the main button fill
   await page.click("#rRetry");                                              // too soon: ignored
   await expect(page.locator("#result")).toBeVisible();
   await page.waitForTimeout(3100);
+  await expect(page.locator("#rNext")).not.toHaveClass(/filling/);         // ready: the fill is gone
   await page.keyboard.press("Enter");                                       // after the lock: next chapter
   await expect(page.locator("#type")).toBeVisible();
 });
