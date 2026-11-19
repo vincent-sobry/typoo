@@ -271,6 +271,21 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .toast.on{transform:translate(-50%,0)}
 .toast .i{font-size:28px}
 .toast small{display:block;font-weight:500;color:#cfd3ff;font-size:13px;margin-top:2px}
+/* Press feedback (all buttons): a short squish + a soft ripple from the press point. Big home tiles also bounce their title letters.
+   Never during typing runs (see pressFx). Reduced motion: only a short highlight. Opt out with data-nofx. */
+button.fx-host{position:relative}
+button.fx-press{animation:fxSquish .22s ease-out}
+@keyframes fxSquish{35%{scale:.95}100%{scale:1}}
+.fx-wave{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.fx-ripple{position:absolute;border-radius:50%;background:currentColor;opacity:0;transform:translate(-50%,-50%) scale(0);animation:fxRipple .28s ease-out forwards}
+@keyframes fxRipple{0%{opacity:.35;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.fx-l{display:inline-block;animation:fxHop .18s ease-out both;white-space:pre}
+@keyframes fxHop{50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){
+  button.fx-press{animation:fxFlash .15s ease-out}
+  @keyframes fxFlash{0%{filter:brightness(1.3)}100%{filter:none}}
+  .fx-wave,.fx-l{animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -1836,6 +1851,37 @@ $("#setCodeGo").onclick=()=>{
     $("#setCode").style.display="none"; $("#setCodeRow").style.display="none"; $("#settings").classList.remove("on"); goHome(); toast("✅","Progress restored!"); }
   catch(e){ $("#setCodeMsg").textContent="That code does not work. Check that you copied all of it."; }
 };
+
+/* =========================================================================
+   PRESS FEEDBACK (all buttons, one shared handler)
+   ========================================================================= */
+const FX_RM = matchMedia("(prefers-reduced-motion: reduce)");
+function pressFx(btn, x, y){
+  if(!btn || btn.disabled || btn.classList.contains("locked") || btn.hasAttribute("data-nofx")) return;
+  if(screen==="type" || screen==="meteor") return; // never during typing runs
+  btn.classList.remove("fx-press"); void btn.offsetWidth; btn.classList.add("fx-press");
+  clearTimeout(btn._fxT); btn._fxT=setTimeout(()=>btn.classList.remove("fx-press"), 300);
+  if(FX_RM.matches) return;
+  if(getComputedStyle(btn).position==="static") btn.classList.add("fx-host");
+  const r=btn.getBoundingClientRect();
+  if(x==null){ x=r.left+r.width/2; y=r.top+r.height/2; }
+  const d=2*Math.hypot(Math.max(x-r.left, r.right-x), Math.max(y-r.top, r.bottom-y));
+  const wave=document.createElement("span"); wave.className="fx-wave";
+  const rip=document.createElement("span"); rip.className="fx-ripple";
+  rip.style.cssText=`left:${x-r.left}px;top:${y-r.top}px;width:${d}px;height:${d}px`;
+  wave.appendChild(rip); btn.appendChild(wave);
+  setTimeout(()=>wave.remove(), 320);
+  // Big home tiles: the title letters hop one by one (whole wave stays under 300 ms).
+  const b = btn.classList.contains("mode") && btn.querySelector("b");
+  if(b && !b.dataset.fx){
+    const txt=b.textContent, n=[...txt].length, step=Math.min(20, 110/Math.max(1,n));
+    b.dataset.fx="1";
+    b.innerHTML=[...txt].map((c,i)=>`<span class="fx-l" style="animation-delay:${(i*step).toFixed(0)}ms">${esc(c)}</span>`).join("");
+    setTimeout(()=>{ b.textContent=txt; delete b.dataset.fx; }, 320);
+  }
+}
+document.addEventListener("pointerdown", e=>{ if(e.button===0) pressFx(e.target.closest("button"), e.clientX, e.clientY); }, true);
+document.addEventListener("click", e=>{ if(e.detail===0) pressFx(e.target.closest("button")); }, true); // keyboard (Enter/Space)
 
 /* =========================================================================
    GLOBAL KEYS
