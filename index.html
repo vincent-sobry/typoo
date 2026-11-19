@@ -121,7 +121,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .prog>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .15s}
 .capswarn{display:none;background:var(--warn);color:#2b1d00;font-weight:800;padding:6px 12px;border-radius:10px;text-align:center;margin-bottom:8px}
 .capswarn.on{display:block}
-.layoutwarn{display:none;background:#2c2560;border:1px solid var(--accent);padding:8px 12px;border-radius:12px;margin-bottom:8px;font-size:14px}
+.layoutwarn{display:none;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:70;max-width:min(92vw,640px);background:#2c2560;border:1px solid var(--accent);padding:10px 14px;border-radius:14px;font-size:14px;box-shadow:0 8px 30px #0008}
 .layoutwarn.on{display:flex;gap:10px;align-items:center}
 .press{color:var(--muted);text-align:center;font-size:14px;margin-top:-4px}
 
@@ -358,7 +358,6 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
       <svg class="bot" viewBox="0 0 120 120"></svg>
       <div class="bubble" id="tBubble">…</div>
     </div>
-    <div class="layoutwarn" id="layoutWarn"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn" id="layoutFix">Switch</button></div>
     <div class="capswarn" id="capsWarn">⚠️ Caps Lock is ON. Turn it off.</div>
     <div class="tbwrap"><div class="textbox" id="text"></div>
       <div class="lights" id="lights" aria-label="Start lights"><i></i><i></i><i></i><i></i><i></i></div></div>
@@ -478,6 +477,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
   <div class="rbtns"><button class="btn" id="bcClose">OK</button></div>
 </div></div>
 <canvas id="confetti" width="0" height="0"></canvas>
+<div class="layoutwarn" id="layoutWarn" role="status"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn ghost" id="layoutLater">Not now</button><button class="btn" id="layoutFix">Switch</button></div>
 <div class="toast" id="toast"><span class="i" id="toastI">🏅</span><span id="toastT"></span></div>
 
 <script>
@@ -865,6 +865,7 @@ function show(id){ $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id))
    ========================================================================= */
 let S=null, liveTimer=null;
 function startSession(opts){
+  $("#layoutWarn").classList.remove("on");
   S = Object.assign({pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
   show("type");
   $("#tTitle").textContent = opts.title;
@@ -1050,6 +1051,7 @@ function showResult(o){
   $("#rNext").style.display = o.next ? "" : "none";
   $("#rNext").textContent = o.nextLabel||"Next →";
   resultActions = o;
+  offerLayout();
 }
 let resultActions=null, lvlTimer=null;
 /* XP sum after the summary. A new level gets a celebration. */
@@ -1327,7 +1329,7 @@ function ladderOver(won){
    ========================================================================= */
 let M=null;
 function startRain(){
-  show("meteor");
+  show("meteor"); $("#layoutWarn").classList.remove("on");
   const sky=$("#sky"); $$("#sky .met,#sky .star").forEach(e=>e.remove());
   for(let i=0;i<40;i++){ const s=document.createElement("div"); s.className="star"; s.style.left=Math.random()*100+"%"; s.style.top=Math.random()*85+"%"; sky.appendChild(s); }
   const allowed=learnedSet();
@@ -1482,7 +1484,7 @@ function confStep(){
 /* =========================================================================
    HOME
    ========================================================================= */
-function goHome(){ clearTimeout(lvlTimer); if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); }
+function goHome(){ clearTimeout(lvlTimer); if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); offerLayout(); }
 function renderHome(){
   const li=levelInfo(state.xp);
   $("#pName").textContent=state.name||"Player";
@@ -1537,7 +1539,15 @@ $("#tBlind").onclick=e=>{ state.blind=(state.blind+1)%3; save(); applyBlind(); e
 /* =========================================================================
    LAYOUT DETECTION
    ========================================================================= */
-let layoutHinted=false;
+let layoutHinted=false, layoutGuess=null;
+/* Show the layout hint, if the app noted a mismatch. Called on the result and home screens. */
+function offerLayout(){
+  const g=layoutGuess; if(!g || g===state.layout){ $("#layoutWarn").classList.remove("on"); return; }
+  $("#layoutWarnTxt").innerHTML=`⌨️ Your keyboard looks like <b>${g.toUpperCase()}</b>, but the app is set to ${state.layout.toUpperCase()}.`;
+  $("#layoutWarn").classList.add("on");
+  $("#layoutFix").onclick=()=>{ layoutGuess=null; state.layout=g; save(); $("#layoutWarn").classList.remove("on"); buildKeyboard(); goHome(); };
+  $("#layoutLater").onclick=()=>{ layoutGuess=null; $("#layoutWarn").classList.remove("on"); };
+}
 function detectLayout(e){
   if(layoutHinted || !e.code) return;
   let guess=null;
@@ -1545,10 +1555,8 @@ function detectLayout(e){
   if(e.code==="KeyA"){ if(e.key.toLowerCase()==="q") guess="azerty"; else if(e.key.toLowerCase()==="a") guess="qwerty"; }
   if(e.code==="Semicolon" && e.key.toLowerCase()==="m") guess="azerty";
   if(guess && guess!==state.layout){
-    layoutHinted=true;
-    $("#layoutWarnTxt").innerHTML=`Your keyboard looks like <b>${guess.toUpperCase()}</b>, but the app is set to ${state.layout.toUpperCase()}.`;
-    $("#layoutWarn").classList.add("on");
-    $("#layoutFix").onclick=()=>{ state.layout=guess; save(); $("#layoutWarn").classList.remove("on"); buildKeyboard(); goHome(); };
+    // Only note it. The hint shows after the run (result or home screen), never during typing.
+    layoutHinted=true; layoutGuess=guess;
   }
 }
 async function guessLayout(){
