@@ -70,6 +70,7 @@ test("Tab restarts Longest Word cleanly", async ({ page }) => {
   // Longest Word opens after the Bottom Row (18 chapters with 1 star).
   await openApp(page, player({ lessons: done(18), bestWpm: 20 }));
   await page.click("#mLadder");
+  await page.click("#lvChoices .lv-normal");             // level lobby: Normal
   await expect(page.locator("#type")).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.locator("#tTitle")).toContainText("Longest Word · 2 letters");
