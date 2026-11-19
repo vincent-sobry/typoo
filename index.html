@@ -180,6 +180,20 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .track .fin{position:absolute;right:8px;top:0;bottom:0;display:grid;place-items:center;font-size:22px}
 .track .runner{position:absolute;top:4px;left:6px;font-size:28px;transition:left .15s linear}
 .track .who{position:absolute;left:52px;top:12px;font-size:13px;color:var(--muted);font-weight:700}
+/* ---------- Longest Word ---------- */
+.ladder{display:none;gap:4px;flex-wrap:wrap;margin:4px 0 6px}
+.ladder.on{display:flex}
+.ladder i{font-style:normal;min-width:30px;height:26px;padding:0 6px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--muted)}
+.ladder i.done{background:#1b4d36;border-color:var(--good);color:#fff}
+.ladder i.cur{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 12px #7c5cff88}
+#raceTracks.compact .track{height:32px;margin:4px 0}
+#raceTracks.compact .runner{font-size:22px;top:2px}
+#raceTracks.compact .who{top:7px}
+#raceTracks.compact .fin{font-size:18px}
+.mode.locked{opacity:.55}
+.mode.locked .ic::after{content:"🔒";font-size:14px;position:relative;left:-6px;top:10px}
+.missing{text-align:left;margin:10px auto;max-width:420px;font-size:14px;max-height:40vh;overflow:auto}
+.missing li{margin:3px 0}
 .overlay{position:fixed;inset:0;background:#070918cc;display:none;place-items:center;z-index:50;backdrop-filter:blur(3px)}
 .overlay.on{display:grid}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;max-width:560px;width:92%;text-align:center;max-height:92vh;overflow:auto}
@@ -279,6 +293,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
             <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b>Continue</b><small id="mContText">Next chapter</small></span></button>
             <button class="mode" id="mRace"><span class="ic">🏁</span><span><b>Race Keebo</b><small>Beat the bot in a typing race</small></span></button>
             <button class="mode" id="mRain"><span class="ic">☄️</span><span><b>Word Rain</b><small>Stop the meteors before they land</small></span></button>
+            <button class="mode" id="mLadder"><span class="ic">🪜</span><span><b>Longest Word</b><small id="mLadderText">Climb the word ladder against Keebo</small></span></button>
             <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b>Smart Practice</b><small>Train your weakest keys</small></span></button>
           </div>
         </div>
@@ -319,6 +334,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
       <div class="track"><div class="lane"></div><div class="runner" id="rYou">🧑‍💻</div><div class="who" id="rYouLbl">You</div><div class="fin">🏁</div></div>
       <div class="track"><div class="lane"></div><div class="runner" id="rBot">🤖</div><div class="who" id="rBotLbl">Keebo</div><div class="fin">🏁</div></div>
     </div>
+    <div class="ladder" id="ladder" aria-label="Word ladder"></div>
     <div class="botbox">
       <svg class="bot" viewBox="0 0 120 120"></svg>
       <div class="bubble" id="tBubble">…</div>
@@ -386,6 +402,12 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
   <p class="muted">Pick Keebo's speed. Win to earn bonus XP. Keebo uses only the keys you have learned.</p>
   <div class="choices" id="raceChoices"></div>
   <button class="btn ghost" id="raceCancel">Cancel</button>
+</div></div>
+<div class="overlay" id="ladderLock"><div class="panel">
+  <h2>🪜 Longest Word is locked</h2>
+  <p class="muted" id="llTxt"></p>
+  <ol class="missing" id="llList"></ol>
+  <button class="btn" id="llClose">OK</button>
 </div></div>
 <div class="overlay" id="countdown"><div class="count" id="countNum">3</div></div>
 <div class="overlay" id="rainOver"><div class="panel">
@@ -574,7 +596,7 @@ const storage = {
 };
 function freshState(){
   return {name:"", layout:"", lang:"nl", blind:0, sound:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
-    streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, flags:{}};
+    streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, flags:{}};
 }
 let state = freshState();
 try{ const raw = storage.get(); if(raw) state = Object.assign(freshState(), JSON.parse(raw)); }catch(e){}
@@ -791,7 +813,9 @@ function fitKeyboard(){
   const hands=state.hands!==0;
   document.body.classList.toggle("nohands", !hands);
   // Room for the rest of the screen (bars, coach, text, bottom margin): about 400 px, 350 px on short screens. Keyboard = 5.7 key heights, hands = 2.2 key heights.
-  const byH=(window.innerHeight-(window.innerHeight<=700?350:400))/(5.7+(hands?2.3:0));
+  // Race tracks and the word ladder take extra room on the typing screen.
+  const extra = screen==="type" ? $("#raceTracks").offsetHeight+$("#ladder").offsetHeight : 0;
+  const byH=(window.innerHeight-(window.innerHeight<=700?350:400)-extra)/(5.7+(hands?2.3:0));
   const u=Math.max(30, Math.min(54, (w-110)/15, byH));
   document.documentElement.style.setProperty("--u", u+"px");
 }
@@ -825,7 +849,10 @@ function startSession(opts){
   S = Object.assign({pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
   show("type");
   $("#tTitle").textContent = opts.title;
-  $("#raceTracks").style.display = opts.mode==="race" ? "block" : "none";
+  $("#raceTracks").style.display = opts.mode==="race"||opts.mode==="ladder" ? "block" : "none";
+  $("#ladder").classList.toggle("on", opts.mode==="ladder");
+  $("#raceTracks").classList.toggle("compact", opts.mode==="ladder");
+  fitKeyboard();
   $("#lTimeP").style.display = "";
   $("#capsWarn").classList.remove("on");
   renderText();
@@ -876,6 +903,11 @@ function curWpm(){ const t=elapsed(); return t>1 ? (S.pos/5)/(t/60) : 0; }
 function curAcc(){ return S.keystrokes ? (S.keystrokes-S.errors)/S.keystrokes*100 : 100; }
 function updateLive(){
   if(!S) return;
+  if(S.mode==="ladder" && LW){                     // Longest Word: totals over all words of this run
+    const w=LW.wordStart && !S.locked && !S.done ? (performance.now()-LW.wordStart)/1000 : 0, t=LW.secs+w;
+    $("#lWpm").textContent=t>1 ? Math.round(((LW.chars+S.pos)/5)/(t/60)) : 0;
+    $("#lAcc").textContent=Math.round(curAcc()); $("#lTime").textContent=fmtTime(t); return;
+  }
   $("#lWpm").textContent=Math.round(curWpm());
   $("#lAcc").textContent=Math.round(curAcc());
   $("#lTime").textContent=fmtTime(elapsed());
@@ -900,8 +932,8 @@ function onTypeKey(e){
     const el=document.getElementById("c"+S.pos); el.classList.remove("bad"); el.classList.add(S.errAt.has(S.pos)?"fx":"ok");
     flashKey(k,"hit");
     S.pos++; S.streak++; S.wrongRow=0;
-    if(S.streak>0 && S.streak%40===0 && S.mode!=="race") say("#type", pick("cheer"), "wow");
-    if(S.pos>=S.text.length){ finishSession(); return; }
+    if(S.streak>0 && S.streak%40===0 && S.mode==="lesson") say("#type", pick("cheer"), "wow");
+    if(S.pos>=S.text.length){ if(S.onWord){ S.onWord(); return; } finishSession(); return; }
     updateCursor();
   } else {
     st.m++; S.errors++; S.errAt.add(S.pos); S.streak=0; S.wrongRow++;
@@ -1082,14 +1114,158 @@ function startRace(botWpm, label){
   });
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
   say("#type","Get ready… Fingers on the home row!","think");
+  countIn(()=>{ S.locked=false; S.start=performance.now(); botStart=performance.now(); say("#type","GO! 🏁","wow"); });
+}
+/* 3-2-1 countdown, then go(). Stops when the session ends. */
+function countIn(go){
   let n=3; $("#countNum").textContent=n; $("#countdown").classList.add("on"); beep(440,0.1,"sine");
+  const sess=S;
   const iv=setInterval(()=>{
-    n--; if(!S || S.done){ clearInterval(iv); $("#countdown").classList.remove("on"); return; }
+    n--; if(!S || S.done || S!==sess){ clearInterval(iv); $("#countdown").classList.remove("on"); return; }
     if(n>0){ $("#countNum").textContent=n; beep(440,0.1,"sine"); }
-    else { clearInterval(iv); $("#countdown").classList.remove("on"); beep(880,0.2,"sine"); S.locked=false; S.start=performance.now(); botStart=performance.now(); say("#type","GO! 🏁","wow"); }
+    else { clearInterval(iv); $("#countdown").classList.remove("on"); beep(880,0.2,"sine"); go(); }
   },800);
 }
 function avgWpm(){ const h=state.history.slice(-10); return h.length? Math.round(h.reduce((a,b)=>a+b.wpm,0)/h.length) : 0; }
+
+/* =========================================================================
+   LONGEST WORD (word ladder against Keebo)
+   One word per sublevel: 2 letters, then 3, ... up to 15, then the boss word.
+   Keebo types each word too. If Keebo finishes first, the game ends.
+   Errors do not end the game. Only Keebo's time does.
+   ========================================================================= */
+const LADDER_WORDS = {
+  en: {
+    2:"go up hi we no on me", 3:"cat sun dog fun box sky map", 4:"fish jump game star moon frog",
+    5:"happy robot pizza tiger music beach", 6:"rocket planet guitar castle jungle monkey",
+    7:"dolphin penguin volcano rainbow giraffe kingdom", 8:"elephant dinosaur keyboard treasure mountain sandwich",
+    9:"chocolate adventure butterfly astronaut crocodile spaceship", 10:"basketball skateboard motorcycle strawberry helicopter",
+    11:"grasshopper celebration imagination superheroes chimpanzees rollerblade", 12:"thunderstorm hippopotamus marshmallows championship photographer",
+    13:"extraordinary entertainment skateboarding communication understanding", 14:"constellations mountaineering transportation photosynthesis rollercoasters",
+    15:"congratulations electromagnetic experimentation kindheartedness multiplications"
+  },
+  nl: {
+    2:"ja nu op in zo ik", 3:"kat zon vis bal ijs bus pet", 4:"hond boom maan vlag kaas raam",
+    5:"fiets taart bloem robot pizza zebra", 6:"tijger school banaan konijn ballon",
+    7:"kasteel planeet vulkaan dolfijn pinguin giraffe", 8:"computer vlinders vakantie krokodil kinderen",
+    9:"regenboog chocolade speeltuin schatkist astronaut olifanten", 10:"dinosaurus pannenkoek skateboard verjaardag helikopter",
+    11:"ruimteschip voetballers sinterklaas bibliotheek regenwormen", 12:"zonnebloemen schildpadden dierentuinen kinderboeken pannenkoeken sneeuwpoppen",
+    13:"chocolademelk speelgoedauto kampioenschap dinosaurussen brandweerauto", 14:"aardbeientaart vakantiehuisje schoolvakantie pannenkoekhuis chocoladetaart voetbalstadion",
+    15:"brandweermannen kinderboerderij ruimtewandeling vakantiehuisjes tekenfilmfiguur"
+  }
+};
+const LADDER_BOSS = { en:"supercalifragilisticexpialidocious", nl:"hottentottententententoonstelling" };
+const LADDER_MIN = 2, LADDER_MAX = 15;
+const LADDER_SUBS = LADDER_MAX - LADDER_MIN + 2;      // 14 word lengths + the boss word
+const KEEBO_READ = 0.6;                               // seconds Keebo waits to read the new word
+const LADDER_PAUSE = 700;                             // ms between two words
+/* Keebo's pace: 80% of the all-time top WPM, plus 3% per sublevel. Minimum 10 WPM. */
+function ladderPace(best, sub){ return Math.max(10, Math.round(best*(0.80+0.03*(sub-1)))); }
+/* One random word per length, then the boss word. Each run is different. */
+function ladderWords(lang=state.lang){
+  const L=LADDER_WORDS[lang]||LADDER_WORDS.en, out=[];
+  for(let n=LADDER_MIN;n<=LADDER_MAX;n++) out.push(rnd(L[n].split(" ")));
+  out.push(LADDER_BOSS[lang]||LADDER_BOSS.en);
+  return out;
+}
+/* Unlock: at least 1 star on each chapter up to the end of the Bottom Row stage. */
+function ladderMissing(){
+  const L=lessonsFlat(); const si=CURRICULUM[state.layout].findIndex(s=>s.stage==="Bottom Row");
+  return L.filter(l=>l.stage<=si && !((lessonRec(l.idx)?.stars||0)>=1));
+}
+function openLadder(){
+  const miss=ladderMissing();
+  if(!miss.length) return startLadder();
+  $("#llTxt").textContent=`Learn all the letters first. Get at least 1 star on each ${chapterWord().toLowerCase()} up to the end of the Bottom Row. You still need ${miss.length}:`;
+  $("#llList").innerHTML=miss.map(l=>`<li value="${l.idx+1}">${esc(l.title)}</li>`).join("");
+  $("#ladderLock").classList.add("on");
+  setTimeout(()=>$("#llClose").focus(),30);
+}
+$("#llClose").onclick=()=>$("#ladderLock").classList.remove("on");
+let LW=null;
+function renderLadderBar(){
+  $("#ladder").innerHTML=LW.words.map((w,i)=>`<i class="${i<LW.sub-1?"done":i===LW.sub-1?"cur":""}" title="${i===LW.words.length-1?"Boss word":w.length+" letters"}">${i===LW.words.length-1?"👑":w.length}</i>`).join("");
+}
+function startLadder(){
+  const words=ladderWords(), best=state.bestWpm||0;
+  LW={words, sub:0, best, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
+  startSession({mode:"ladder", title:"Longest Word", text:words[0], locked:true,
+    onTick(){
+      if(!LW || LW.over || !LW.botStart || !S) return;
+      const t=(performance.now()-LW.botStart)/1000-KEEBO_READ;
+      const bp=Math.max(0,Math.min(1,t/LW.botSecs)), yp=S.pos/S.text.length;
+      $("#rBot").style.left=`calc(${bp*100}% - ${bp*60}px + 6px)`;
+      $("#rYou").style.left=`calc(${yp*100}% - ${yp*60}px + 6px)`;
+      if(bp>=1 && !S.locked) ladderOver(false);
+    },
+    onWord(){ ladderWordDone(); },
+    onAbort(){ $("#countdown").classList.remove("on"); if(LW) LW.over=true; LW=null; }
+  });
+  $("#rYouLbl").textContent="You";
+  say("#type",`Type each word before I do. Errors do not count, only time. My start pace is <b>${ladderPace(best,1)} WPM</b>. Ready?`,"think");
+  ladderNext();
+  countIn(()=>{ if(!LW) return; S.locked=false; LW.botStart=S.start=LW.wordStart=performance.now(); say("#type","GO! 🪜","wow"); });
+}
+/* Show the next word and reset Keebo. */
+function ladderNext(){
+  LW.sub++;
+  const w=LW.words[LW.sub-1], boss=LW.sub===LW.words.length;
+  LW.botWpm=ladderPace(LW.best, LW.sub);
+  LW.botSecs=w.length*12/LW.botWpm;                // 5 chars per word: secs per char = 60/(wpm*5)
+  S.text=w; S.pos=0; S.errAt=new Set(); S.wrongRow=0;
+  renderText(); updateCursor(); renderLadderBar();
+  $("#tTitle").textContent = boss ? `Longest Word · 👑 Boss word (${LW.sub}/${LADDER_SUBS})` : `Longest Word · ${w.length} letters (${LW.sub}/${LADDER_SUBS})`;
+  $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
+  $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
+}
+function ladderWordDone(){
+  if(!LW || LW.over) return;
+  const now=performance.now();
+  // Keebo was first if his time ran out before this last key.
+  if((now-LW.botStart)/1000-KEEBO_READ >= LW.botSecs) return ladderOver(false);
+  LW.chars+=S.text.length; LW.secs+=(now-LW.wordStart)/1000;
+  $("#rYou").style.left="calc(100% - 54px)";
+  if(LW.sub>=LW.words.length) return ladderOver(true);
+  S.locked=true; beep(660,0.06,"sine",0.05);
+  say("#type", rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
+  const lw=LW;
+  setTimeout(()=>{
+    if(LW!==lw || LW.over || !S) return;
+    ladderNext();
+    if(LW.sub===LW.words.length) say("#type","👑 BOSS WORD! The longest word I know. Go!","wow");
+    S.locked=false; LW.botStart=S.start=LW.wordStart=performance.now();
+  }, LADDER_PAUSE);
+}
+function ladderOver(won){
+  if(!LW || LW.over) return;
+  LW.over=true; S.done=true; S.end=performance.now(); clearInterval(liveTimer); clearHighlights();
+  if(!won) $("#rBot").style.left="calc(100% - 54px)";
+  const cleared = won ? LW.words.length : LW.sub-1;  // sublevels done
+  const L=state.ladder || (state.ladder={best:0,played:0,boss:0});
+  const record = cleared>L.best;
+  L.played++; L.best=Math.max(L.best,cleared); if(won) L.boss++;
+  const xp = LW.words.slice(0,cleared).reduce((a,w)=>a+w.length,0) + (won?50:0);
+  state.xp+=xp;
+  // time and streak count, like the other games. The top WPM does not change, so Keebo's pace stays fair.
+  const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0}; state.today.secs+=LW.secs;
+  if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
+  const acc = S.keystrokes ? (S.keystrokes-S.errors)/S.keystrokes*100 : 100;
+  const res={wpm: LW.secs>0 ? (LW.chars/5)/(LW.secs/60) : 0, acc, secs:LW.secs, miss:S.miss};
+  const last=LW.words[LW.sub-1];
+  save(); checkBadges();
+  const lw=LW, sess=S; LW=null;
+  setTimeout(()=>{
+    if(S!==sess || screen!=="type") return;      // the player left during the pause
+    showResult({title: won ? "You beat the longest word! 👑" : `Keebo wins at ${last.length} letters`, res, xp,
+      mood: won ? "wow" : "happy",
+      msg: won ? "WHAT?! Even the boss word! You are a word ladder legend! 🤖💜" :
+           cleared ? `You climbed ${cleared} ${cleared===1?"rung":"rungs"}. ${record?"New record! 🏆":"Rematch?"}` : "I was faster on the first word. Try again!",
+      need: `Sublevels: ${cleared} of ${lw.words.length} · Record: ${L.best} · Last word: ${last}`,
+      retry: startLadder, next: null});
+    if(won||record){ chime(); confetti(won?200:80); }
+  }, won ? 300 : 900);
+  if(!won) say("#type","Beep! I finished that word first.","wow");
+}
 
 /* =========================================================================
    WORD RAIN (meteor game)
@@ -1268,6 +1444,9 @@ function renderHome(){
   $("#sBest").textContent=state.bestWpm; $("#sAvg").textContent=avgWpm(); $("#sStars").textContent=totalStars();
   const cur=currentLessonIdx(); const L=lessonsFlat();
   $("#mContText").textContent=`${cur+1}. ${L[cur].title}`;
+  const lmiss=ladderMissing().length, lrec=state.ladder?.best||0;
+  $("#mLadder").classList.toggle("locked", lmiss>0);
+  $("#mLadderText").textContent = lmiss ? `Locked: finish the Bottom Row first` : lrec ? `Record: ${lrec} of ${LADDER_SUBS} · climb against Keebo` : "Climb the word ladder against Keebo";
   // map
   const map=$("#map"); let html="";
   CURRICULUM[state.layout].forEach((st,si)=>{
@@ -1296,6 +1475,7 @@ $("#mContinue").onclick=()=>startLesson(currentLessonIdx());
 $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=startRain;
 $("#mSmart").onclick=startSmart;
+$("#mLadder").onclick=openLadder;
 $("#tBack").onclick=endSessionEarly;
 $("#tBlind").onclick=e=>{ state.blind=(state.blind+1)%3; save(); applyBlind(); e.currentTarget.blur(); };
 
@@ -1409,6 +1589,7 @@ $("#setCodeGo").onclick=()=>{
    ========================================================================= */
 document.addEventListener("keydown", e=>{
   if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
+  if($("#ladderLock").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); $("#ladderLock").classList.remove("on"); } return; }
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
   if(screen==="meteor") return onRainKey(e);
