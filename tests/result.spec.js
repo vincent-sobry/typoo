@@ -36,3 +36,30 @@ test("short window (1366x657): the whole card can be seen, the page scrolls if n
   await page.locator("#rNext").scrollIntoViewIfNeeded();
   await expect(page.locator("#rNext")).toBeInViewport();                    // buttons can be reached
 });
+
+test("result lock: keys do nothing for 3 s, clicks for 1 s, the main button fills up", async ({ page }) => {
+  await openApp(page, player(), { resultLock: true });
+  await page.click("#mContinue");
+  await typeAll(page);
+  await expect(page.locator("#result")).toBeVisible();
+  await expect(page.locator("#rNext")).toHaveClass(/filling/);
+  await page.keyboard.press("Enter");                                       // still typing: ignored
+  await page.keyboard.press("Escape");
+  await page.keyboard.type("asdf");
+  await expect(page.locator("#result")).toBeVisible();
+  await page.click("#rRetry");                                              // too soon: ignored
+  await expect(page.locator("#result")).toBeVisible();
+  await page.waitForTimeout(3100);
+  await page.keyboard.press("Enter");                                       // after the lock: next chapter
+  await expect(page.locator("#type")).toBeVisible();
+});
+
+test("result lock: a click works after 1 s", async ({ page }) => {
+  await openApp(page, player(), { resultLock: true });
+  await page.click("#mContinue");
+  await typeAll(page);
+  await expect(page.locator("#result")).toBeVisible();
+  await page.waitForTimeout(1100);
+  await page.click("#rRetry");
+  await expect(page.locator("#type")).toBeVisible();
+});
