@@ -332,6 +332,15 @@ body.fframe #fframe{display:block}
 .toast.on{transform:translate(-50%,0)}
 .toast .i{font-size:28px}
 .toast small{display:block;font-weight:500;color:#cfd3ff;font-size:13px;margin-top:2px}
+/* First-visit tour: a spotlight on one part of the home screen and a short card. Skip with the button or Esc. */
+#tour{position:fixed;inset:0;z-index:85;display:none}
+#tour.on{display:block}
+#tourHole{position:absolute;border-radius:16px;box-shadow:0 0 0 9999px #070918c4,0 0 0 3px var(--accent2);transition:all .25s ease;pointer-events:none}
+#tourCard{position:absolute;width:min(340px,92vw);background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;box-shadow:0 10px 40px #000a;transition:top .25s,left .25s}
+#tourCard h3{font-size:17px;margin-bottom:4px}
+#tourCard p{margin:0 0 12px;color:#cdd2f5;font-size:15px;line-height:1.4}
+#tourCard .row{gap:8px}
+@media (prefers-reduced-motion:reduce){#tourHole,#tourCard{transition:none}}
 /* Press feedback (all buttons): a short squish, a border glow + a soft ripple from the press point. Big home tiles also bounce their title letters.
    Never during typing runs (see pressFx). Reduced motion: only a short highlight. Opt out with data-nofx. */
 button.fx-host{position:relative}
@@ -623,6 +632,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="field" id="setNewDay" style="display:none"><label>New day <small class="muted">(test)</small></label>
     <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1">Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.</span>
     <button class="btn ghost" id="setNewDayGo">Start a new day</button></div></div>
+  <div class="field"><label>Tour</label><button class="btn ghost" id="setTour">Show the tour again</button></div>
   <div class="row" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose">Done</button></div>
 </div></div>
 <div class="overlay" id="badgeCard"><div class="panel bcard" role="dialog" aria-modal="true" aria-labelledby="bcName">
@@ -635,6 +645,10 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="rbtns"><button class="btn" id="bcClose">OK</button></div>
 </div></div>
 <div id="fframe" aria-hidden="true"></div>
+<div id="tour" role="dialog" aria-modal="true" aria-labelledby="tourT"><div id="tourHole"></div>
+  <div id="tourCard"><h3 id="tourT"></h3><p id="tourP"></p>
+    <div class="row"><span class="muted" id="tourN" style="font-size:13px"></span><div class="spacer"></div>
+      <button class="btn ghost" id="tourSkip">Skip</button><button class="btn" id="tourNext">Next →</button></div></div></div>
 <canvas id="confetti" width="0" height="0"></canvas>
 <div class="layoutwarn" id="layoutWarn" role="status"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn ghost" id="layoutLater">Not now</button><button class="btn" id="layoutFix">Switch</button></div>
 <div class="toast" id="toast"><span class="i" id="toastI">🏅</span><span id="toastT"></span></div>
@@ -2234,6 +2248,7 @@ async function startOnboarding(){
 $("#obGo").onclick=()=>{
   const n=$("#obName").value.trim(); if(!n){ $("#obName").focus(); $("#obName").style.borderColor="var(--bad)"; return; }
   state.name=n; state.layout=ob.layout; state.lang=ob.lang; save(); buildKeyboard(); goHome();
+  if(!state.flags.tour) setTimeout(startTour, 400);      // first visit: short tour of the home screen
 };
 $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#obGo").click(); });
 
@@ -2316,6 +2331,59 @@ $("#setCodeGo").onclick=()=>{
 };
 
 /* =========================================================================
+   FIRST-VISIT TOUR (home screen only; never in a run)
+   ========================================================================= */
+const TOUR=[
+  {el:"#mContinue", t:"Start here ▶️", p:"Continue opens your next chapter. Each chapter teaches new keys."},
+  {el:"#map", t:"Your map 🗺️", p:"All chapters. Get 1 star to open the next chapter. 3 stars is perfect."},
+  {el:"#gBar", box:".profile .bar.green", t:"Today's goal 🎯", p:"Practise 10 minutes every day. This bar fills up."},
+  {el:".modes", t:"Games ☄️", p:"Races, word games and extra practice. A lock 🔒 opens later."},
+  {el:"#badges", t:"Badges 🏅", p:"Earn badges as you learn. Tap a badge to see how."},
+  {el:"#hSettings", t:"Settings ⚙️", p:"Keyboard, sound, help on screen and keyboard shortcuts. You can see this tour again there."}
+];
+let T=null;
+function startTour(){
+  if(screen!=="home") return;
+  T={i:0}; $("#tour").classList.add("on"); tourStep(0);
+}
+function tourStep(i){
+  if(!T) return;
+  if(i<0) i=0;
+  if(i>=TOUR.length) return endTour();
+  T.i=i; const st=TOUR[i], el=$(st.box||st.el);
+  if(!el) return tourStep(i+1);
+  $("#tourT").textContent=st.t; $("#tourP").textContent=st.p;
+  $("#tourN").textContent=`${i+1} / ${TOUR.length}`;
+  $("#tourNext").textContent = i===TOUR.length-1 ? "Done" : "Next →";
+  el.scrollIntoView({block:"nearest", behavior:"instant"});
+  tourPlace();
+}
+function tourPlace(){
+  if(!T) return;
+  const st=TOUR[T.i], el=$(st.box||st.el); if(!el) return;
+  const r=el.getBoundingClientRect(), pad=6, vw=innerWidth, vh=innerHeight;
+  const top=Math.max(4,r.top-pad), left=Math.max(4,r.left-pad);
+  const h=Math.min(r.bottom+pad, vh-4)-top, w=Math.min(r.right+pad, vw-4)-left;
+  Object.assign($("#tourHole").style, {top:top+"px", left:left+"px", width:w+"px", height:h+"px"});
+  const card=$("#tourCard"), cw=card.offsetWidth, ch=card.offsetHeight;
+  // below the spot, else above, else beside it, else at the bottom of the window
+  let cy = top+h+12+ch<=vh ? top+h+12 : top-12-ch>=0 ? top-12-ch : -1, cx;
+  if(cy<0){ cy=Math.max(8, Math.min(vh-ch-8, top)); cx = left+w+12+cw<=vw ? left+w+12 : left-12-cw>=0 ? left-12-cw : (vw-cw)/2;
+    if(cx===(vw-cw)/2) cy=vh-ch-8; }
+  else cx=Math.max(8, Math.min(vw-cw-8, left));
+  card.style.top=cy+"px"; card.style.left=cx+"px";
+}
+function endTour(){
+  T=null; $("#tour").classList.remove("on");
+  state.flags.tour=1; save();
+}
+$("#tourNext").onclick=()=>T && tourStep(T.i+1);
+$("#tourSkip").onclick=endTour;
+$("#setTour").onclick=()=>{ $("#settings").classList.remove("on"); renderHome(); setTimeout(startTour, 50); };
+addEventListener("resize", tourPlace);
+addEventListener("scroll", tourPlace, {passive:true});
+
+/* =========================================================================
    PRESS FEEDBACK (all buttons, one shared handler)
    ========================================================================= */
 const FX_RM = matchMedia("(prefers-reduced-motion: reduce)");
@@ -2364,6 +2432,7 @@ document.addEventListener("click", e=>{ if(e.detail===0) pressFx(e.target.closes
    ========================================================================= */
 document.addEventListener("keydown", e=>{
   if(screen==="result" && resultKeysLocked()){ e.preventDefault(); return; }   // still typing: ignore all keys for a moment
+  if(T){ if(e.key==="Escape"){ e.preventDefault(); endTour(); } else if(e.key==="Enter"||e.key==="ArrowRight"){ e.preventDefault(); tourStep(T.i+1); } else if(e.key==="ArrowLeft"){ e.preventDefault(); tourStep(T.i-1); } return; }
   if($("#badgeCard").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); closeBadge(); } return; }
   if($("#ladderLock").classList.contains("on")){ if(e.key==="Escape"||e.key==="Enter"){ e.preventDefault(); $("#ladderLock").classList.remove("on"); } return; }
   if($("#customLobby").classList.contains("on")){
