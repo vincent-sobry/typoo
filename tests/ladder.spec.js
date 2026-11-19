@@ -50,10 +50,10 @@ test("a chapter with 0 stars inside the first stages keeps it locked", async ({ 
   await expect(page.locator("#llList li")).toHaveAttribute("value", "4");
 });
 
-test("pace: 80% of top WPM, plus 3% per sublevel, minimum 10", async ({ page }) => {
+test("pace: 60% of top WPM, plus 3% per sublevel, minimum 10", async ({ page }) => {
   await openApp(page, withChapters(18));
   const r = await page.evaluate(() => [ladderPace(50, 1), ladderPace(50, 11), ladderPace(40, 2), ladderPace(5, 1), ladderPace(0, 15), LADDER_SUBS]);
-  expect(r).toEqual([40, 55, 33, 10, 10, 15]);
+  expect(r).toEqual([30, 45, 25, 10, 10, 15]);
 });
 
 test("word lists: 5+ words per length from 2 to 15, letters only, boss word last", async ({ page }) => {
@@ -113,7 +113,7 @@ test("Keebo wins when he finishes the word first", async ({ page }) => {
   await page.click("#mLadder");
   await typeRung(page, 1);                         // the 2-letter word: fast enough
   await page.waitForFunction(() => LW && LW.sub === 2 && !S.locked);
-  await expect(page.locator("#rBotLbl")).toHaveText("Keebo · 166 WPM");
+  await expect(page.locator("#rBotLbl")).toHaveText("Keebo · 126 WPM");
   // Do not type: Keebo finishes the 3-letter word.
   await expect(page.locator("#result")).toBeVisible({ timeout: 5000 });
   await expect(page.locator("#rTitle")).toHaveText("Keebo wins at 3 letters");
@@ -155,4 +155,31 @@ test("ladder, keyboard and hands fit on a 1366x657 screen", async ({ page }) => 
   await page.waitForFunction(() => LW && !S.locked);
   const hands = await page.locator("#hands").boundingBox();
   expect(hands.y + hands.height).toBeLessThanOrEqual(657);
+});
+
+test("word transition: the next word shows ahead and takes keys at once", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  await waitRung(page, 1);
+  const [w1, w2, w3] = await page.evaluate(() => LW.words.slice(0, 3));
+  await expect(page.locator("#ladderPeek")).toHaveText(w2);
+  // Type word 1, a space, and word 2 in one go, with no wait between the words.
+  await page.keyboard.type(w1 + " " + w2, { delay: 15 });
+  await page.waitForFunction(() => LW && LW.sub === 3);
+  expect(await page.evaluate("S.errors")).toBe(0);   // no key lost, the space is not an error
+  expect(await page.evaluate("S.locked")).toBe(false);
+  expect(await page.evaluate("S.text")).toBe(w3);
+  await expect(page.locator("#ladderPeek")).toHaveText(await page.evaluate("LW.words[3]"));
+  await expect(page.locator("#ladder i:nth-child(2)")).toHaveClass(/done/);
+});
+
+test("when Keebo wins, the result shows fast", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 300 }));
+  await page.click("#mLadder");
+  await waitRung(page, 1);
+  // 2 letters at 180 WPM = 0.13 s, plus the read time. The result must follow within 1 s.
+  await page.waitForFunction(() => document.querySelector("#text").classList.contains("lost"), null, { timeout: 4000 });
+  const t0 = Date.now();
+  await expect(page.locator("#result")).toBeVisible({ timeout: 1000 });
+  expect(Date.now() - t0).toBeLessThan(1000);
 });
