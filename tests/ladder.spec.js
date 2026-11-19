@@ -50,10 +50,21 @@ test("a chapter with 0 stars inside the first stages keeps it locked", async ({ 
   await expect(page.locator("#llList li")).toHaveAttribute("value", "4");
 });
 
-test("pace: 60% of top WPM, plus 3% per sublevel, minimum 10", async ({ page }) => {
+test("pace: 80% of the reference WPM, plus 3% per sublevel, minimum 10", async ({ page }) => {
   await openApp(page, withChapters(18));
   const r = await page.evaluate(() => [ladderPace(50, 1), ladderPace(50, 11), ladderPace(40, 2), ladderPace(5, 1), ladderPace(0, 15), LADDER_SUBS]);
-  expect(r).toEqual([30, 45, 25, 10, 10, 15]);
+  expect(r).toEqual([40, 55, 33, 10, 10, 15]);
+});
+
+test("reference WPM: average of the last 10 runs, else the top WPM", async ({ page }) => {
+  const hist = [];
+  for (let i = 0; i < 12; i++) hist.push({ d: "2026-11-19", wpm: i < 2 ? 90 : 30, acc: 95 }); // 2 old fast runs drop out
+  await openApp(page, withChapters(18, { bestWpm: 55, history: hist }));
+  expect(await page.evaluate("ladderRef()")).toBe(30);
+  await page.click("#mLadder");
+  await expect(page.locator("#rBotLbl")).toContainText("Keebo · 24 WPM");
+  await page.evaluate("state.history = []");
+  expect(await page.evaluate("ladderRef()")).toBe(55);
 });
 
 test("word lists: 5+ words per length from 2 to 15, letters only, boss word last", async ({ page }) => {
@@ -113,7 +124,7 @@ test("Keebo wins when he finishes the word first", async ({ page }) => {
   await page.click("#mLadder");
   await typeRung(page, 1);                         // the 2-letter word: fast enough
   await page.waitForFunction(() => LW && LW.sub === 2 && !S.locked);
-  await expect(page.locator("#rBotLbl")).toHaveText("Keebo · 126 WPM");
+  await expect(page.locator("#rBotLbl")).toContainText("Keebo · 166 WPM");
   // Do not type: Keebo finishes the 3-letter word.
   await expect(page.locator("#result")).toBeVisible({ timeout: 5000 });
   await expect(page.locator("#rTitle")).toHaveText("Keebo wins at 3 letters");
@@ -182,4 +193,39 @@ test("when Keebo wins, the result shows fast", async ({ page }) => {
   const t0 = Date.now();
   await expect(page.locator("#result")).toBeVisible({ timeout: 1000 });
   expect(Date.now() - t0).toBeLessThan(1000);
+});
+
+test("F1 start lights: 5 lights, light blur, clear word at GO", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  const lights = page.locator("#lights");
+  await expect(lights).toBeVisible();
+  await expect(page.locator("#text")).toHaveClass(/wait/);
+  await expect(page.locator("#text")).toBeVisible();              // the word stays readable under the lights
+  await expect(page.locator("#lights i.on")).toHaveCount(5, { timeout: 4000 });
+  await waitRung(page, 1);                                         // GO: all lights off
+  await expect(lights).toBeHidden();
+  await expect(page.locator("#text")).not.toHaveClass(/wait/);
+  await expect(page.locator("#text .cur")).toBeVisible();
+});
+
+test("breath: after a word, Keebo waits longer before the next word", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mLadder");
+  await waitRung(page, 1);
+  expect(await page.evaluate("LW.wait")).toBeCloseTo(1.2);
+  await page.keyboard.type(await page.evaluate("S.text"), { delay: 5 });
+  await page.waitForFunction(() => LW && LW.sub === 2);
+  expect(await page.evaluate("LW.wait")).toBeCloseTo(1.8);
+  await expect(page.locator("#rBotLbl")).toContainText("reading");
+  expect(await page.evaluate("S.locked")).toBe(false);             // the player can type at once
+});
+
+test("Race uses the start lights too", async ({ page }) => {
+  await openApp(page, withChapters(18, { bestWpm: 10 }));
+  await page.click("#mRace");
+  await page.locator("#raceChoices .choice").first().click();
+  await expect(page.locator("#lights")).toBeVisible();
+  await page.waitForFunction(() => S && !S.locked, null, { timeout: 5000 });
+  await expect(page.locator("#lights")).toBeHidden();
 });
