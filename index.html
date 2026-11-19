@@ -1182,7 +1182,27 @@ const LADDER_BOSS = { en:"supercalifragilisticexpialidocious", nl:"hottentottent
 const LADDER_MIN = 2, LADDER_MAX = 15;
 const LADDER_SUBS = LADDER_MAX - LADDER_MIN + 2;      // 14 word lengths + the boss word
 const KEEBO_READ = 1.2;                               // seconds Keebo waits to read the new word
-const LADDER_BREATH = 0.6;                            // extra seconds Keebo waits after each finished word
+const LADDER_BREATH = 0.6;                            // extra seconds after each finished word
+/* Keebo's speed-up. Keebo starts at once, very slowly. His speed goes up along an S-curve
+   (smoothstep) to his pace, over a ramp time R. Then he keeps his pace.
+   The time per word stays the same as "wait still, then type at pace": wait + letters/pace.
+   R is found so that Keebo finishes the word at exactly that time. */
+const smooth = u => u<=0 ? 0 : u>=1 ? 1 : u*u*(3-2*u);                 // speed factor, 0..1 (S-curve)
+const smoothInt = u => u<=0 ? 0 : u>=1 ? u-0.5 : u*u*u-u*u*u*u/2;      // distance factor: integral of smooth
+/* Letters Keebo has typed after t seconds, at pace v letters/s, with ramp R. */
+function keeboChars(t, v, R){ return R>0 ? v*R*smoothInt(t/R) : v*Math.max(0,t); }
+/* Ramp time so that Keebo types L letters in T seconds at pace v (T > L/v). */
+function keeboRamp(L, v, T){
+  let lo=0, hi=2*T;                       // keeboChars(T) falls when R grows
+  for(let i=0;i<50;i++){ const R=(lo+hi)/2; if(keeboChars(T,v,R) > L) lo=R; else hi=R; }
+  return (lo+hi)/2;
+}
+/* Set Keebo's timing for the current word. wait = the old still time before he typed. */
+function ladderTiming(wait){
+  const L=S.text.length, v=LW.botWpm*5/60;
+  LW.wait=wait; LW.botTotal=wait+LW.botSecs; LW.botV=v; LW.ramp=keeboRamp(L, v, LW.botTotal);
+}
+function keeboDone(now){ return keeboChars((now-LW.botStart)/1000, LW.botV, LW.ramp) >= S.text.length; }
 const LADDER_START = 0.80, LADDER_STEP = 0.03;        // Keebo's pace: 80% of the reference WPM, plus 3% per sublevel
 /* Keebo's pace for a sublevel (1 = first word). Minimum 10 WPM. */
 function ladderPace(ref, sub){ return Math.max(10, Math.round(ref*(LADDER_START+LADDER_STEP*(sub-1)))); }
@@ -1215,15 +1235,15 @@ function renderLadderBar(){
 }
 function startLadder(){
   const words=ladderWords(), best=ladderRef();
-  LW={words, sub:0, best, wait:KEEBO_READ, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
+  LW={words, sub:0, best, wait:KEEBO_READ, ramp:0, botV:1, botTotal:0, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
   startSession({mode:"ladder", title:"Longest Word", text:words[0], locked:true,
     onTick(){
       if(!LW || LW.over || !LW.botStart || !S) return;
-      const t=(performance.now()-LW.botStart)/1000-LW.wait;
-      const bp=Math.max(0,Math.min(1,t/LW.botSecs)), yp=S.pos/S.text.length;
+      const t=(performance.now()-LW.botStart)/1000;
+      const bp=Math.max(0,Math.min(1,keeboChars(t,LW.botV,LW.ramp)/S.text.length)), yp=S.pos/S.text.length;
       $("#rBot").style.left=`calc(${bp*100}% - ${bp*60}px + 6px)`;
       $("#rYou").style.left=`calc(${yp*100}% - ${yp*60}px + 6px)`;
-      $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`+(t<0?" · 👀 reading":"");
+      $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`+(t<LW.ramp?" · 🐢 speeding up":"");
       if(bp>=1 && !S.locked) ladderOver(false);
     },
     onWord(){ ladderWordDone(); },
@@ -1232,7 +1252,7 @@ function startLadder(){
   $("#rYouLbl").textContent="You";
   say("#type",`Type each word before I do. Errors do not count, only time. My start pace is <b>${ladderPace(best,1)} WPM</b>. Ready?`,"think");
   ladderNext();
-  countIn(()=>{ if(!LW) return; S.locked=false; LW.botStart=S.start=LW.wordStart=performance.now(); say("#type","GO! 🪜","wow"); });
+  countIn(()=>{ if(!LW) return; S.locked=false; LW.botStart=S.start=LW.wordStart=performance.now(); ladderTiming(KEEBO_READ); say("#type","GO! 🪜","wow"); });
 }
 /* Show the next word and reset Keebo. */
 function ladderNext(){
@@ -1254,7 +1274,7 @@ function ladderWordDone(){
   if(!LW || LW.over) return;
   const now=performance.now();
   // Keebo was first if his time ran out before this last key.
-  if((now-LW.botStart)/1000-LW.wait >= LW.botSecs) return ladderOver(false);
+  if(keeboDone(now)) return ladderOver(false);
   LW.chars+=S.text.length; LW.secs+=(now-LW.wordStart)/1000;
   $("#rYou").style.left="calc(100% - 54px)";
   if(LW.sub>=LW.words.length) return ladderOver(true);
@@ -1262,7 +1282,7 @@ function ladderWordDone(){
   beep(660,0.06,"sine",0.05);
   ladderNext();
   // A short breath: Keebo waits a bit longer before the new word. The player can type at once.
-  LW.botStart=S.start=LW.wordStart=performance.now(); LW.wait=KEEBO_READ+LADDER_BREATH;
+  LW.botStart=S.start=LW.wordStart=performance.now(); ladderTiming(KEEBO_READ+LADDER_BREATH);
   const box=$("#text"); box.classList.remove("rung"); void box.offsetWidth; box.classList.add("rung");
   say("#type", LW.sub===LW.words.length ? "👑 BOSS WORD! The longest word I know. Go!" :
     rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
