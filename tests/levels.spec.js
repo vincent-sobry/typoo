@@ -147,3 +147,20 @@ test("Word Rain: words start hidden behind a cloud", async ({ page }) => {
   expect(r.zc).toBeGreaterThan(r.zm);       // clouds are drawn over the words
   expect(r.under).toBe(true);               // a new word starts inside a front cloud
 });
+
+test("Word Rain: meteors fall at a slight slant, all the same way, and stay in the sky", async ({ page }) => {
+  await openApp(page, withRuns([]));
+  await page.click("#mRain");
+  await page.click("#lvChoices .lv-normal");
+  await expect(page.locator("#sky .met").first()).toBeAttached();
+  const r = await page.evaluate(() => {
+    const W = document.querySelector("#sky").clientWidth, H = document.querySelector("#sky").clientHeight - 26;
+    return M.words.map((w) => ({ k: w.k, wind: M.wind, endX: w.x + w.k * H, wd: w.el.offsetWidth, W }));
+  });
+  for (const w of r) {
+    expect(Math.abs(w.k)).toBeLessThanOrEqual(Math.tan((14 * Math.PI) / 180) + 1e-9);   // max 14 degrees
+    expect(w.k * w.wind).toBeGreaterThanOrEqual(0);                                       // same way as the wind
+    expect(w.endX).toBeGreaterThanOrEqual(0);
+    expect(w.endX + w.wd).toBeLessThanOrEqual(w.W);
+  }
+});
