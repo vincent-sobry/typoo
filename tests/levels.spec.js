@@ -130,17 +130,20 @@ test("Word Rain: Fun makes the meteors slower, records per level", async ({ page
   expect(await page.evaluate("M.level")).toBe("fun");
 });
 
-test("Word Rain: words start hidden behind the clouds", async ({ page }) => {
+test("Word Rain: words start hidden behind a cloud", async ({ page }) => {
   await openApp(page, withRuns([]));
   await page.click("#mRain");
   await page.click("#lvChoices .lv-normal");
   await expect(page.locator("#sky .met").first()).toBeAttached();
   const r = await page.evaluate(() => {
-    const w = M.words[0], c = document.querySelector("#sky .clouds.front");
-    return { bottom: -6 + w.el.offsetHeight,
-             zm: +getComputedStyle(w.el).zIndex, zc: +getComputedStyle(c).zIndex, cloud: c.offsetHeight };
+    M.running = false;
+    const w = M.words[0], sky = document.querySelector("#sky").getBoundingClientRect();
+    const fronts = [...document.querySelectorAll("#sky .cloud.front")];
+    const x0 = w.x, x1 = w.x + w.el.offsetWidth;
+    const under = fronts.some((c) => { const b = c.getBoundingClientRect(); return b.left - sky.left <= x0 && b.right - sky.left >= x1; });
+    return { under, n: fronts.length, zm: +getComputedStyle(w.el).zIndex, zc: +getComputedStyle(fronts[0]).zIndex };
   });
-  expect(r.zc).toBeGreaterThan(r.zm);      // the clouds are drawn over the words
-  expect(r.bottom).toBeLessThan(52);       // a new word fits in the solid part of the cloud band (52 px)
-  expect(r.cloud).toBeGreaterThan(52);
+  expect(r.n).toBeGreaterThan(1);           // more than one cloud, with sky between them
+  expect(r.zc).toBeGreaterThan(r.zm);       // clouds are drawn over the words
+  expect(r.under).toBe(true);               // a new word starts inside a front cloud
 });
