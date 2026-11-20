@@ -10,7 +10,7 @@ test.afterEach(async ({ page }) => {
   expect(page.errors, "no JavaScript errors").toEqual([]);
 });
 
-for (const [w, h] of [[1366, 657], [1366, 768], [1920, 1080]]) {
+for (const [w, h] of [[1366, 780], [1440, 900], [1920, 1080]]) {
   test(`${w}x${h}: games list scrolls, stats and badges stay in the window`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await openApp(page, player());
@@ -37,11 +37,27 @@ test("narrow screen: one column, the page scrolls as before", async ({ page }) =
   expect(scrolls).toBe(false);
 });
 
-test("short screen (under 640 px high): the whole page scrolls, the games list does not", async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 600 });
+test("short screen (under 780 px high, Chromebook): the whole page scrolls, the games list does not", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 657 });
   await openApp(page, player());
   const r = await page.evaluate(() => { const m = document.querySelector("#home .modes");
     return { list: m.scrollHeight > m.clientHeight + 1, page: document.documentElement.scrollHeight > innerHeight }; });
   expect(r.list).toBe(false);
   expect(r.page).toBe(true);
+});
+
+test("badges: 20 badges in a full grid of 4 rows of 5", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await openApp(page, player());
+  const rows = await page.evaluate(() => { const t = [...document.querySelectorAll("#badges .badge")].map((b) => Math.round(b.getBoundingClientRect().top));
+    const r = {}; t.forEach((y) => (r[y] = (r[y] || 0) + 1)); return Object.values(r); });
+  expect(rows).toEqual([5, 5, 5, 5]);
+  await expect(page.locator("#badges .badge").last()).toBeInViewport();
+});
+
+test("Word Legend: a win in Longest Word or Word Marathon, any level", async ({ page }) => {
+  await openApp(page, player({ marathon: { best: 0, played: 1, boss: 0, lv: { fun: { best: 8, played: 1, boss: 1 } } } }));
+  expect(await page.evaluate("ladderWins()")).toBe(1);
+  await page.evaluate("checkBadges(); save()");
+  expect((await page.evaluate("state.badges")).ladder).toBeTruthy();
 });
