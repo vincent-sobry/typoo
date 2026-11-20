@@ -108,8 +108,34 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 @keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:90}
 @media (prefers-reduced-motion:reduce){.lvlup.on,.lvlup.goal.on{animation:none}}
-.tips{margin-top:14px;font-size:14px}
-.tips li{margin:4px 0;color:#cdd2f5}
+/* Keebo's golden rules: card above the map. Three sizes: all (list), tip (one rule), mini (one line). */
+.rules{margin-bottom:16px;border-radius:18px;background:linear-gradient(135deg,#2c2366,var(--card) 65%);border:1px solid #f5b83d66;box-shadow:0 0 18px #f5b83d1f;padding:12px 14px}
+.rules .rh{display:flex;align-items:center;gap:8px}
+.rules .rh>b{color:#ffd77a;font-size:14px;letter-spacing:.5px;white-space:nowrap}
+.rules .rn{font-size:12px;color:var(--muted);white-space:nowrap}
+.rules .rbtn{background:var(--card2);border:1px solid var(--line);border-radius:10px;min-width:32px;height:32px;padding:0 9px;font-weight:700;color:var(--text);white-space:nowrap}
+.rules .rbtn:hover,.rules .rbtn:focus-visible{border-color:#ffd77a}
+.rules .rtip{display:flex;align-items:center;gap:14px;margin-top:8px}
+.rules .ri{font-size:34px;line-height:1}
+.rules .rt{font-size:18px;font-weight:700}
+.rules .rw{font-size:13px;color:var(--muted);margin-top:2px}
+.rules .fade{animation:ruleIn .35s ease}
+@keyframes ruleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.rules .dots{display:flex;gap:4px;margin-left:auto}
+.rules .dots button{width:18px;height:18px;padding:4px;border-radius:50%;background:none}
+.rules .dots button i{display:block;width:10px;height:10px;border-radius:50%;background:var(--line)}
+.rules .dots button.on i{background:#ffd77a}
+.rules .rall{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:10px}
+.rules .rall button{display:flex;gap:10px;align-items:center;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:14px;color:var(--text)}
+.rules .rall button:hover{border-color:#ffd77a99}
+.rules .rall button.on{border-color:#ffd77a;box-shadow:0 0 0 1px #ffd77a55}
+.rules .rall .ri{font-size:24px}
+.rules .rall .rw{display:none}
+.rules .rall button.on .rw{display:block}
+.rules.mini{padding:6px 8px 6px 12px}
+.rules.mini .ri{font-size:20px}
+.rules.mini .rt{font-size:14px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-reduced-motion:reduce){.rules .fade{animation:none}}
 
 /* ---------- Bot ---------- */
 .botbox{display:flex;gap:10px;align-items:flex-start}
@@ -450,19 +476,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
           <b>Badges</b> <span class="muted" id="bCount" style="font-size:13px"></span>
           <div class="badges" id="badges"></div>
         </div>
-        <div class="card tips" style="margin-top:16px">
-          <b>Keebo's golden rules</b>
-          <ol style="padding-left:20px;margin:8px 0 0">
-            <li>Sit up straight. Feet flat. Wrists float, do not rest.</li>
-            <li>Find the bumps on <b>F</b> and <b>J</b> with your index fingers.</li>
-            <li>Each finger has its own keys. Go back to the home row after each key.</li>
-            <li>Eyes on the screen. Do not look at your hands.</li>
-            <li>Accuracy first. Speed comes by itself.</li>
-            <li>10–15 minutes every day beats 2 hours once a week.</li>
-          </ol>
-        </div>
       </aside>
-      <main id="map"></main>
+      <main><div id="rules" class="rules" aria-label="Keebo's golden rules"></div><div id="map"></div></main>
     </div>
   </section>
 
@@ -2183,7 +2198,72 @@ function confStep(){
 /* =========================================================================
    HOME
    ========================================================================= */
-function goHome(){ clearTimeout(lvlTimer); clearTimeout(goalTimer); goalPending=false; if(M) M.running=false; clearInterval(liveTimer); S=null; renderHome(); show("home"); offerLayout(); }
+function goHome(){ clearTimeout(lvlTimer); clearTimeout(goalTimer); goalPending=false; if(M) M.running=false; clearInterval(liveTimer); S=null; nextRuleVisit(); renderHome(); show("home"); offerLayout(); }
+/* =========================================================================
+   KEEBO'S GOLDEN RULES: a card above the map, as a reminder.
+   Sizes: "all" (every rule), "tip" (one rule + why), "mini" (one line).
+   Default size gets smaller as the player passes chapters. A size the player
+   picks is saved in state.rules. state.ruleI = the rule on show; it moves to
+   the next rule on each home visit and every RULE_MS (not with reduced motion).
+   ========================================================================= */
+const RULES = [
+  {i:"🪑", t:"Sit up straight. Feet flat. Wrists float, do not rest.", w:"Your hands stay fresh and fast for longer."},
+  {i:"👆", t:"Find the bumps on F and J with your index fingers.", w:"Your fingers find home without a look."},
+  {i:"🏠", t:"Each finger has its own keys. Go back to the home row after each key.", w:"Short trips, fewer mistakes."},
+  {i:"👀", t:"Eyes on the screen. Do not look at your hands.", w:"This is the superpower. Trust your fingers!"},
+  {i:"🎯", t:"Accuracy first. Speed comes by itself.", w:"A mistake costs more time than a slow key."},
+  {i:"📅", t:"10–15 minutes every day beats 2 hours once a week.", w:"Your brain learns while you sleep."}
+];
+const RULE_MS = 10000;
+let ruleHold = false, ruleFade = false;
+/* Default size from progress: chapters 1-3 all rules, 4-10 one tip, then one line. */
+function rulesSize(){
+  if(["all","tip","mini"].includes(state.rules)) return state.rules;
+  const c=currentLessonIdx(); return c<3 ? "all" : c<10 ? "tip" : "mini";
+}
+function ruleIdx(){ const n=RULES.length; return (((state.ruleI|0)%n)+n)%n; }
+function renderRules(){
+  const box=$("#rules"); if(!box) return;
+  const size=rulesSize(), ri=ruleIdx(), R=RULES[ri], f=ruleFade?" fade":""; ruleFade=false;
+  box.className="rules "+size; box.dataset.size=size;
+  const nav=`<button class="rbtn" data-r="prev" title="Previous rule" aria-label="Previous rule">‹</button><button class="rbtn" data-r="next" title="Next rule" aria-label="Next rule">›</button>`;
+  if(size==="mini"){
+    box.innerHTML=`<div class="rh"><span class="ri" aria-hidden="true">⭐</span><span class="rt${f}" title="${esc(R.t)}">${R.i} ${esc(R.t)}</span>${nav}
+      <button class="rbtn" data-r="tip" title="Show more" aria-label="Show more" aria-expanded="false">▾</button></div>`;
+  } else if(size==="tip"){
+    box.innerHTML=`<div class="rh"><b>⭐ Keebo's golden rules</b><span class="rn">${ri+1} / ${RULES.length}</span>
+      <div class="dots">${RULES.map((r,i)=>`<button data-nofx data-go="${i}" class="${i===ri?"on":""}" aria-label="Rule ${i+1}"><i></i></button>`).join("")}</div>
+      <button class="rbtn" data-r="all" title="Show all rules">☰ All</button><button class="rbtn" data-r="mini" title="Make smaller" aria-label="Make smaller">▴</button></div>
+      <div class="rtip"><span class="ri${f}" aria-hidden="true">${R.i}</span><div style="flex:1"><div class="rt${f}">${esc(R.t)}</div><div class="rw${f}">${esc(R.w)}</div></div>${nav}</div>`;
+  } else {
+    box.innerHTML=`<div class="rh"><b>⭐ Keebo's golden rules</b><span class="rn">Tap a rule to see why</span><div class="spacer" style="flex:1"></div>
+      <button class="rbtn" data-r="tip" title="Make smaller" aria-label="Make smaller">▴</button></div>
+      <div class="rall">${RULES.map((r,i)=>`<button data-go="${i}" class="${i===ri?"on":""}"><span class="ri" aria-hidden="true">${r.i}</span><span><span class="rt" style="font-size:14px;font-weight:600">${esc(r.t)}</span><span class="rw">${esc(r.w)}</span></span></button>`).join("")}</div>`;
+  }
+  box.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
+    const r=b.dataset.r;
+    if(r==="prev"||r==="next"){ state.ruleI=ruleIdx()+(r==="next"?1:-1); ruleFade=true; }
+    else state.rules=r;
+    save(); renderRules();
+    const again=box.querySelector(`[data-r="${r}"]`); if(again) again.focus();
+  });
+  box.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{
+    state.ruleI=+b.dataset.go; ruleFade=size!=="all"; save(); renderRules();
+    const again=box.querySelector(`[data-go="${b.dataset.go}"]`); if(again) again.focus();
+  });
+}
+function nextRuleVisit(){ state.ruleI=ruleIdx()+1; ruleFade=true; }
+(function ruleTimer(){
+  const box=$("#rules"); if(!box) return;
+  box.addEventListener("pointerenter",()=>ruleHold=true); box.addEventListener("pointerleave",()=>ruleHold=false);
+  box.addEventListener("focusin",()=>ruleHold=true); box.addEventListener("focusout",()=>ruleHold=false);
+  setInterval(()=>{
+    if(screen!=="home" || document.hidden || ruleHold || rulesSize()==="all") return;
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches || $("#tour.on")) return;
+    state.ruleI=ruleIdx()+1; ruleFade=true; renderRules();       // not saved: only a visit moves the saved rule
+  }, RULE_MS);
+})();
+
 function renderHome(){
   const li=levelInfo(state.xp);
   $("#pName").textContent=state.name||"Player";
@@ -2224,6 +2304,7 @@ function renderHome(){
     html+=`</div></div>`;
   });
   map.innerHTML=html;
+  renderRules();
   $$("#map .lesson").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(isUnlocked(i)) startLesson(i); });
   // badges
   $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(b.n)}: ${esc(b.d)}" aria-label="${esc(b.n)}">${b.i}</button>`).join("");
@@ -2401,6 +2482,7 @@ const TOUR=[
   {el:"#home .card:has(#badges)", t:"Badges 🏅", p:"Collect them all. Tap one to see how to win it."},
   {el:"#hSettings", t:"Settings ⚙️", p:"Sound, keyboard, shortcuts. Make Typoo yours."},
   {el:"#hHelp", t:"Lost? Tap ❓", p:"It starts this tour again. Or press ? on your keyboard."},
+  {el:"#rules", t:"Golden rules ⭐", p:"Keebo's tips for typing blind. Tap ‹ › for the next one. ▴ makes it smaller."},
   {el:"#map", t:"Your map 🗺️", p:"Each chapter teaches new keys. 1 star opens the next one."},
   {el:"#mContinue", t:"Ready? Go! ▶️", p:"Continue starts your next chapter. Fingers on F and J!", last:true}
 ];
