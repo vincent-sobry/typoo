@@ -42,6 +42,37 @@ h1,h2,h3{margin:0}
 /* ---------- Home ---------- */
 .home-grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
 @media (max-width:900px){.home-grid{grid-template-columns:1fr}}
+/* Home on wide screens: the page does not scroll. The map scrolls on its own. In the left column
+   the top part and the badges stay, the games list scrolls in between. */
+@media (min-width:901px) and (min-height:560px){
+  body:has(#home.on) .wrap{height:100vh;box-sizing:border-box;display:flex;flex-direction:column;padding-bottom:16px}
+  #home.on{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #home .home-grid{flex:1 1 auto;min-height:0}
+  #home .home-grid>main{min-height:0;overflow-y:auto;overscroll-behavior:contain;margin:0 -8px;padding:0 8px 8px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  #home .home-grid>aside{min-height:0;display:flex;flex-direction:column}
+  #home aside .profile{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  #home aside .modes{flex:1 1 auto;min-height:120px;overflow-y:auto;overscroll-behavior:contain;margin:14px -8px 0;padding:4px 8px 8px;
+    scrollbar-width:thin;scrollbar-color:var(--line) transparent;
+    -webkit-mask-image:linear-gradient(#000 calc(100% - 18px),transparent);mask-image:linear-gradient(#000 calc(100% - 18px),transparent)}
+  #home aside .modes.end{-webkit-mask-image:none;mask-image:none}
+  #home aside>.card:last-child{flex:none;padding:12px 16px}
+  #home aside .badges{flex-wrap:nowrap;overflow-x:auto;gap:6px;margin:8px -4px 0;padding:3px 4px 6px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  #home aside .badge{flex:none;width:38px;height:38px;font-size:19px}
+}
+/* Short wide screens (Chromebook): a smaller top part gives the games list more room. */
+@media (min-width:901px) and (min-height:560px) and (max-height:760px){
+  #home aside .profile{padding:12px 16px}
+  #home aside .profile .bot{width:56px;height:56px}
+  #home aside .profile .bubble{font-size:14px;padding:8px 12px}
+  #home #pLevelBox{margin-top:8px!important}
+  #home #pLevelBox h2{font-size:20px;margin:0}
+  #home #gBox{margin-top:8px!important}
+  #home aside .stats3{margin-top:8px}
+  #home aside .stat{padding:5px}
+  #home aside .stat b{font-size:17px}
+  #home aside .modes{margin-top:8px;gap:8px}
+  #home aside .mode{padding:8px 10px}
+}
 .profile .lvl{font-size:13px;color:var(--muted);margin-top:2px}
 .bar{height:10px;background:#0b0e20;border-radius:99px;overflow:hidden;margin-top:8px}
 .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .6s}
@@ -2264,6 +2295,10 @@ function nextRuleVisit(){ state.ruleI=ruleIdx()+1; ruleFade=true; }
   }, RULE_MS);
 })();
 
+/* Games list: hide the bottom fade when the list is at its end (or does not scroll). */
+function modesEnd(){ const m=$("#home .modes"); if(m) m.classList.toggle("end", m.scrollTop+m.clientHeight>=m.scrollHeight-4); }
+$("#home .modes").addEventListener("scroll", modesEnd, {passive:true});
+addEventListener("resize", modesEnd);
 function renderHome(){
   const li=levelInfo(state.xp);
   $("#pName").textContent=state.name||"Player";
@@ -2305,6 +2340,7 @@ function renderHome(){
   });
   map.innerHTML=html;
   renderRules();
+  requestAnimationFrame(modesEnd);
   $$("#map .lesson").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(isUnlocked(i)) startLesson(i); });
   // badges
   $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(b.n)}: ${esc(b.d)}" aria-label="${esc(b.n)}">${b.i}</button>`).join("");
