@@ -129,3 +129,18 @@ test("Word Rain: Fun makes the meteors slower, records per level", async ({ page
   await page.click("#rainAgain");
   expect(await page.evaluate("M.level")).toBe("fun");
 });
+
+test("Word Rain: words start hidden behind the clouds", async ({ page }) => {
+  await openApp(page, withRuns([]));
+  await page.click("#mRain");
+  await page.click("#lvChoices .lv-normal");
+  await expect(page.locator("#sky .met").first()).toBeAttached();
+  const r = await page.evaluate(() => {
+    const w = M.words[0], c = document.querySelector("#sky .clouds.front");
+    return { bottom: -6 + w.el.offsetHeight,
+             zm: +getComputedStyle(w.el).zIndex, zc: +getComputedStyle(c).zIndex, cloud: c.offsetHeight };
+  });
+  expect(r.zc).toBeGreaterThan(r.zm);      // the clouds are drawn over the words
+  expect(r.bottom).toBeLessThan(52);       // a new word fits in the solid part of the cloud band (52 px)
+  expect(r.cloud).toBeGreaterThan(52);
+});
