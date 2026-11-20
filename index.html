@@ -42,9 +42,9 @@ h1,h2,h3{margin:0}
 /* ---------- Home ---------- */
 .home-grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
 @media (max-width:900px){.home-grid{grid-template-columns:1fr}}
-/* Home on wide screens, 640 px high or more (else the whole page scrolls, as before): the page does not scroll. The map scrolls on its own. In the left column
+/* Home on wide screens, 780 px high or more (else the whole page scrolls, as before): the page does not scroll. The map scrolls on its own. In the left column
    the top part and the badges stay, the games list scrolls in between. */
-@media (min-width:901px) and (min-height:640px){
+@media (min-width:901px) and (min-height:780px){
   body:has(#home.on) .wrap{height:100vh;box-sizing:border-box;display:flex;flex-direction:column;padding-bottom:16px}
   #home.on{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
   #home .home-grid{flex:1 1 auto;min-height:0}
@@ -56,11 +56,11 @@ h1,h2,h3{margin:0}
     -webkit-mask-image:linear-gradient(#000 calc(100% - 18px),transparent);mask-image:linear-gradient(#000 calc(100% - 18px),transparent)}
   #home aside .modes.end{-webkit-mask-image:none;mask-image:none}
   #home aside>.card:last-child{flex:none;padding:12px 16px}
-  #home aside .badges{flex-wrap:nowrap;overflow-x:auto;gap:6px;margin:8px -4px 0;padding:3px 4px 6px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-  #home aside .badge{flex:none;width:38px;height:38px;font-size:19px}
+  #home aside .badges{display:grid;grid-template-columns:repeat(5,40px);justify-content:space-between;gap:6px;margin-top:8px}
+  #home aside .badge{width:40px;height:40px;font-size:20px}
 }
-/* Short wide screens (Chromebook): a smaller top part gives the games list more room. */
-@media (min-width:901px) and (min-height:640px) and (max-height:760px){
+/* Wide screens 780-900 px high: a smaller top part gives the games list more room. */
+@media (min-width:901px) and (min-height:780px) and (max-height:900px){
   #home aside .profile{padding:12px 16px}
   #home aside .profile .bot{width:56px;height:56px}
   #home aside .profile .bubble{font-size:14px;padding:8px 12px}
@@ -2176,8 +2176,11 @@ const BADGES=[
   {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",t:()=>state.streak.count>=3,p:()=>[streakNow(),3,"days"]},
   {id:"s7",i:"🌋",n:"Unstoppable",d:"7-day streak",t:()=>state.streak.count>=7,p:()=>[streakNow(),7,"days"]},
   {id:"rain",i:"☄️",n:"Meteor Shield",d:"Score 500 in Word Rain",t:()=>state.rainBest>=500,p:()=>[state.rainBest,500,"points"]},
+  {id:"ladder",i:"🪜",n:"Word Legend",d:"Win Longest Word or Word Marathon",t:()=>ladderWins()>=1,p:()=>[ladderWins(),1,"win"]},
   {id:"stars30",i:"⭐",n:"Star Collector",d:"Collect 30 stars",t:()=>totalStars()>=30,p:()=>[totalStars(),30,"stars"]}
 ];
+/* Wins in Longest Word and Word Marathon, all levels together. */
+function ladderWins(){ return ["ladder","marathon"].reduce((a,k)=>{ const L=state[k]; return a+(L?(L.boss||0)+Object.values(L.lv||{}).reduce((b,x)=>b+(x.boss||0),0):0); },0); }
 function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si); return [L.filter(l=>(lessonRec(l.idx)?.stars||0)>=1).length, L.length, "chapters"]; }
 function streakNow(){ const t=todayStr(), y=new Date(); y.setDate(y.getDate()-1); return state.streak.last===t||state.streak.last===todayStr(y) ? state.streak.count : 0; }
 function checkBadges(){
