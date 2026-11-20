@@ -319,6 +319,7 @@ body.fframe #fframe{display:block}
 .ground{position:absolute;left:0;right:0;bottom:0;height:26px;background:linear-gradient(#2a6b4a,#173d2b);border-top:2px solid #3ee089}
 .met{position:absolute;top:0;left:0;font-family:var(--mono);font-size:24px;font-weight:700;padding:4px 10px;border-radius:10px;background:#2b2257;border:1px solid #6d5bd0;white-space:nowrap;will-change:transform}
 .met::before{content:"☄️";position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:18px}
+.met.r::before{transform:translateX(-50%) scaleX(-1)}
 .met.tgt{border-color:var(--accent2);box-shadow:0 0 16px var(--accent2)}
 .met .d{color:var(--good)}
 .met.boom{animation:boom .3s forwards}
@@ -2026,7 +2027,7 @@ function startRain(level){
   let pool=wordList().filter(w=>fits(w,allowed) && w.length>=2 && w.length<=9);
   if(pool.length<15) pool=genWords(allowed,40).split(" ");
   const f=levelFactor(level);                       // Fun: slower meteors, Super Challenge: faster
-  M={words:[],score:0,lives:3,speed:28*f,spawn:0,interval:2.4/f,last:0,target:null,pool,running:true,kills:0,t0:performance.now(),level,f};
+  M={words:[],score:0,lives:3,speed:28*f,spawn:0,interval:2.4/f,last:0,target:null,pool,running:true,kills:0,t0:performance.now(),level,f,wind:Math.random()<.5?-1:1};   // wind: meteors fall at a slight slant, one way per game
   $("#mBest").textContent=rainBestOf(level); $("#meteor h2").textContent = "Word Rain" + (level!=="normal" ? " · "+levelTag(level) : ""); updateRainHud();
   requestAnimationFrame(rainLoop);
 }
@@ -2041,10 +2042,14 @@ function rainLoop(t){
     let w; let tries=0; do{ w=rnd(M.pool); tries++; } while(tries<20 && M.words.some(x=>x.text[0]===w[0]));
     const el=document.createElement("div"); el.className="met"; el.textContent=w; sky.appendChild(el);
     const x=cloudSpawnX(sky, el.offsetWidth, W);
-    M.words.push({text:w,typed:0,x,y:-6,el});   // starts hidden behind the clouds, then falls out
+    // slant of 6-14 degrees; less if the word would leave the sky before it lands
+    let dx=M.wind*Math.tan((6+Math.random()*8)*Math.PI/180)*H;
+    dx=Math.max(4-x, Math.min(W-el.offsetWidth-4-x, dx));
+    if(M.wind>0) el.classList.add("r");
+    M.words.push({text:w,typed:0,x,y:-6,k:dx/H,el});   // starts hidden behind the clouds, then falls out
   }
   for(const w of [...M.words]){
-    w.y+=M.speed*dt;
+    w.y+=M.speed*dt; w.x+=w.k*M.speed*dt;
     w.el.style.transform=`translate(${w.x}px,${w.y}px)`;
     if(w.y+30>H){
       w.el.remove(); M.words=M.words.filter(x=>x!==w); if(M.target===w) M.target=null;
