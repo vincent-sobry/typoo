@@ -335,7 +335,7 @@ body.fframe #fframe{display:block}
 /* First-visit tour: a spotlight on one part of the home screen and a short card. Skip with the button or Esc. */
 #tour{position:fixed;inset:0;z-index:85;display:none}
 #tour.on{display:block}
-#tourHole{position:absolute;border-radius:16px;box-shadow:0 0 0 9999px #070918c4,0 0 0 3px var(--accent2);transition:all .25s ease;pointer-events:none}
+#tourHole{position:absolute;border-radius:22px;box-shadow:0 0 0 9999px #070918c4,0 0 0 3px var(--accent2);transition:all .25s ease;pointer-events:none}
 #tourCard{position:absolute;width:min(340px,92vw);background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;box-shadow:0 10px 40px #000a;transition:top .25s,left .25s}
 #tourCard h3{font-size:17px;margin-bottom:4px}
 #tourCard p{margin:0 0 12px;color:#cdd2f5;font-size:15px;line-height:1.4}
@@ -2392,7 +2392,7 @@ function tourNextStep(){
 function tourPlace(){
   if(!T) return;
   const el=$(TOUR[T.i].el); if(!el) return;
-  const r=el.getBoundingClientRect(), pad=6, gap=14, vw=innerWidth, vh=innerHeight;
+  const r=el.getBoundingClientRect(), pad=r.width<120 ? 9 : 16, gap=16, vw=innerWidth, vh=innerHeight;
   const top=Math.max(4,r.top-pad), left=Math.max(4,r.left-pad);
   const h=Math.max(0,Math.min(r.bottom+pad, vh-4)-top), w=Math.min(r.right+pad, vw-4)-left;
   Object.assign($("#tourHole").style, {top:top+"px", left:left+"px", width:w+"px", height:h+"px"});
