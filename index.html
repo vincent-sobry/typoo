@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -407,6 +407,7 @@ body.fframe #fframe{display:block}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg button{flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px;font-weight:700}
 .seg button.on{background:var(--accent);border-color:var(--accent)}
+.langseg button{min-width:110px}
 .seg button small{display:block;font-weight:500;color:#cfd3ff;font-size:12px}
 .toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-140%);background:#2c2560;border:1px solid var(--accent);border-radius:14px;padding:12px 18px;font-weight:700;z-index:80;transition:transform .35s;display:flex;gap:10px;align-items:center}
 .toast.on{transform:translate(-50%,0)}
@@ -454,23 +455,25 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div class="onboard card">
       <div class="botbox">
         <svg class="bot" viewBox="0 0 120 120"></svg>
-        <div class="bubble">Hi! I'm <b>Keebo</b>, your typing coach. I'll teach you to type with all ten fingers, without looking. First, a few questions.</div>
+        <div class="bubble" data-t="ob.hi">Hi! I'm <b>Keebo</b>, your typing coach. I'll teach you to type with all ten fingers, without looking. First, a few questions.</div>
       </div>
-      <div class="field"><label for="obName">What's your name?</label><input id="obName" type="text" maxlength="20" placeholder="Your name" autocomplete="off"></div>
-      <div class="field"><label>Which keyboard do you have? <span class="muted" style="font-weight:400">Look at the first letters on the top row.</span></label>
+      <div class="field"><label data-t="lang">Language</label>
+        <div class="seg langseg" id="obLang">
+          <button data-v="nl">Nederlands</button>
+          <button data-v="en">English</button>
+          <button data-v="fr">Français</button>
+          <button data-v="it">Italiano</button>
+        </div>
+      </div>
+      <div class="field"><label for="obName" data-t="ob.name">What's your name?</label><input id="obName" type="text" maxlength="20" placeholder="Your name" data-ta="placeholder=ob.namePh" autocomplete="off"></div>
+      <div class="field"><label><span data-t="ob.kb">Which keyboard do you have?</span> <span class="muted" style="font-weight:400" data-t="ob.kbHint">Look at the first letters on the top row.</span></label>
         <div class="seg" id="obLayout">
-          <button data-v="azerty">AZERTY<small>Belgian / French</small></button>
-          <button data-v="qwerty">QWERTY<small>US / UK / Dutch</small></button>
+          <button data-v="azerty">AZERTY<small data-t="lay.az">Belgian / French</small></button>
+          <button data-v="qwerty">QWERTY<small data-t="lay.qw">US / UK / Dutch</small></button>
         </div>
         <div class="muted" id="obDetect" style="font-size:13px;margin-top:6px"></div>
       </div>
-      <div class="field"><label>Practice words in</label>
-        <div class="seg" id="obLang">
-          <button data-v="nl">Nederlands</button>
-          <button data-v="en">English</button>
-        </div>
-      </div>
-      <div style="text-align:right;margin-top:18px"><button class="btn" id="obGo">Let's go! →</button></div>
+      <div style="text-align:right;margin-top:18px"><button class="btn" id="obGo" data-t="ob.go">Let's go! →</button></div>
     </div>
   </section>
 
@@ -479,10 +482,10 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div class="top">
       <div class="logo">Typ<span>oo</span> ⌨️</div>
       <div class="spacer"></div>
-      <div class="pill" id="hStreak" title="Streak: days in a row with today's goal reached">🔥 0</div>
+      <div class="pill" id="hStreak" title="Streak: days in a row with today's goal reached" data-ta="title=h.streakT">🔥 0</div>
       <div class="pill" id="hLevel">Lv 1</div>
-      <button class="btn ghost" id="hHelp" title="Tour (?)" aria-label="Start the tour">❓</button>
-      <button class="btn ghost" id="hSettings" title="Settings">⚙️</button>
+      <button class="btn ghost" id="hHelp" title="Tour (?)" aria-label="Start the tour" data-ta="title=h.tourT,aria-label=h.tourA">❓</button>
+      <button class="btn ghost" id="hSettings" title="Settings" data-ta="title=settings,aria-label=settings">⚙️</button>
     </div>
     <div class="home-grid">
       <aside>
@@ -497,42 +500,42 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
             <div class="bar"><i id="pBar" style="width:0"></i></div>
           </div>
           <div style="margin-top:12px" id="gBox">
-            <div class="row"><b style="font-size:14px">Today's goal</b><div class="spacer"></div><span class="muted" id="gTxt" style="font-size:13px">0 / 10 min</span></div>
+            <div class="row"><b style="font-size:14px" data-t="goal">Today's goal</b><div class="spacer"></div><span class="muted" id="gTxt" style="font-size:13px">0 / 10 min</span></div>
             <div class="bar green"><i id="gBar" style="width:0"></i></div>
-            <div class="week" id="week" aria-label="Streak: last 7 days"><div class="days" id="wDays"></div><span class="frz" id="wFreeze"></span></div>
-            <div class="wsave" id="wSave" hidden>Reach today's goal to save your streak</div>
+            <div class="week" id="week" aria-label="Streak: last 7 days" data-ta="aria-label=h.week"><div class="days" id="wDays"></div><span class="frz" id="wFreeze"></span></div>
+            <div class="wsave" id="wSave" data-t="h.wsave" hidden>Reach today's goal to save your streak</div>
           </div>
           <div class="stats3">
-            <div class="stat"><b id="sBest">0</b><small>Best WPM</small></div>
-            <div class="stat"><b id="sAvg">0</b><small>Avg WPM</small></div>
-            <div class="stat"><b id="sStars">0</b><small>Stars</small></div>
+            <div class="stat"><b id="sBest">0</b><small data-t="st.best">Best WPM</small></div>
+            <div class="stat"><b id="sAvg">0</b><small data-t="st.avg">Avg WPM</small></div>
+            <div class="stat"><b id="sStars">0</b><small data-t="st.stars">Stars</small></div>
           </div>
           <div class="modes">
-            <button class="mode warm" id="mWarm"><span class="ic">☀️</span><span><b>Daily warm-up</b><small id="mWarmText">1 minute · easy words · no score</small></span></button>
-            <button class="mode daily" id="mDaily"><span class="ic">📜</span><span><b>Daily sentence</b><small id="mDailyText">One new sentence each day</small></span></button>
-            <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b>Continue</b><small id="mContText">Next chapter</small></span></button>
-            <button class="mode" id="mRace"><span class="ic">🏁</span><span><b>Race Keebo</b><small>Beat the bot in a typing race</small></span></button>
-            <button class="mode" id="mRain"><span class="ic">☄️</span><span><b>Word Rain</b><small>Stop the meteors before they land</small></span></button>
-            <button class="mode" id="mLadder"><span class="ic">🪜</span><span><b>Longest Word</b><small id="mLadderText">Climb the word ladder against Keebo</small></span></button>
-            <button class="mode" id="mMarathon"><span class="ic">🏃</span><span><b>Word Marathon</b><small id="mMarathonText">Type the ladder at your own pace. Stay ahead of Keebo</small></span></button>
-            <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b>Smart Practice</b><small>Train your weakest keys</small></span></button>
-            <button class="mode" id="mCustom"><span class="ic">🔤</span><span><b>Custom Letters</b><small id="mCustomText">Pick the keys you want to practise</small></span></button>
-            <button class="mode" id="mBoost"><span class="ic">⚡</span><span><b>Booster</b><small id="mBoostText">Get more stars on a chapter</small></span></button>
+            <button class="mode warm" id="mWarm"><span class="ic">☀️</span><span><b data-t="m.warm">Daily warm-up</b><small id="mWarmText">1 minute · easy words · no score</small></span></button>
+            <button class="mode daily" id="mDaily"><span class="ic">📜</span><span><b data-t="m.daily">Daily sentence</b><small id="mDailyText">One new sentence each day</small></span></button>
+            <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b data-t="m.cont">Continue</b><small id="mContText">Next chapter</small></span></button>
+            <button class="mode" id="mRace"><span class="ic">🏁</span><span><b data-t="m.race">Race Keebo</b><small data-t="m.raceS">Beat the bot in a typing race</small></span></button>
+            <button class="mode" id="mRain"><span class="ic">☄️</span><span><b data-t="m.rain">Word Rain</b><small data-t="m.rainS">Stop the meteors before they land</small></span></button>
+            <button class="mode" id="mLadder"><span class="ic">🪜</span><span><b data-t="m.ladder">Longest Word</b><small id="mLadderText">Climb the word ladder against Keebo</small></span></button>
+            <button class="mode" id="mMarathon"><span class="ic">🏃</span><span><b data-t="m.mar">Word Marathon</b><small id="mMarathonText">Type the ladder at your own pace. Stay ahead of Keebo</small></span></button>
+            <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b data-t="m.smart">Smart Practice</b><small data-t="m.smartS">Train your weakest keys</small></span></button>
+            <button class="mode" id="mCustom"><span class="ic">🔤</span><span><b data-t="m.custom">Custom Letters</b><small id="mCustomText">Pick the keys you want to practise</small></span></button>
+            <button class="mode" id="mBoost"><span class="ic">⚡</span><span><b data-t="m.boost">Booster</b><small id="mBoostText">Get more stars on a chapter</small></span></button>
           </div>
         </div>
         <div class="card" style="margin-top:16px">
-          <b>Badges</b> <span class="muted" id="bCount" style="font-size:13px"></span>
+          <b data-t="badges">Badges</b> <span class="muted" id="bCount" style="font-size:13px"></span>
           <div class="badges" id="badges"></div>
         </div>
       </aside>
-      <main><div id="rules" class="rules" aria-label="Keebo's golden rules"></div><div id="map"></div></main>
+      <main><div id="rules" class="rules" aria-label="Keebo's golden rules" data-ta="aria-label=rules.h"></div><div id="map"></div></main>
     </div>
   </section>
 
   <!-- ============ TYPING ============ -->
   <section id="type" class="screen">
     <div class="tbar">
-      <button class="btn ghost" id="tBack">← Map</button>
+      <button class="btn ghost" id="tBack" data-t="backMap">← Map</button>
       <h2 id="tTitle">Chapter</h2>
       <div class="spacer"></div>
       <div class="live">
@@ -540,22 +543,22 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
         <div class="pill">🎯 <span id="lAcc">100</span>%</div>
         <div class="pill" id="lTimeP">⏱ <span id="lTime">0:00</span></div>
       </div>
-      <button class="btn ghost" id="tBlind" title="Change how much of the keyboard you see">👀 Keys: on</button>
+      <button class="btn ghost" id="tBlind" title="Change how much of the keyboard you see" data-ta="title=t.blindT">👀 Keys: on</button>
     </div>
     <div id="raceTracks" style="display:none">
-      <div class="track full"><div class="lane"></div><div class="runner" id="fYou">🧑‍💻</div><div class="who">You</div><div class="fin">🏁</div></div>
+      <div class="track full"><div class="lane"></div><div class="runner" id="fYou">🧑‍💻</div><div class="who" data-t="you">You</div><div class="fin">🏁</div></div>
       <div class="track full"><div class="lane"></div><div class="runner" id="fBot">🤖</div><div class="who" id="fBotLbl">Keebo</div><div class="fin">🏁</div></div>
       <div class="track"><div class="lane"></div><div class="runner" id="rYou">🧑‍💻</div><div class="who" id="rYouLbl">You</div><div class="fin">🏁</div></div>
       <div class="track"><div class="lane"></div><div class="runner" id="rBot">🤖</div><div class="who" id="rBotLbl">Keebo</div><div class="fin">🏁</div></div>
     </div>
-    <div class="ladder" id="ladder" aria-label="Word ladder"></div>
+    <div class="ladder" id="ladder" aria-label="Word ladder" data-ta="aria-label=t.ladderA"></div>
     <div class="botbox">
       <svg class="bot" viewBox="0 0 120 120"></svg>
       <div class="bubble" id="tBubble">…</div>
     </div>
-    <div class="capswarn" id="capsWarn">⚠️ Caps Lock is ON. Turn it off.</div>
+    <div class="capswarn" id="capsWarn" data-t="t.caps">⚠️ Caps Lock is ON. Turn it off.</div>
     <div class="tbwrap"><div class="textbox" id="text"></div>
-      <div class="lights" id="lights" aria-label="Start lights"><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="lights" id="lights" aria-label="Start lights" data-ta="aria-label=t.lightsA"><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="prog"><i id="tProg"></i></div>
     <div class="kbwrap" id="kbwrap">
       <div class="fingerlbl" id="fingerLbl"></div>
@@ -575,8 +578,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <div class="bigstars" id="rStars"><span>★</span><span>★</span><span>★</span></div>
       <div class="rstats">
         <div class="stat"><b id="rWpm">0</b><small>WPM</small></div>
-        <div class="stat"><b id="rAcc">0%</b><small>Accuracy</small></div>
-        <div class="stat"><b id="rTime">0s</b><small>Time</small></div>
+        <div class="stat"><b id="rAcc">0%</b><small data-t="r.acc">Accuracy</small></div>
+        <div class="stat"><b id="rTime">0s</b><small data-t="r.time">Time</small></div>
         <div class="stat"><b id="rXp">+0</b><small>XP</small></div>
       </div>
       <div class="need" id="rNeed"></div>
@@ -588,18 +591,18 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <div class="lvlup goal" id="rGoal" role="status"></div>
       <div class="weak" id="rWeak"></div>
       <div class="rbtns">
-        <button class="btn ghost" id="rMap">Map</button>
-        <button class="btn ghost" id="rRetry">↻ Retry</button>
+        <button class="btn ghost" id="rMap" data-t="map">Map</button>
+        <button class="btn ghost" id="rRetry" data-t="r.retry">↻ Retry</button>
         <button class="btn" id="rNext">Next →</button>
       </div>
-      <div class="muted" style="font-size:12px;margin-top:10px">Press <b>Enter</b> for the main button</div>
+      <div class="muted" style="font-size:12px;margin-top:10px" data-t="r.enter">Press <b>Enter</b> for the main button</div>
     </div>
   </section>
 
   <!-- ============ METEOR ============ -->
   <section id="meteor" class="screen">
     <div class="hud">
-      <button class="btn ghost" id="mBack">← Map</button>
+      <button class="btn ghost" id="mBack" data-t="backMap">← Map</button>
       <h2>Word Rain</h2>
       <div class="spacer"></div>
       <div class="hearts" id="mLives">❤️❤️❤️</div>
@@ -607,116 +610,117 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <div class="pill">🏆 <span id="mBest">0</span></div>
     </div>
     <div class="sky" id="sky"><div class="ground"></div></div>
-    <p class="muted" style="text-align:center">Type a word to destroy it. Keep your fingers on the home row. <b>Esc</b> = let go of the current word.</p>
+    <p class="muted" style="text-align:center" data-t="rain.hint">Type a word to destroy it. Keep your fingers on the home row. <b>Esc</b> = let go of the current word.</p>
   </section>
 </div>
 
 <!-- overlays -->
 <div class="overlay" id="raceLobby"><div class="panel">
-  <h2>🏁 Race Keebo</h2>
-  <p class="muted">Pick Keebo's speed. Win to earn bonus XP. Keebo uses only the keys you have learned.</p>
-  <div class="lvrow" id="raceLv" role="group" aria-label="Level for Match me"></div>
+  <h2 data-t="race.h">🏁 Race Keebo</h2>
+  <p class="muted" data-t="race.txt">Pick Keebo's speed. Win to earn bonus XP. Keebo uses only the keys you have learned.</p>
+  <div class="lvrow" id="raceLv" role="group" aria-label="Level for Match me" data-ta="aria-label=race.lvA"></div>
   <div class="choices" id="raceChoices"></div>
-  <button class="btn ghost" id="raceCancel">Cancel</button>
+  <button class="btn ghost" id="raceCancel" data-t="cancel">Cancel</button>
 </div></div>
 <div class="overlay" id="ladderLock"><div class="panel">
-  <h2>🪜 Longest Word is locked</h2>
+  <h2 data-t="ll.h">🪜 Longest Word is locked</h2>
   <p class="muted" id="llTxt"></p>
   <ol class="missing" id="llList"></ol>
   <button class="btn" id="llClose">OK</button>
 </div></div>
 <div class="overlay" id="levelLobby"><div class="panel">
   <h2 id="lvTitle">Pick a level</h2>
-  <p class="muted" id="lvTxt">Fun is more relaxed. Normal is the game as you know it. Super Challenge is harder.</p>
+  <p class="muted" id="lvTxt" data-t="lv.txt">Fun is more relaxed. Normal is the game as you know it. Super Challenge is harder.</p>
   <div class="choices lvchoices" id="lvChoices"></div>
-  <button class="btn ghost" id="lvCancel">Cancel</button>
+  <button class="btn ghost" id="lvCancel" data-t="cancel">Cancel</button>
 </div></div>
 <div class="overlay" id="boostLobby"><div class="panel">
   <h2>⚡ Booster</h2>
-  <p class="muted" id="blTxt">Pick a chapter: easy, medium or hard. A very good run gives it one more star.</p>
+  <p class="muted" id="blTxt" data-t="bl.txt">Pick a chapter: easy, medium or hard. A very good run gives it one more star.</p>
   <div class="choices" id="boostChoices"></div>
-  <button class="btn ghost" id="boostCancel">Cancel</button>
+  <button class="btn ghost" id="boostCancel" data-t="cancel">Cancel</button>
 </div></div>
 <div class="overlay" id="customLobby"><div class="panel">
-  <h2>🔤 Custom Letters</h2>
-  <p class="muted">Click the keys to practise, or press them on your keyboard. You get real words with only these letters.</p>
+  <h2 data-t="cl.h">🔤 Custom Letters</h2>
+  <p class="muted" data-t="cl.txt">Click the keys to practise, or press them on your keyboard. You get real words with only these letters.</p>
   <div class="ckb" id="clKb"></div>
-  <div class="cquick"><button class="btn ghost" id="clHome">Home row</button><button class="btn ghost" id="clLearned">Learned keys</button><button class="btn ghost" id="clClear">Clear</button></div>
+  <div class="cquick"><button class="btn ghost" id="clHome" data-t="cl.home">Home row</button><button class="btn ghost" id="clLearned" data-t="cl.learned">Learned keys</button><button class="btn ghost" id="clClear" data-t="cl.clear">Clear</button></div>
   <div id="clInfo" class="muted"></div>
-  <div class="rbtns"><button class="btn ghost" id="clCancel">Cancel</button><button class="btn" id="clGo">Start ▶</button></div>
+  <div class="rbtns"><button class="btn ghost" id="clCancel" data-t="cancel">Cancel</button><button class="btn" id="clGo" data-t="cl.go">Start ▶</button></div>
 </div></div>
 <div class="overlay" id="rainOver"><div class="panel">
   <h2 id="rainTitle">Game over</h2>
   <div class="bigstars" style="font-size:44px">☄️</div>
   <p id="rainTxt" class="muted"></p>
-  <div class="rbtns"><button class="btn ghost" id="rainMap">Map</button><button class="btn" id="rainAgain">Play again</button></div>
+  <div class="rbtns"><button class="btn ghost" id="rainMap" data-t="map">Map</button><button class="btn" id="rainAgain" data-t="rain.again">Play again</button></div>
 </div></div>
 <div class="overlay" id="settings"><div class="panel" style="text-align:left">
-  <h2>⚙️ Settings</h2>
-  <div class="field"><label for="setName">Name</label><input id="setName" type="text" maxlength="20"></div>
-  <div class="field"><label>Keyboard</label><div class="seg" id="setLayout">
-    <button data-v="azerty">AZERTY<small>Belgian / French</small></button>
-    <button data-v="qwerty">QWERTY<small>US / UK / Dutch</small></button></div>
-    <div class="muted" style="font-size:12px;margin-top:4px">Each keyboard has its own chapter progress.</div></div>
-  <div class="field"><label>Practice words</label><div class="seg" id="setLang">
-    <button data-v="nl">Nederlands</button><button data-v="en">English</button></div></div>
-  <div class="field"><label>Keyboard help on screen</label><div class="seg" id="setBlind">
-    <button data-v="0">Full<small>labels + colors</small></button>
-    <button data-v="1">Blind<small>no letters</small></button>
-    <button data-v="2">Pro<small>no keyboard</small></button></div></div>
-  <div class="field"><label>Hands below the keyboard</label><div class="seg" id="setHands">
-    <button data-v="1">On<small>show which finger</small></button>
-    <button data-v="0">Off<small>no finger hint</small></button></div></div>
-  <div class="field"><label>Sliding text <small class="muted">(test)</small></label><div class="seg" id="setSlide">
-    <button data-v="1">On<small>one row, the text slides</small></button>
-    <button data-v="0">Off<small>rows of text</small></button></div></div>
-  <div class="field"><label>Finger colour frame</label><div class="seg" id="setFrame">
-    <button data-v="1">On<small>screen border in the finger colour</small></button>
-    <button data-v="0">Off<small>no frame</small></button></div></div>
-  <div class="field"><label>Sound</label><div class="seg" id="setSound">
-    <button data-v="1">On</button><button data-v="0">Off</button></div></div>
-  <div class="field"><label>Click sound</label><div class="seg" id="setClicks">
-    <button data-v="1">On<small>soft tick on buttons</small></button><button data-v="0">Off</button></div></div>
-  <div class="field" id="setKeys"><label>Keyboard shortcuts</label>
+  <h2 data-t="set.h">⚙️ Settings</h2>
+  <div class="field"><label for="setName" data-t="set.name">Name</label><input id="setName" type="text" maxlength="20"></div>
+  <div class="field"><label data-t="set.kb">Keyboard</label><div class="seg" id="setLayout">
+    <button data-v="azerty">AZERTY<small data-t="lay.az">Belgian / French</small></button>
+    <button data-v="qwerty">QWERTY<small data-t="lay.qw">US / UK / Dutch</small></button></div>
+    <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.kbNote">Each keyboard has its own chapter progress.</div></div>
+  <div class="field"><label data-t="set.lang">Language</label><div class="seg langseg" id="setLang">
+    <button data-v="nl">Nederlands</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="it">Italiano</button></div>
+    <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.langNote">Screens, Keebo and all typing texts.</div></div>
+  <div class="field"><label data-t="set.help">Keyboard help on screen</label><div class="seg" id="setBlind">
+    <button data-v="0"><span data-t="set.full">Full</span><small data-t="set.fullS">labels + colors</small></button>
+    <button data-v="1"><span data-t="set.blind">Blind</span><small data-t="set.blindS">no letters</small></button>
+    <button data-v="2">Pro<small data-t="set.proS">no keyboard</small></button></div></div>
+  <div class="field"><label data-t="set.hands">Hands below the keyboard</label><div class="seg" id="setHands">
+    <button data-v="1"><span data-t="on">On</span><small data-t="set.handsOn">show which finger</small></button>
+    <button data-v="0"><span data-t="off">Off</span><small data-t="set.handsOff">no finger hint</small></button></div></div>
+  <div class="field"><label><span data-t="set.slide">Sliding text</span> <small class="muted">(test)</small></label><div class="seg" id="setSlide">
+    <button data-v="1"><span data-t="on">On</span><small data-t="set.slideOn">one row, the text slides</small></button>
+    <button data-v="0"><span data-t="off">Off</span><small data-t="set.slideOff">rows of text</small></button></div></div>
+  <div class="field"><label data-t="set.frame">Finger colour frame</label><div class="seg" id="setFrame">
+    <button data-v="1"><span data-t="on">On</span><small data-t="set.frameOn">screen border in the finger colour</small></button>
+    <button data-v="0"><span data-t="off">Off</span><small data-t="set.frameOff">no frame</small></button></div></div>
+  <div class="field"><label data-t="set.sound">Sound</label><div class="seg" id="setSound">
+    <button data-v="1" data-t="on">On</button><button data-v="0" data-t="off">Off</button></div></div>
+  <div class="field"><label data-t="set.clicks">Click sound</label><div class="seg" id="setClicks">
+    <button data-v="1"><span data-t="on">On</span><small data-t="set.clicksOn">soft tick on buttons</small></button><button data-v="0" data-t="off">Off</button></div></div>
+  <div class="field" id="setKeys"><label data-t="set.keys">Keyboard shortcuts</label>
     <table class="keys-list">
-      <tr><th colspan="2">Map</th></tr>
-      <tr><td><kbd>Enter</kbd></td><td>Continue: next chapter</td></tr>
-      <tr><td><kbd>1</kbd> … <kbd>9</kbd>, <kbd>0</kbd></td><td>Open a game. The number is on the tile.</td></tr>
-      <tr><td><kbd>S</kbd></td><td>Settings</td></tr>
-      <tr><td><kbd>?</kbd></td><td>Tour of the screen</td></tr>
-      <tr><th colspan="2">Tour</th></tr>
-      <tr><td><kbd>→</kbd> / <kbd>←</kbd></td><td>Next / back</td></tr>
-      <tr><th colspan="2">While you type</th></tr>
-      <tr><td><kbd>Esc</kbd></td><td>Stop and go back to the map</td></tr>
-      <tr><td><kbd>Tab</kbd></td><td>Start the same run again</td></tr>
-      <tr><td><kbd>Esc</kbd> in Word Rain</td><td>Let go of the current word</td></tr>
-      <tr><th colspan="2">Result</th></tr>
-      <tr><td><kbd>Enter</kbd></td><td>Main button (next or retry)</td></tr>
-      <tr><td><kbd>R</kbd></td><td>Retry</td></tr>
-      <tr><td><kbd>M</kbd> or <kbd>Esc</kbd></td><td>Map</td></tr>
-      <tr><th colspan="2">Pop-ups</th></tr>
-      <tr><td><kbd>1</kbd> … <kbd>4</kbd></td><td>Pick a choice in Race Keebo and Booster</td></tr>
-      <tr><td><kbd>Esc</kbd></td><td>Close</td></tr>
+      <tr><th colspan="2" data-t="map">Map</th></tr>
+      <tr><td><kbd>Enter</kbd></td><td data-t="k.cont">Continue: next chapter</td></tr>
+      <tr><td><kbd>1</kbd> … <kbd>9</kbd>, <kbd>0</kbd></td><td data-t="k.game">Open a game. The number is on the tile.</td></tr>
+      <tr><td><kbd>S</kbd></td><td data-t="settings">Settings</td></tr>
+      <tr><td><kbd>?</kbd></td><td data-t="k.tour">Tour of the screen</td></tr>
+      <tr><th colspan="2" data-t="tour">Tour</th></tr>
+      <tr><td><kbd>→</kbd> / <kbd>←</kbd></td><td data-t="k.nextBack">Next / back</td></tr>
+      <tr><th colspan="2" data-t="k.typing">While you type</th></tr>
+      <tr><td><kbd>Esc</kbd></td><td data-t="k.stop">Stop and go back to the map</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td data-t="k.again">Start the same run again</td></tr>
+      <tr><td data-t="k.escRain"><kbd>Esc</kbd> in Word Rain</td><td data-t="k.letGo">Let go of the current word</td></tr>
+      <tr><th colspan="2" data-t="k.result">Result</th></tr>
+      <tr><td><kbd>Enter</kbd></td><td data-t="k.main">Main button (next or retry)</td></tr>
+      <tr><td><kbd>R</kbd></td><td data-t="retry">Retry</td></tr>
+      <tr><td data-t="k.mEsc"><kbd>M</kbd> or <kbd>Esc</kbd></td><td data-t="map">Map</td></tr>
+      <tr><th colspan="2" data-t="k.pop">Pop-ups</th></tr>
+      <tr><td><kbd>1</kbd> … <kbd>4</kbd></td><td data-t="k.pick">Pick a choice in Race Keebo and Booster</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td data-t="close">Close</td></tr>
     </table></div>
-  <div class="field"><label>Backup</label>
+  <div class="field"><label data-t="set.backup">Backup</label>
     <div class="row" style="flex-wrap:wrap">
-      <button class="btn ghost" id="setExport">Copy backup code</button>
-      <button class="btn ghost" id="setImport">Restore from code</button>
-      <button class="btn ghost" id="setReset" style="color:#ff8a9a">Reset all</button>
+      <button class="btn ghost" id="setExport" data-t="set.export">Copy backup code</button>
+      <button class="btn ghost" id="setImport" data-t="set.import">Restore from code</button>
+      <button class="btn ghost" id="setReset" style="color:#ff8a9a" data-t="set.reset">Reset all</button>
     </div>
     <textarea id="setCode" rows="3" style="display:none;width:100%;margin-top:8px;border-radius:10px;background:var(--bg2);color:var(--text);border:1px solid var(--line);padding:8px;font-family:var(--mono);font-size:11px"></textarea>
-    <div class="row" id="setCodeRow" style="display:none;margin-top:6px"><span class="muted" id="setCodeMsg" style="font-size:13px"></span><div class="spacer"></div><button class="btn" id="setCodeGo">Restore</button></div>
+    <div class="row" id="setCodeRow" style="display:none;margin-top:6px"><span class="muted" id="setCodeMsg" style="font-size:13px"></span><div class="spacer"></div><button class="btn" id="setCodeGo" data-t="set.restore">Restore</button></div>
   </div>
-  <div class="field" id="setChapters" style="display:none"><label>Chapter codes <small class="muted">(test)</small></label>
-    <div class="muted" style="font-size:12px;margin-bottom:6px">A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in "Restore from code", or click Go.</div>
+  <div class="field" id="setChapters" style="display:none"><label><span data-t="set.codes">Chapter codes</span> <small class="muted">(test)</small></label>
+    <div class="muted" style="font-size:12px;margin-bottom:6px" data-t="set.codesTxt">A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in "Restore from code", or click Go.</div>
     <div id="setChList" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px"></div>
   </div>
-  <div class="field" id="setNewDay" style="display:none"><label>New day <small class="muted">(test)</small></label>
-    <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1">Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.</span>
-    <button class="btn ghost" id="setNewDayGo">Start a new day</button></div></div>
-  <div class="field"><label>Tour</label><button class="btn ghost" id="setTour">Show the tour again</button>
-    <span class="muted" style="font-size:12px;margin-left:8px">or tap ❓ on the map</span></div>
-  <div class="row" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose">Done</button></div>
+  <div class="field" id="setNewDay" style="display:none"><label><span data-t="set.newDay">New day</span> <small class="muted">(test)</small></label>
+    <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1" data-t="set.newDayTxt">Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.</span>
+    <button class="btn ghost" id="setNewDayGo" data-t="set.newDayGo">Start a new day</button></div></div>
+  <div class="field"><label data-t="tour">Tour</label><button class="btn ghost" id="setTour" data-t="set.tour">Show the tour again</button>
+    <span class="muted" style="font-size:12px;margin-left:8px" data-t="set.tourHint">or tap ❓ on the map</span></div>
+  <div class="row" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose" data-t="done">Done</button></div>
 </div></div>
 <div class="overlay" id="badgeCard"><div class="panel bcard" role="dialog" aria-modal="true" aria-labelledby="bcName">
   <div class="bic" id="bcIcon">🏅</div>
@@ -731,11 +735,11 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
 <div id="tour" role="dialog" aria-modal="true" aria-labelledby="tourT"><div id="tourHole"></div>
   <div id="tourCard"><h3 id="tourT"></h3><p id="tourP"></p>
     <div class="row" style="margin-bottom:10px"><span id="tourDots" aria-hidden="true"></span><div class="spacer"></div><span class="muted" id="tourN" style="font-size:12px"></span></div>
-    <div class="row"><button class="btn ghost" id="tourSkip" style="padding:8px 12px">Skip</button><div class="spacer"></div>
-      <button class="btn ghost tarr" id="tourBack" aria-label="Back" title="Back (←)">←</button>
+    <div class="row"><button class="btn ghost" id="tourSkip" style="padding:8px 12px" data-t="skip">Skip</button><div class="spacer"></div>
+      <button class="btn ghost tarr" id="tourBack" aria-label="Back" title="Back (←)" data-ta="aria-label=back,title=tour.backT">←</button>
       <button class="btn tarr" id="tourNext" aria-label="Next" title="Next (→)">→</button></div></div></div>
 <canvas id="confetti" width="0" height="0"></canvas>
-<div class="layoutwarn" id="layoutWarn" role="status"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn ghost" id="layoutLater">Not now</button><button class="btn" id="layoutFix">Switch</button></div>
+<div class="layoutwarn" id="layoutWarn" role="status"><span id="layoutWarnTxt"></span><div class="spacer"></div><button class="btn ghost" id="layoutLater" data-t="lay.later">Not now</button><button class="btn" id="layoutFix" data-t="lay.fix">Switch</button></div>
 <div class="toast" id="toast"><span class="i" id="toastI">🏅</span><span id="toastT"></span></div>
 
 <script>
@@ -764,8 +768,9 @@ const LAYOUTS = {
     left:[0,1.5,1.75,1.25], right:["⌫","Enter","","Shift"]
   }
 };
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 const LEFT_LABEL = ["","Tab","Caps","Shift"];
-const FINGER_NAMES = ["left pinky","left ring finger","left middle finger","left index finger","right index finger","right middle finger","right ring finger","right pinky","thumb"];
 const FINGER_COLORS = ["#ff6b8b","#ffa94d","#ffd43b","#3ee089","#3ee089","#ffd43b","#ffa94d","#ff6b8b","#9aa3d6"];
 
 /* =========================================================================
@@ -815,7 +820,27 @@ spel spelen school klas leraar vraag antwoord huiswerk scherm toets toetsenbord 
 huis kamer keuken tuin straat stad dorp land zee strand bos rivier berg wolk regen zon sneeuw wind lente zomer herfst winter ochtend middag avond nacht vandaag morgen gisteren altijd nooit soms
 groot klein lang kort warm koud mooi leuk goed slecht blij boos moe snel traag sterk zacht hard licht donker rood blauw groen geel zwart wit oranje paars roze grijs
 lopen rennen springen zwemmen fietsen lezen schrijven tekenen zingen dansen spelen werken leren denken weten willen kunnen zien horen praten lachen eten drinken slapen helpen maken bouwen delen sturen winnen verliezen proberen
-fiets auto trein vliegtuig raket planeet robot computer telefoon spelletje pizza frietjes chocolade koekje appel banaan peer druif aardbei kaas brood boter soep water melk thee`
+fiets auto trein vliegtuig raket planeet robot computer telefoon spelletje pizza frietjes chocolade koekje appel banaan peer druif aardbei kaas brood boter soep water melk thee`,
+fr: `le la les un une de des et est en il elle on nous vous ils je tu ne pas que qui dans pour sur avec au aux du par plus mais ou son sa ses mon ma mes ton ta tes ce cette tout tous bien fait faire avoir aller voir dire venir prendre petit grand jour temps eau main mot oui non comme quand alors aussi encore jamais toujours ici moi toi lui deux trois
+la sa as ah gala salsa flash glas
+elle fil fille fils sel seul sud dur jus rue roue lit lire rire dire tir tour tout toute route porte pied pire port poste plat plage pour jour joue joie jouet loup heure feu jeu ours
+chat chien bon bonne nuit nez vent vert vive bleu blanc noir neige zoo zone taxi six dix vingt
+jeu jouer classe prof devoir clavier doigt lettre vitesse niveau score match but ballon foot tennis basket
+maison chambre cuisine jardin ville village pays mer plage nuage pluie soleil vent matin midi soir nuit demain hier hiver
+grand petit long court chaud froid beau joli bon content rapide lent fort doux dur clair sombre rouge bleu vert jaune noir blanc orange violet rose gris
+marcher courir sauter nager rouler lire chanter danser jouer penser savoir vouloir pouvoir parler rire manger boire dormir aider faire partager gagner perdre essayer
+voiture train avion robot pizza frites chocolat biscuit pomme banane poire raisin fraise fromage pain beurre soupe lait
+école été forêt rivière montagne fusée planète téléphone ordinateur écran équipe élève dessiner écrire apprendre printemps automne fâché fatigué`,
+it: `il lo la i gli le un una di da in con su per tra e o ma non che chi come dove quando sono sei siamo io tu lui lei noi voi loro mio tuo suo bene male molto poco meno anche ancora sempre mai oggi ieri domani qui qua no ciao grazie fare dire andare vedere dare stare avere essere
+la da fa sa ha alla dalla falla galla sala salsa salda falsa gala
+tre sei otto re pere torta tutti rete riso ruota pera pietra quattro porta poi pure piede uova ieri oro tetto
+cane cena come casa vino vento neve nove nave buono zoo zero zucca zebra taxi
+gioco giocare scuola classe maestro compiti schermo tastiera dito lettera livello punti squadra partita gol palla calcio tennis basket
+casa camera cucina giardino strada paese mare spiaggia bosco fiume montagna nuvola pioggia sole neve vento primavera estate autunno inverno mattina sera notte
+grande piccolo lungo corto caldo freddo bello buono brutto felice stanco veloce lento forte morbido duro chiaro scuro rosso blu verde giallo nero bianco arancione viola rosa grigio
+camminare correre saltare nuotare leggere scrivere disegnare cantare ballare lavorare imparare pensare sapere volere potere vedere sentire parlare ridere mangiare bere dormire aiutare costruire mandare vincere perdere provare
+bici macchina treno aereo razzo pianeta robot computer telefono pizza patatine cioccolato biscotto mela banana uva fragola formaggio pane burro minestra acqua latte gelato
+città velocità perché più già così però caffè tè`
 };
 const SENTENCES = {
 en: [
@@ -841,7 +866,582 @@ nl: [
 "Geef nooit op, ook niet als de woorden lang worden.","Hij schopte de bal over het hek.","Waarom hebben pinguins nooit koude voeten?",
 "Goed leren typen helpt je de rest van je leven.","Een rechte rug houdt je polsen en schouders blij.","Pas op, de hond van de buren springt over de haag.",
 "Vlakbij de zee bouwden we een kasteel van zand.","Morgen gaan we fietsen naar het park.","Typen is als fietsen: je leert het een keer en je vergeet het nooit."
+],
+fr: [
+"Entraîne-toi un peu chaque jour et tu iras plus vite.","Regarde l'écran, pas tes mains.","Mon robot tape plus vite qu'un guépard ne court.",
+"Nous avons mangé une pizza sur le toit sous les étoiles.","La mer est salée depuis des millions d'années.","Un bon dactylo revient toujours sur la rangée de base.",
+"L'équipe a gagné le match à la dernière minute.","La musique rend les devoirs beaucoup plus courts.","Notre classe a construit une fusée en papier et en colle.",
+"Elle a trouvé une petite grenouille dans sa chaussure.","Des doigts calmes gagnent la course.","La pluie tape doucement sur la fenêtre ce soir.",
+"Le secret de la vitesse, c'est un rythme calme et régulier.","Chaque touche a son doigt, alors fais confiance à tes mains.","Le volcan de l'île dort depuis des années.",
+"Je crois que mon chat dirige toute la maison en secret.","Taper sans regarder, c'est comme un super-pouvoir.","Les zèbres courent en zigzag dans la plaine dorée.",
+"Les examens sont plus faciles quand on a bien dormi.","Waouh, c'était rapide et très précis.","Les lumières brillent au-dessus de la ville la nuit.",
+"N'abandonne jamais, même quand les mots deviennent longs.","Il a tapé dans le ballon, qui a volé par-dessus la haie.","Les pingouins n'ont jamais froid aux pieds.",
+"Apprendre à bien taper t'aidera toute ta vie.","Un dos droit garde tes poignets et tes épaules contents.","Attention, le chien des voisins saute par-dessus la haie.",
+"Près de la mer, nous avons construit un château de sable.","Demain, nous allons au parc à vélo.","Taper, c'est comme le vélo, on ne l'oublie jamais."
+],
+it: [
+"Esercitati un po' ogni giorno e diventerai più veloce.","Guarda lo schermo, non le mani.","Il mio robot scrive più veloce di un ghepardo.",
+"Abbiamo mangiato la pizza sul tetto guardando le stelle.","Sai perché il mare è salato?","Un bravo dattilografo torna sempre sulla fila di base.",
+"La squadra ha vinto la partita all'ultimo minuto.","La musica rende i compiti molto più brevi.","La nostra classe ha costruito un razzo di carta e colla.",
+"Ha trovato una piccola rana nella scarpa sinistra!","Dita calme vincono la gara.","Senti la pioggia sulla finestra stasera?",
+"Il segreto della velocità è un ritmo calmo e regolare.","Ogni tasto ha il suo dito, quindi fidati delle tue mani.","Il vulcano sull'isola dorme da anni.",
+"Credo che il mio gatto comandi tutta la casa in segreto.","Scrivere senza guardare è come un superpotere.","Le zebre corrono a zigzag nella pianura dorata.",
+"Gli esami vanno meglio quando dormi bene.","Wow, è stato veloce e molto preciso!","Luci brillanti tremolano sopra la città di notte.",
+"Non arrenderti mai, anche quando le parole diventano lunghe.","Ha calciato la palla oltre la siepe.","Perché i pinguini non hanno mai freddo ai piedi?",
+"Imparare a scrivere bene ti aiuterà per tutta la vita.","Una schiena dritta rende felici polsi e spalle.","Attenzione, il cane dei vicini salta oltre la siepe.",
+"Vicino al mare abbiamo costruito un castello di sabbia.","Domani andiamo al parco in bici.","Scrivere è come andare in bici: una volta imparato, non lo dimentichi più."
 ]};
+
+/* =========================================================================
+   DATA: screen texts per language (nl, en, fr, it). English is the fallback.
+   Keys: see t(). Lists: fingers, lines.*, titles, badgeText, rules, tour.
+   "$" maps English data strings (stage names, tips, chapter titles) to the language.
+   ========================================================================= */
+const I18N = {};
+I18N.en = {
+  "lang":"Language","chapter":"Chapter","and":"and","space":"space","you":"You","player":"Player","level":"Level","lv":"Lv","key":"Key",
+  "map":"Map","backMap":"← Map","cancel":"Cancel","close":"Close","done":"Done","skip":"Skip","back":"Back","next":"Next","retry":"Retry",
+  "on":"On","off":"Off","settings":"Settings","tour":"Tour","badges":"Badges","goal":"Today's goal","go":"GO!","go.btn":"Go","letsGo":"Let's go!","rematch":"Rematch?",
+  "days1":"{n} day","days":"{n} days",
+  "fingers":["left pinky","left ring finger","left middle finger","left index finger","right index finger","right middle finger","right ring finger","right pinky","thumb"],
+  "f.space":"Space: thumb","f.shiftL":" + Shift with your left pinky","f.shiftR":" + Shift with your right pinky",
+  "lines.cheer":["Smooth! 😎","Nice rhythm!","Eyes on the screen. You've got this. 👀","You're on fire! 🔥","Beep boop, that's fast!","Great flow, keep going!","Your fingers know the way now."],
+  "lines.oops":["Easy… accuracy first. Speed comes later.","Feel the bumps on F and J and reset your hands.","Slow is smooth, and smooth is fast.","Breathe. Look at the screen, not your hands.","Which finger is that key for? Check the colour."],
+  "lines.hello":["Hi {n}! Ready to train those fingers?","Welcome back, {n}! 10 minutes today?","Hey {n}! Every key you type makes you faster.","Good to see you, {n}! Let's beat yesterday."],
+  /* onboarding */
+  "ob.hi":"Hi! I'm <b>Keebo</b>, your typing coach. I'll teach you to type with all ten fingers, without looking. First, a few questions.",
+  "ob.name":"What's your name?","ob.namePh":"Your name","ob.kb":"Which keyboard do you have?","ob.kbHint":"Look at the first letters on the top row.",
+  "ob.detect":"I think you have {g}. Change it if I'm wrong.","ob.go":"Let's go! →","lay.az":"Belgian / French","lay.qw":"US / UK / Dutch",
+  /* home */
+  "h.streakT":"Streak: days in a row with today's goal reached","h.tourT":"Tour (?)","h.tourA":"Start the tour","h.week":"Streak: last 7 days",
+  "h.wsave":"Reach today's goal to save your streak","h.toNext":"{x} XP to next level",
+  "st.best":"Best WPM","st.avg":"Avg WPM","st.stars":"Stars",
+  "m.warm":"Daily warm-up","m.warmS":"1 minute · easy words · no score","m.daily":"Daily sentence","m.dailyS":"One new sentence each day",
+  "m.cont":"Continue","m.race":"Race Keebo","m.raceS":"Beat the bot in a typing race","m.rain":"Word Rain","m.rainS":"Stop the meteors before they land",
+  "m.ladder":"Longest Word","m.ladderS":"Climb the word ladder against Keebo","m.ladderRec":"climb against Keebo",
+  "m.mar":"Word Marathon","m.marS":"Type the ladder at your own pace. Stay ahead of Keebo","m.marRec":"stay ahead of Keebo",
+  "m.smart":"Smart Practice","m.smartS":"Train your weakest keys","m.custom":"Custom Letters","m.customS":"Pick the keys you want to practise","m.customLast":"Last: {k} · pick your keys",
+  "m.boost":"Booster","m.boostN1":"{n} chapter can get more stars","m.boostN":"{n} chapters can get more stars","m.boostAll":"All chapters have ★★★ 🎉","m.boostLock":"Locked: get 1 star on a chapter first",
+  "lock.ch1":"Locked: pass chapter 1 first","lock.bottom":"Locked: finish the Bottom Row first","map.target":"target {w}+ WPM",
+  "hi.warm":"Hi {n}! Start the day with a 1-minute warm-up? ☀️","hi.daily":"Today's sentence is ready, {n}. One try counts! 📜",
+  "hi.goal":"Daily goal done, {n}! 🎉 Extra practice makes you even faster.","hi.frozen":"Welcome back, {n}! Reach today's goal to save your streak. ❄️",
+  "hi.broken":"Welcome back, {n}! Let's start a new streak today. 🔥",
+  "sk.risk":"at risk","sk.wd":["S","M","T","W","T","F","S"],"sk.tip":{goal:"Goal reached",saved:"Frozen, then saved",frozen:"Frozen",miss:"Missed",today:"Today"},
+  "sk.ready":"❄ Freeze ready","sk.back":"❄ Freeze back in {d}",
+  /* rules */
+  "rules.h":"Keebo's golden rules","rules.tap":"Tap a rule to see why","rules.prev":"Previous rule","rules.next":"Next rule","rules.more":"Show more",
+  "rules.all":"All","rules.allT":"Show all rules","rules.smaller":"Make smaller","rules.rule":"Rule",
+  /* typing */
+  "t.blindT":"Change how much of the keyboard you see","t.blind":["👀 Keys: on","🙈 Keys: blind","😎 Keys: hidden"],"t.caps":"⚠️ Caps Lock is ON. Turn it off.",
+  "t.ladderA":"Word ladder","t.lightsA":"Start lights",
+  "intro.first":"Put your index fingers on the bumps of <b>F</b> and <b>J</b>. The other fingers rest next to them. Thumbs on space. {keys}.",
+  "intro.new":"New keys: {keys}. Reach, press, and go back home.",
+  "intro*words":"Real words with the keys you know. Do not look down!","intro*shift":"Capitals! Hold Shift with the pinky of the OTHER hand, then press the letter.",
+  "intro*sentences":"Full sentences. Keep a calm, steady rhythm.","intro*numbers":"Numbers and words. Reach up, then come back to the home row.",
+  "intro*speed":"Speed sprint! The most common words. Stay relaxed.","intro*boss":"BOSS LEVEL. A long text. Accuracy first, then speed. Good luck!",
+  /* result */
+  "r.acc":"Accuracy","r.time":"Time","r.retry":"↻ Retry","r.next":"Next →","r.enter":"Press <b>Enter</b> for the main button",
+  "r.tricky":"Tricky keys:","r.noMiss":"No mistakes. Wow! 💎",
+  "les.s3":"PERFECT! Three stars! You're a typing machine! 🤖💜","les.s2":"Great job! Two stars. Want to go for three?",
+  "les.s1":"Chapter passed! Next time, try a bit faster.","les.s0":"Almost! Get 90% accuracy to pass. Go slower, and be precise.",
+  "les.need1":"Need: 90% accuracy to pass.","les.need2":"For ★★: 94% accuracy and {w} WPM.","les.need3":"For ★★★: 97% accuracy and {w} WPM.",
+  "les.next":"Next chapter →","les.blindTip":"Tip: try Blind mode in Settings!",
+  "goal.done":"🎯 Daily goal reached!<small>10 minutes of practice today. You can stop now, or go on for extra speed.</small>","goal.say":"Daily goal done{name}! 🎉 Same time tomorrow?",
+  "lvl.up":"Level up!","lvl.newTitle":"New title: {t}","lvl.toNext":"{x} XP to level {l}","lvl.sayTitle":"Level {l}! You are now a <b>{t}</b>! 🤖💃","lvl.say":"Level {l}! Keep going! 🚀",
+  "train.ok":"Good training. Accuracy first, then speed.",
+  /* smart practice */
+  "smart.good":"Your weak keys are getting stronger! 💪","smart.ok":"Good training. Repeat this a few times.","smart.say":"I picked your trickiest keys: {keys}. Slow and precise!",
+  /* booster */
+  "bl.txt":"Pick a chapter: easy, medium or hard. A very good run gives it one more star.",
+  "b.easy":"Easy","b.mid":"Medium","b.hard":"Hard","b.goal":"{a}% accuracy and {w} WPM","b.allDone":"All your chapters have ★★★. Wow! 🎉","b.first":"Get 1 star on a chapter first.",
+  "b.nextStar":"Next star:","b.focus":"Focus keys: {keys}.","b.say":"Boost to {s}! You need {g}.","b.up":"BOOST! {c} now has {s}! 🚀","b.close":"So close! Try once more.",
+  "b.complete":"{c} is complete: ★★★","b.for":"For","b.again":"Boost a chapter",
+  /* custom letters */
+  "cl.h":"🔤 Custom Letters","cl.txt":"Click the keys to practise, or press them on your keyboard. You get real words with only these letters.",
+  "cl.home":"Home row","cl.learned":"Learned keys","cl.clear":"Clear","cl.go":"Start ▶","cl.pick1":"Pick at least 1 key.",
+  "cl.keys1":"key","cl.keys":"keys","cl.words1":"real word","cl.words":"real words","cl.groups":"Keebo adds letter groups",
+  "cl.good":"Your keys are getting stronger! 💪","cl.keysLbl":"Keys:","cl.other":"Pick other keys","cl.say":"Your keys: {keys}.",
+  "cl.few":"Few real words with these letters, so I added letter groups.","cl.eyes":"Eyes on the screen!",
+  /* warm-up */
+  "wu.doneToday":"Done today ✓ · unlocks again tomorrow","wu.done":"Warm-up done ☀️","wu.msg":"Your fingers are warm. Ready for the real work!",
+  "wu.say":"Warm-up. Easy words, no score. Find F and J, and type at a calm pace.","wu.opens":"The warm-up opens after chapter 1.","wu.toast":"Warm-up done for today. It unlocks again tomorrow!",
+  /* daily sentence */
+  "ds.doneToday":"Done today ✓ · {w} WPM · back tomorrow","ds.practice":"practice","ds.pMsg":"Practice run. Only the first run of the day counts.",
+  "ds.flawless":"Flawless sentence! 💎 Come back tomorrow for a new one.","ds.record":"New daily record: {w} WPM! 🏆 A new sentence waits tomorrow.",
+  "ds.done":"Today's sentence is done. A new one waits tomorrow!","ds.title":"Daily sentence done 📜","ds.best":"Your record: {w} WPM.",
+  "ds.pSay":"Practice run. It does not change today's score.","ds.say":"One sentence, one try that counts. Calm and precise!",
+  "ds.opens":"The daily sentence opens after chapter 1.","ds.toast":"Today's sentence is done. A new one comes tomorrow!",
+  /* race */
+  "race.h":"🏁 Race Keebo","race.txt":"Pick Keebo's speed. Win to earn bonus XP. Keebo uses only the keys you have learned.","race.lvA":"Level for Match me",
+  "speeds":["Chill","Steady","Fast","Turbo","Insane"],"race.match":"Match me","race.title":"Race vs Keebo ({l}, {w} WPM)",
+  "race.botFirst":"Beep! I finished first. Finish your race anyway!","race.won":"You beat Keebo! 🏆","race.lost":"Keebo wins this time 🤖",
+  "race.wonMsg":"Nooo! My circuits! You were faster. Try a faster level?","race.lostMsg":"I was faster this time. You typed {w} WPM. Rematch?",
+  "race.pick":"Pick speed","race.ready":"Get ready… Fingers on the home row!",
+  /* game levels */
+  "lv.txt":"Fun is more relaxed. Normal is the game as you know it. Super Challenge is harder.",
+  "lv.fun":"Fun","lv.normal":"Normal","lv.challenge":"Super Challenge","lv.keeboStart":"Keebo starts at {w} WPM",
+  "lv.metNormal":"Meteors at normal speed","lv.metSlower":"Meteors {p}% slower","lv.metFaster":"Meteors {p}% faster",
+  "rec.of":"Record: {b} of {n}","rec.pts":"Record: {b}","rec.none":"No record yet","rec.new":"New record! 🏆",
+  /* longest word */
+  "ll.h":"🪜 Longest Word is locked","ll.txt":"Learn all the letters first. Get at least 1 star on each chapter up to the end of the Bottom Row. You still need {n}:",
+  "lw.boss":"Boss word","lw.letters1":"{n} letter","lw.letters":"{n} letters","lw.ramp":"🐢 speeding up","lw.next":"Next word",
+  "lw.say":"Type each word before I do. Errors do not count, only time. My start pace is <b>{w} WPM</b>. Ready?",
+  "lw.sayMar":"Type the words at your own pace. I run the whole ladder without a stop. If I pass you, I win. My start pace is <b>{w} WPM</b>. Ready?",
+  "lw.bossNext":"👑 BOSS WORD next! The longest word I know.","lw.cheer":["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."],
+  "lw.wonMar":"You won the Word Marathon! 👑","lw.won":"You beat the longest word! 👑","lw.passed":"Keebo passed you at {n} letters","lw.lost":"Keebo wins at {n} letters",
+  "lw.wonMsg":"WHAT?! Even the boss word! You are a word ladder legend! 🤖💜","lw.climbed1":"You climbed {n} rung.","lw.climbed":"You climbed {n} rungs.",
+  "lw.firstLost":"I was faster on the first word. Try again!","lw.need":"Sublevels: {c} of {n} · Record: {b} · Last word: {w}",
+  "lw.sayPassed":"Beep! I passed you!","lw.sayLost":"Beep! I finished that word first.",
+  /* word rain */
+  "rain.hint":"Type a word to destroy it. Keep your fingers on the home row. <b>Esc</b> = let go of the current word.","rain.again":"Play again","rain.over":"Game over",
+  "rain.txt":"Score <b>{s}</b> · {k} meteors stopped · +{x} XP","rain.goal":"🎯 Daily goal reached! 10 minutes today.",
+  /* badges */
+  "bc.unlocked":"Badge unlocked:","bc.done":"Done! ✅","bc.notYet":"Not yet","bc.of":"{c} of {g} {u}","bc.earned":"Earned on {d}","bc.notEarned":"Not earned yet. You can do it!",
+  "u.star":"star","u.stars":"stars","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"days","u.points":"points","u.win":"win","u.chapters":"chapters",
+  /* settings */
+  "set.h":"⚙️ Settings","set.name":"Name","set.kb":"Keyboard","set.kbNote":"Each keyboard has its own chapter progress.",
+  "set.lang":"Language","set.langNote":"Screens, Keebo and all typing texts.","set.help":"Keyboard help on screen",
+  "set.full":"Full","set.fullS":"labels + colors","set.blind":"Blind","set.blindS":"no letters","set.proS":"no keyboard",
+  "set.hands":"Hands below the keyboard","set.handsOn":"show which finger","set.handsOff":"no finger hint",
+  "set.slide":"Sliding text","set.slideOn":"one row, the text slides","set.slideOff":"rows of text",
+  "set.frame":"Finger colour frame","set.frameOn":"screen border in the finger colour","set.frameOff":"no frame",
+  "set.sound":"Sound","set.clicks":"Click sound","set.clicksOn":"soft tick on buttons","set.keys":"Keyboard shortcuts",
+  "k.cont":"Continue: next chapter","k.game":"Open a game. The number is on the tile.","k.tour":"Tour of the screen","k.nextBack":"Next / back",
+  "k.typing":"While you type","k.stop":"Stop and go back to the map","k.again":"Start the same run again","k.escRain":"<kbd>Esc</kbd> in Word Rain",
+  "k.letGo":"Let go of the current word","k.result":"Result","k.main":"Main button (next or retry)","k.mEsc":"<kbd>M</kbd> or <kbd>Esc</kbd>",
+  "k.pop":"Pop-ups","k.pick":"Pick a choice in Race Keebo and Booster",
+  "set.backup":"Backup","set.export":"Copy backup code","set.import":"Restore from code","set.reset":"Reset all","set.restore":"Restore",
+  "set.resetSure":"Click again to delete ALL progress","set.copied":"Backup code copied. Paste it in a note or email.","set.copyBox":"Copy the code in the box (Ctrl+C).",
+  "set.pastePh":"Paste your backup code or chapter code here","set.restored":"Progress restored!","set.badCode":"That code does not work. Check that you copied all of it.",
+  "set.codes":"Chapter codes","set.codesTxt":"A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in \"Restore from code\", or click Go.",
+  "set.chOpen":"{c} is open ({l}).","set.newDay":"New day",
+  "set.newDayTxt":"Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.",
+  "set.newDayGo":"Start a new day","set.newDayToast":"New day! The warm-up and the daily sentence are back.",
+  "set.tour":"Show the tour again","set.tourHint":"or tap ❓ on the map",
+  /* tour */
+  "tour.go":"Let's type! ▶","tour.goA":"Start typing","tour.backT":"Back (←)","tour.nextT":"Next (→)",
+  "lay.warn":"⌨️ Your keyboard looks like <b>{g}</b>, but the app is set to {a}.","lay.later":"Not now","lay.fix":"Switch"
+};
+I18N.nl = {
+  "lang":"Taal","chapter":"Hoofdstuk","and":"en","space":"spatie","you":"Jij","player":"Speler","level":"Level","lv":"Lv","key":"Toets",
+  "map":"Kaart","backMap":"← Kaart","cancel":"Annuleren","close":"Sluiten","done":"Klaar","skip":"Overslaan","back":"Terug","next":"Volgende","retry":"Opnieuw",
+  "on":"Aan","off":"Uit","settings":"Instellingen","tour":"Rondleiding","badges":"Badges","goal":"Doel van vandaag","go":"START!","go.btn":"Ga","letsGo":"Daar gaan we!","rematch":"Revanche?",
+  "days1":"{n} dag","days":"{n} dagen",
+  "fingers":["linkerpink","linkerringvinger","linkermiddelvinger","linkerwijsvinger","rechterwijsvinger","rechtermiddelvinger","rechterringvinger","rechterpink","duim"],
+  "f.space":"Spatie: duim","f.shiftL":" + Shift met je linkerpink","f.shiftR":" + Shift met je rechterpink",
+  "lines.cheer":["Vlot! 😎","Mooi ritme!","Ogen op het scherm. Je kunt dit. 👀","Je bent on fire! 🔥","Biep boep, dat is snel!","Goede flow, ga zo door!","Je vingers kennen de weg nu."],
+  "lines.oops":["Rustig… eerst juist, dan snel.","Voel de bultjes op F en J en zet je handen terug.","Traag is vlot, en vlot is snel.","Adem in. Kijk naar het scherm, niet naar je handen.","Welke vinger hoort bij die toets? Kijk naar de kleur."],
+  "lines.hello":["Hoi {n}! Klaar om je vingers te trainen?","Welkom terug, {n}! 10 minuten vandaag?","Hey {n}! Elke toets maakt je sneller.","Fijn je te zien, {n}! Versla je score van gisteren."],
+  "ob.hi":"Hoi! Ik ben <b>Keebo</b>, je typcoach. Ik leer je typen met tien vingers, zonder te kijken. Eerst een paar vragen.",
+  "ob.name":"Hoe heet je?","ob.namePh":"Je naam","ob.kb":"Welk toetsenbord heb je?","ob.kbHint":"Kijk naar de eerste letters op de bovenste rij.",
+  "ob.detect":"Ik denk dat je {g} hebt. Pas het aan als ik me vergis.","ob.go":"Daar gaan we! →","lay.az":"Belgisch / Frans","lay.qw":"VS / VK / Nederlands",
+  "h.streakT":"Reeks: dagen na elkaar met je doel gehaald","h.tourT":"Rondleiding (?)","h.tourA":"Start de rondleiding","h.week":"Reeks: laatste 7 dagen",
+  "h.wsave":"Haal het doel van vandaag om je reeks te redden","h.toNext":"nog {x} XP tot het volgende level",
+  "st.best":"Beste WPM","st.avg":"Gem. WPM","st.stars":"Sterren",
+  "m.warm":"Dagelijkse opwarming","m.warmS":"1 minuut · makkelijke woorden · geen score","m.daily":"Zin van de dag","m.dailyS":"Elke dag een nieuwe zin",
+  "m.cont":"Verder","m.race":"Race tegen Keebo","m.raceS":"Versla de robot in een typrace","m.rain":"Woordenregen","m.rainS":"Stop de meteoren voor ze landen",
+  "m.ladder":"Langste woord","m.ladderS":"Klim de woordladder op tegen Keebo","m.ladderRec":"klim tegen Keebo",
+  "m.mar":"Woordmarathon","m.marS":"Typ de ladder in je eigen tempo. Blijf Keebo voor","m.marRec":"blijf Keebo voor",
+  "m.smart":"Slim oefenen","m.smartS":"Train je zwakste toetsen","m.custom":"Eigen letters","m.customS":"Kies de toetsen die je wilt oefenen","m.customLast":"Laatst: {k} · kies je toetsen",
+  "m.boost":"Booster","m.boostN1":"{n} hoofdstuk kan meer sterren krijgen","m.boostN":"{n} hoofdstukken kunnen meer sterren krijgen","m.boostAll":"Alle hoofdstukken hebben ★★★ 🎉","m.boostLock":"Op slot: haal eerst 1 ster op een hoofdstuk",
+  "lock.ch1":"Op slot: haal eerst hoofdstuk 1","lock.bottom":"Op slot: werk eerst de onderste rij af","map.target":"doel {w}+ WPM",
+  "hi.warm":"Hoi {n}! Begin de dag met 1 minuut opwarmen? ☀️","hi.daily":"De zin van vandaag is klaar, {n}. Eén poging telt! 📜",
+  "hi.goal":"Dagdoel gehaald, {n}! 🎉 Extra oefenen maakt je nog sneller.","hi.frozen":"Welkom terug, {n}! Haal het doel van vandaag om je reeks te redden. ❄️",
+  "hi.broken":"Welkom terug, {n}! Start vandaag een nieuwe reeks. 🔥",
+  "sk.risk":"in gevaar","sk.wd":["Z","M","D","W","D","V","Z"],"sk.tip":{goal:"Doel gehaald",saved:"Bevroren, dan gered",frozen:"Bevroren",miss:"Gemist",today:"Vandaag"},
+  "sk.ready":"❄ Bevriezing klaar","sk.back":"❄ Bevriezing terug over {d}",
+  "rules.h":"Keebo's gouden regels","rules.tap":"Tik op een regel om te zien waarom","rules.prev":"Vorige regel","rules.next":"Volgende regel","rules.more":"Toon meer",
+  "rules.all":"Alle","rules.allT":"Toon alle regels","rules.smaller":"Kleiner maken","rules.rule":"Regel",
+  "t.blindT":"Kies hoeveel van het toetsenbord je ziet","t.blind":["👀 Toetsen: aan","🙈 Toetsen: blind","😎 Toetsen: weg"],"t.caps":"⚠️ Caps Lock staat AAN. Zet hem uit.",
+  "t.ladderA":"Woordladder","t.lightsA":"Startlichten",
+  "intro.first":"Leg je wijsvingers op de bultjes van <b>F</b> en <b>J</b>. De andere vingers liggen ernaast. Duimen op de spatie. {keys}.",
+  "intro.new":"Nieuwe toetsen: {keys}. Strek, druk en ga terug naar huis.",
+  "intro*words":"Echte woorden met de toetsen die je kent. Niet naar beneden kijken!","intro*shift":"Hoofdletters! Hou Shift in met de pink van de ANDERE hand en druk dan de letter.",
+  "intro*sentences":"Volledige zinnen. Hou een rustig, vast ritme.","intro*numbers":"Cijfers en woorden. Strek naar boven en kom terug naar de thuisrij.",
+  "intro*speed":"Snelheidssprint! De meest gebruikte woorden. Blijf ontspannen.","intro*boss":"EINDBAAS. Een lange tekst. Eerst juist, dan snel. Succes!",
+  "r.acc":"Nauwkeurigheid","r.time":"Tijd","r.retry":"↻ Opnieuw","r.next":"Volgende →","r.enter":"Druk op <b>Enter</b> voor de hoofdknop",
+  "r.tricky":"Lastige toetsen:","r.noMiss":"Geen fouten. Wauw! 💎",
+  "les.s3":"PERFECT! Drie sterren! Je bent een typmachine! 🤖💜","les.s2":"Goed gedaan! Twee sterren. Ga je voor drie?",
+  "les.s1":"Hoofdstuk gehaald! Probeer volgende keer iets sneller.","les.s0":"Bijna! Haal 90% nauwkeurigheid om door te gaan. Ga trager en typ precies.",
+  "les.need1":"Nodig: 90% nauwkeurigheid om door te gaan.","les.need2":"Voor ★★: 94% nauwkeurigheid en {w} WPM.","les.need3":"Voor ★★★: 97% nauwkeurigheid en {w} WPM.",
+  "les.next":"Volgend hoofdstuk →","les.blindTip":"Tip: probeer de blinde modus in Instellingen!",
+  "goal.done":"🎯 Dagdoel gehaald!<small>10 minuten geoefend vandaag. Je kunt nu stoppen, of doorgaan voor extra snelheid.</small>","goal.say":"Dagdoel gehaald{name}! 🎉 Morgen weer?",
+  "lvl.up":"Level omhoog!","lvl.newTitle":"Nieuwe titel: {t}","lvl.toNext":"nog {x} XP tot level {l}","lvl.sayTitle":"Level {l}! Je bent nu een <b>{t}</b>! 🤖💃","lvl.say":"Level {l}! Ga zo door! 🚀",
+  "train.ok":"Goed getraind. Eerst juist, dan snel.",
+  "smart.good":"Je zwakke toetsen worden sterker! 💪","smart.ok":"Goed getraind. Doe dit nog een paar keer.","smart.say":"Ik koos je lastigste toetsen: {keys}. Traag en precies!",
+  "bl.txt":"Kies een hoofdstuk: makkelijk, gemiddeld of moeilijk. Een heel goede run geeft er één ster bij.",
+  "b.easy":"Makkelijk","b.mid":"Gemiddeld","b.hard":"Moeilijk","b.goal":"{a}% nauwkeurigheid en {w} WPM","b.allDone":"Al je hoofdstukken hebben ★★★. Wauw! 🎉","b.first":"Haal eerst 1 ster op een hoofdstuk.",
+  "b.nextStar":"Volgende ster:","b.focus":"Focustoetsen: {keys}.","b.say":"Boost naar {s}! Je hebt {g} nodig.","b.up":"BOOST! {c} heeft nu {s}! 🚀","b.close":"Bijna! Probeer nog eens.",
+  "b.complete":"{c} is klaar: ★★★","b.for":"Voor","b.again":"Boost een hoofdstuk",
+  "cl.h":"🔤 Eigen letters","cl.txt":"Klik op de toetsen die je wilt oefenen, of druk ze in op je toetsenbord. Je krijgt echte woorden met alleen deze letters.",
+  "cl.home":"Thuisrij","cl.learned":"Geleerde toetsen","cl.clear":"Wissen","cl.go":"Start ▶","cl.pick1":"Kies minstens 1 toets.",
+  "cl.keys1":"toets","cl.keys":"toetsen","cl.words1":"echt woord","cl.words":"echte woorden","cl.groups":"Keebo voegt lettergroepjes toe",
+  "cl.good":"Je toetsen worden sterker! 💪","cl.keysLbl":"Toetsen:","cl.other":"Kies andere toetsen","cl.say":"Jouw toetsen: {keys}.",
+  "cl.few":"Weinig echte woorden met deze letters, dus ik voegde lettergroepjes toe.","cl.eyes":"Ogen op het scherm!",
+  "wu.doneToday":"Klaar vandaag ✓ · morgen weer open","wu.done":"Opwarming klaar ☀️","wu.msg":"Je vingers zijn warm. Klaar voor het echte werk!",
+  "wu.say":"Opwarmen. Makkelijke woorden, geen score. Zoek F en J, en typ in een rustig tempo.","wu.opens":"De opwarming gaat open na hoofdstuk 1.","wu.toast":"Opwarming klaar voor vandaag. Morgen kan het weer!",
+  "ds.doneToday":"Klaar vandaag ✓ · {w} WPM · morgen weer","ds.practice":"oefening","ds.pMsg":"Oefenrun. Alleen de eerste run van de dag telt.",
+  "ds.flawless":"Foutloze zin! 💎 Kom morgen terug voor een nieuwe.","ds.record":"Nieuw dagrecord: {w} WPM! 🏆 Morgen wacht een nieuwe zin.",
+  "ds.done":"De zin van vandaag is klaar. Morgen wacht een nieuwe!","ds.title":"Zin van de dag klaar 📜","ds.best":"Je record: {w} WPM.",
+  "ds.pSay":"Oefenrun. Je score van vandaag verandert niet.","ds.say":"Eén zin, één poging die telt. Rustig en precies!",
+  "ds.opens":"De zin van de dag gaat open na hoofdstuk 1.","ds.toast":"De zin van vandaag is klaar. Morgen komt er een nieuwe!",
+  "race.h":"🏁 Race tegen Keebo","race.txt":"Kies de snelheid van Keebo. Win voor bonus-XP. Keebo gebruikt alleen de toetsen die jij al kent.","race.lvA":"Level voor Zoals ik",
+  "speeds":["Relax","Rustig","Snel","Turbo","Waanzinnig"],"race.match":"Zoals ik","race.title":"Race tegen Keebo ({l}, {w} WPM)",
+  "race.botFirst":"Biep! Ik ben eerst klaar. Maak je race toch af!","race.won":"Je hebt Keebo verslagen! 🏆","race.lost":"Keebo wint deze keer 🤖",
+  "race.wonMsg":"Neeee! Mijn circuits! Jij was sneller. Probeer een sneller level?","race.lostMsg":"Ik was sneller deze keer. Jij typte {w} WPM. Revanche?",
+  "race.pick":"Kies snelheid","race.ready":"Klaar… Vingers op de thuisrij!",
+  "lv.txt":"Fun is relaxter. Normaal is het spel zoals je het kent. Superuitdaging is moeilijker.",
+  "lv.fun":"Fun","lv.normal":"Normaal","lv.challenge":"Superuitdaging","lv.keeboStart":"Keebo start aan {w} WPM",
+  "lv.metNormal":"Meteoren op normale snelheid","lv.metSlower":"Meteoren {p}% trager","lv.metFaster":"Meteoren {p}% sneller",
+  "rec.of":"Record: {b} van {n}","rec.pts":"Record: {b}","rec.none":"Nog geen record","rec.new":"Nieuw record! 🏆",
+  "ll.h":"🪜 Langste woord is op slot","ll.txt":"Leer eerst alle letters. Haal minstens 1 ster op elk hoofdstuk tot het einde van de onderste rij. Je hebt er nog {n} nodig:",
+  "lw.boss":"Eindbaaswoord","lw.letters1":"{n} letter","lw.letters":"{n} letters","lw.ramp":"🐢 versnelt","lw.next":"Volgend woord",
+  "lw.say":"Typ elk woord voor ik het doe. Fouten tellen niet, alleen tijd. Mijn starttempo is <b>{w} WPM</b>. Klaar?",
+  "lw.sayMar":"Typ de woorden in je eigen tempo. Ik loop de hele ladder zonder te stoppen. Haal ik je in, dan win ik. Mijn starttempo is <b>{w} WPM</b>. Klaar?",
+  "lw.bossNext":"👑 Nu het EINDBAASWOORD! Het langste woord dat ik ken.","lw.cheer":["Ja! Volgende sport. 🪜","Mooi! Eén letter meer.","Te snel voor mij!","Klimmen, klimmen! 🧗","Biep! Je verslaat me weer."],
+  "lw.wonMar":"Je wint de woordmarathon! 👑","lw.won":"Je verslaat het langste woord! 👑","lw.passed":"Keebo haalde je in bij {n} letters","lw.lost":"Keebo wint bij {n} letters",
+  "lw.wonMsg":"WAT?! Zelfs het eindbaaswoord! Jij bent een woordladderlegende! 🤖💜","lw.climbed1":"Je klom {n} sport.","lw.climbed":"Je klom {n} sporten.",
+  "lw.firstLost":"Ik was sneller op het eerste woord. Probeer opnieuw!","lw.need":"Subniveaus: {c} van {n} · Record: {b} · Laatste woord: {w}",
+  "lw.sayPassed":"Biep! Ik haalde je in!","lw.sayLost":"Biep! Ik had dat woord eerst.",
+  "rain.hint":"Typ een woord om het te vernietigen. Hou je vingers op de thuisrij. <b>Esc</b> = laat het huidige woord los.","rain.again":"Nog eens","rain.over":"Game over",
+  "rain.txt":"Score <b>{s}</b> · {k} meteoren gestopt · +{x} XP","rain.goal":"🎯 Dagdoel gehaald! 10 minuten vandaag.",
+  "bc.unlocked":"Badge verdiend:","bc.done":"Gehaald! ✅","bc.notYet":"Nog niet","bc.of":"{c} van {g} {u}","bc.earned":"Verdiend op {d}","bc.notEarned":"Nog niet verdiend. Jij kunt het!",
+  "u.star":"ster","u.stars":"sterren","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"dagen","u.points":"punten","u.win":"overwinning","u.chapters":"hoofdstukken",
+  "set.h":"⚙️ Instellingen","set.name":"Naam","set.kb":"Toetsenbord","set.kbNote":"Elk toetsenbord heeft zijn eigen voortgang.",
+  "set.lang":"Taal","set.langNote":"Schermen, Keebo en alle typteksten.","set.help":"Hulp van het toetsenbord op het scherm",
+  "set.full":"Volledig","set.fullS":"letters + kleuren","set.blind":"Blind","set.blindS":"geen letters","set.proS":"geen toetsenbord",
+  "set.hands":"Handen onder het toetsenbord","set.handsOn":"toon welke vinger","set.handsOff":"geen vingerhulp",
+  "set.slide":"Schuivende tekst","set.slideOn":"één rij, de tekst schuift","set.slideOff":"rijen tekst",
+  "set.frame":"Vingerkleur-rand","set.frameOn":"schermrand in de vingerkleur","set.frameOff":"geen rand",
+  "set.sound":"Geluid","set.clicks":"Klikgeluid","set.clicksOn":"zachte tik op knoppen","set.keys":"Sneltoetsen",
+  "k.cont":"Verder: volgend hoofdstuk","k.game":"Open een spel. Het nummer staat op de tegel.","k.tour":"Rondleiding door het scherm","k.nextBack":"Volgende / terug",
+  "k.typing":"Tijdens het typen","k.stop":"Stop en ga terug naar de kaart","k.again":"Start dezelfde run opnieuw","k.escRain":"<kbd>Esc</kbd> in Woordenregen",
+  "k.letGo":"Laat het huidige woord los","k.result":"Resultaat","k.main":"Hoofdknop (volgende of opnieuw)","k.mEsc":"<kbd>M</kbd> of <kbd>Esc</kbd>",
+  "k.pop":"Pop-ups","k.pick":"Kies in Race tegen Keebo en Booster",
+  "set.backup":"Back-up","set.export":"Kopieer back-upcode","set.import":"Herstel met code","set.reset":"Alles wissen","set.restore":"Herstel",
+  "set.resetSure":"Klik nog eens om ALLE voortgang te wissen","set.copied":"Back-upcode gekopieerd. Plak hem in een notitie of mail.","set.copyBox":"Kopieer de code in het vak (Ctrl+C).",
+  "set.pastePh":"Plak hier je back-upcode of hoofdstukcode","set.restored":"Voortgang hersteld!","set.badCode":"Die code werkt niet. Kijk of je alles gekopieerd hebt.",
+  "set.codes":"Hoofdstukcodes","set.codesTxt":"Een code opent alle hoofdstukken ervoor. Vanaf dat hoofdstuk begint alles opnieuw. Plak een code in \"Herstel met code\", of klik op Ga.",
+  "set.chOpen":"{c} is open ({l}).","set.newDay":"Nieuwe dag",
+  "set.newDayTxt":"Zet de bewaarde datums 1 dag terug: de opwarming en de zin van de dag komen terug, het dagdoel start op 0, de reeks loopt door.",
+  "set.newDayGo":"Start een nieuwe dag","set.newDayToast":"Nieuwe dag! De opwarming en de zin van de dag zijn terug.",
+  "set.tour":"Toon de rondleiding opnieuw","set.tourHint":"of tik op ❓ op de kaart",
+  "tour.go":"Typen maar! ▶","tour.goA":"Begin met typen","tour.backT":"Terug (←)","tour.nextT":"Volgende (→)",
+  "lay.warn":"⌨️ Je toetsenbord lijkt <b>{g}</b>, maar de app staat op {a}.","lay.later":"Niet nu","lay.fix":"Wissel",
+  "titles":["Toetsbeginner","Thuisrijverkenner","Vingerninja","Toetsenridder","Ritmerijder","Snelheidssurfer","Typtitaan","Toetsenbordlegende"],
+  "badgeText":{first:["Eerste stappen","Haal je eerste hoofdstuk"],home:["Thuisrijheld","Werk de thuisrij af"],top:["Bovenrijklimmer","Werk de bovenste rij af"],
+    bottom:["Onderrijduiker","Werk de onderste rij af"],caps:["Shiftmeester","Werk Hoofdletters & zinnen af"],nums:["Cijferkraker","Werk Cijfers af"],
+    boss:["Eindbaasverslaander","Werk het Snelheidslab af"],perfect:["Foutloos","100% nauwkeurigheid in een volledige run"],blind:["Niet spieken","95%+ nauwkeurigheid in de blinde modus"],
+    w20:["20 WPM","Typ 20 WPM (90%+ nauwkeurigheid)"],w30:["30 WPM","Typ 30 WPM"],w40:["40 WPM","Typ 40 WPM"],w60:["60 WPM","Typ 60 WPM"],
+    bot1:["Robotklopper","Win een race tegen Keebo"],bot10:["Robotbaas","Win 10 races"],s3:["On fire","Reeks van 3 dagen"],s7:["Niet te stoppen","Reeks van 7 dagen"],
+    rain:["Meteorenschild","Scoor 500 in Woordenregen"],ladder:["Woordlegende","Win Langste woord of Woordmarathon"],stars30:["Sterrenverzamelaar","Verzamel 30 sterren"]},
+  "rules":[["Zit recht. Voeten plat. Polsen zweven, niet steunen.","Zo blijven je handen langer fris en snel."],
+    ["Zoek de bultjes op F en J met je wijsvingers.","Je vingers vinden de thuisrij zonder te kijken."],
+    ["Elke vinger heeft zijn eigen toetsen. Ga na elke toets terug naar de thuisrij.","Korte tochtjes, minder fouten."],
+    ["Ogen op het scherm. Kijk niet naar je handen.","Dit is de superkracht. Vertrouw je vingers!"],
+    ["Eerst juist. Snelheid komt vanzelf.","Een fout kost meer tijd dan een trage toets."],
+    ["Elke dag 10–15 minuten is beter dan 2 uur één keer per week.","Je hersenen leren terwijl je slaapt."]],
+  "tourSteps":[["Hoi, ik ben Keebo! 🤖","Je typcoach. Ik geef je een rondleiding. Het duurt 30 seconden."],
+    ["Dit ben jij 🧑‍🚀","Je level, je dagdoel en je snelheid. We zoomen in."],
+    ["XP = kracht ⚡","Elke goede toets geeft XP. Vul de balk en ga een level omhoog."],
+    ["10 minuten per dag 🎯","Vul elke dag de groene balk. Kleine stapjes, grote snelheid."],
+    ["Wat is WPM? 🏎️","Words Per Minute: woorden per minuut, hoe snel je typt. 30 WPM? Je vliegt!"],
+    ["Spellen 🎮","Race tegen Keebo, stop meteoren, klim de woordladder op. 🔒 gaat later open."],
+    ["Badges 🏅","Verzamel ze allemaal. Tik op een badge om te zien hoe je hem wint."],
+    ["Instellingen ⚙️","Geluid, toetsenbord, taal, sneltoetsen. Maak Typoo van jou."],
+    ["Verdwaald? Tik op ❓","Dan start deze rondleiding opnieuw. Of druk op ? op je toetsenbord."],
+    ["Gouden regels ⭐","Keebo's tips om blind te typen. Tik op ‹ › voor de volgende. ▴ maakt het kleiner."],
+    ["Je kaart 🗺️","Elk hoofdstuk leert je nieuwe toetsen. 1 ster opent het volgende."],
+    ["Klaar? Start! ▶️","Verder start je volgende hoofdstuk. Vingers op F en J!"]],
+  "$":{"Home Row":"Thuisrij","Top Row":"Bovenste rij","Bottom Row":"Onderste rij","Capitals & Sentences":"Hoofdletters & zinnen","Numbers":"Cijfers","Speed Lab":"Snelheidslab",
+    "Fingers rest on A S D F and J K L ;":"Vingers rusten op A S D F en J K L ;","Fingers rest on Q S D F and J K L M":"Vingers rusten op Q S D F en J K L M",
+    "Reach up, then come back home.":"Strek naar boven en kom terug naar huis.","Reach down, then come back home.":"Strek naar beneden en kom terug naar huis.",
+    "Shift with the pinky of the OTHER hand.":"Shift met de pink van de ANDERE hand.","Reach up two rows and come back.":"Strek twee rijen omhoog en kom terug.",
+    "On AZERTY, numbers need Shift!":"Op AZERTY heb je Shift nodig voor cijfers!","Relax. Find a steady rhythm.":"Ontspan. Zoek een vast ritme.",
+    "Home row words":"Woorden op de thuisrij","Home row review":"Herhaling thuisrij","Top row words":"Woorden op de bovenste rij","All letters":"Alle letters",
+    "Capitals":"Hoofdletters","First sentences":"Eerste zinnen","More sentences":"Meer zinnen","Numbers 1 to 5":"Cijfers 1 tot 5","Numbers 6 to 0":"Cijfers 6 tot 0",
+    "Numbers and words":"Cijfers en woorden","Top words sprint":"Sprint met topwoorden","Flow":"Flow","Boss level":"Eindbaas"}
+};
+I18N.fr = {
+  "lang":"Langue","chapter":"Chapitre","and":"et","space":"espace","you":"Toi","player":"Joueur","level":"Niveau","lv":"Niv.","key":"Touche",
+  "map":"Carte","backMap":"← Carte","cancel":"Annuler","close":"Fermer","done":"OK","skip":"Passer","back":"Retour","next":"Suivant","retry":"Recommencer",
+  "on":"Oui","off":"Non","settings":"Réglages","tour":"Visite","badges":"Badges","goal":"Objectif du jour","go":"PARTEZ !","go.btn":"Aller","letsGo":"C'est parti !","rematch":"Revanche ?",
+  "days1":"{n} jour","days":"{n} jours",
+  "fingers":["auriculaire gauche","annulaire gauche","majeur gauche","index gauche","index droit","majeur droit","annulaire droit","auriculaire droit","pouce"],
+  "f.space":"Espace : pouce","f.shiftL":" + Maj avec ton auriculaire gauche","f.shiftR":" + Maj avec ton auriculaire droit",
+  "lines.cheer":["Fluide ! 😎","Joli rythme !","Les yeux sur l'écran. Tu gères. 👀","Tu es en feu ! 🔥","Bip boup, c'est rapide !","Super flow, continue !","Tes doigts connaissent le chemin."],
+  "lines.oops":["Doucement… d'abord juste, la vitesse viendra.","Sens les petites bosses sur F et J et replace tes mains.","Lent, c'est fluide. Fluide, c'est rapide.","Respire. Regarde l'écran, pas tes mains.","Quel doigt pour cette touche ? Regarde la couleur."],
+  "lines.hello":["Salut {n} ! Prêt à entraîner tes doigts ?","Re-bonjour, {n} ! 10 minutes aujourd'hui ?","Hé {n} ! Chaque touche te rend plus rapide.","Content de te voir, {n} ! On bat le score d'hier ?"],
+  "ob.hi":"Salut ! Je suis <b>Keebo</b>, ton coach de frappe. Je vais t'apprendre à taper avec tes dix doigts, sans regarder. D'abord, quelques questions.",
+  "ob.name":"Comment tu t'appelles ?","ob.namePh":"Ton prénom","ob.kb":"Quel clavier as-tu ?","ob.kbHint":"Regarde les premières lettres de la rangée du haut.",
+  "ob.detect":"Je pense que tu as un {g}. Change-le si je me trompe.","ob.go":"C'est parti ! →","lay.az":"belge / français","lay.qw":"US / UK / néerlandais",
+  "h.streakT":"Série : jours d'affilée avec l'objectif atteint","h.tourT":"Visite (?)","h.tourA":"Lancer la visite","h.week":"Série : 7 derniers jours",
+  "h.wsave":"Atteins l'objectif du jour pour sauver ta série","h.toNext":"encore {x} XP jusqu'au niveau suivant",
+  "st.best":"Meilleur WPM","st.avg":"WPM moyen","st.stars":"Étoiles",
+  "m.warm":"Échauffement du jour","m.warmS":"1 minute · mots faciles · sans score","m.daily":"Phrase du jour","m.dailyS":"Une nouvelle phrase chaque jour",
+  "m.cont":"Continuer","m.race":"Course contre Keebo","m.raceS":"Bats le robot dans une course de frappe","m.rain":"Pluie de mots","m.rainS":"Arrête les météores avant qu'ils tombent",
+  "m.ladder":"Mot le plus long","m.ladderS":"Grimpe l'échelle de mots contre Keebo","m.ladderRec":"grimpe contre Keebo",
+  "m.mar":"Marathon de mots","m.marS":"Tape l'échelle à ton rythme. Garde ton avance sur Keebo","m.marRec":"garde ton avance sur Keebo",
+  "m.smart":"Entraînement malin","m.smartS":"Entraîne tes touches faibles","m.custom":"Lettres au choix","m.customS":"Choisis les touches à entraîner","m.customLast":"Dernier : {k} · choisis tes touches",
+  "m.boost":"Booster","m.boostN1":"{n} chapitre peut gagner des étoiles","m.boostN":"{n} chapitres peuvent gagner des étoiles","m.boostAll":"Tous les chapitres ont ★★★ 🎉","m.boostLock":"Verrouillé : gagne d'abord 1 étoile sur un chapitre",
+  "lock.ch1":"Verrouillé : réussis d'abord le chapitre 1","lock.bottom":"Verrouillé : termine d'abord la rangée du bas","map.target":"objectif {w}+ WPM",
+  "hi.warm":"Salut {n} ! On commence la journée par 1 minute d'échauffement ? ☀️","hi.daily":"La phrase du jour est prête, {n}. Un seul essai compte ! 📜",
+  "hi.goal":"Objectif du jour atteint, {n} ! 🎉 Un peu plus d'entraînement te rend encore plus rapide.","hi.frozen":"Re-bonjour, {n} ! Atteins l'objectif du jour pour sauver ta série. ❄️",
+  "hi.broken":"Re-bonjour, {n} ! On commence une nouvelle série aujourd'hui. 🔥",
+  "sk.risk":"en danger","sk.wd":["D","L","M","M","J","V","S"],"sk.tip":{goal:"Objectif atteint",saved:"Gelé, puis sauvé",frozen:"Gelé",miss:"Manqué",today:"Aujourd'hui"},
+  "sk.ready":"❄ Gel prêt","sk.back":"❄ Gel de retour dans {d}",
+  "rules.h":"Les règles d'or de Keebo","rules.tap":"Touche une règle pour voir pourquoi","rules.prev":"Règle précédente","rules.next":"Règle suivante","rules.more":"Voir plus",
+  "rules.all":"Toutes","rules.allT":"Voir toutes les règles","rules.smaller":"Réduire","rules.rule":"Règle",
+  "t.blindT":"Choisis combien du clavier tu vois","t.blind":["👀 Touches : oui","🙈 Touches : à l'aveugle","😎 Touches : cachées"],"t.caps":"⚠️ Verr. Maj est ACTIVÉ. Désactive-le.",
+  "t.ladderA":"Échelle de mots","t.lightsA":"Feux de départ",
+  "intro.first":"Pose tes index sur les petites bosses de <b>F</b> et <b>J</b>. Les autres doigts se posent à côté. Les pouces sur l'espace. {keys}.",
+  "intro.new":"Nouvelles touches : {keys}. Tends le doigt, appuie et reviens à la maison.",
+  "intro*words":"De vrais mots avec les touches que tu connais. Ne regarde pas en bas !","intro*shift":"Majuscules ! Tiens Maj avec l'auriculaire de l'AUTRE main, puis appuie sur la lettre.",
+  "intro*sentences":"Des phrases entières. Garde un rythme calme et régulier.","intro*numbers":"Chiffres et mots. Monte, puis reviens sur la rangée de base.",
+  "intro*speed":"Sprint de vitesse ! Les mots les plus courants. Reste détendu.","intro*boss":"NIVEAU BOSS. Un long texte. D'abord juste, puis rapide. Bonne chance !",
+  "r.acc":"Précision","r.time":"Temps","r.retry":"↻ Recommencer","r.next":"Suivant →","r.enter":"Appuie sur <b>Entrée</b> pour le bouton principal",
+  "r.tricky":"Touches difficiles :","r.noMiss":"Aucune faute. Waouh ! 💎",
+  "les.s3":"PARFAIT ! Trois étoiles ! Tu es une machine à écrire ! 🤖💜","les.s2":"Bravo ! Deux étoiles. Tu tentes les trois ?",
+  "les.s1":"Chapitre réussi ! La prochaine fois, essaie un peu plus vite.","les.s0":"Presque ! Il faut 90 % de précision pour réussir. Va plus lentement et sois précis.",
+  "les.need1":"Il faut : 90 % de précision pour réussir.","les.need2":"Pour ★★ : 94 % de précision et {w} WPM.","les.need3":"Pour ★★★ : 97 % de précision et {w} WPM.",
+  "les.next":"Chapitre suivant →","les.blindTip":"Astuce : essaie le mode aveugle dans les Réglages !",
+  "goal.done":"🎯 Objectif du jour atteint !<small>10 minutes d'entraînement aujourd'hui. Tu peux arrêter, ou continuer pour gagner en vitesse.</small>","goal.say":"Objectif du jour atteint{name} ! 🎉 À demain, même heure ?",
+  "lvl.up":"Niveau supérieur !","lvl.newTitle":"Nouveau titre : {t}","lvl.toNext":"encore {x} XP jusqu'au niveau {l}","lvl.sayTitle":"Niveau {l} ! Tu es maintenant <b>{t}</b> ! 🤖💃","lvl.say":"Niveau {l} ! Continue ! 🚀",
+  "train.ok":"Bon entraînement. D'abord juste, puis rapide.",
+  "smart.good":"Tes touches faibles deviennent plus fortes ! 💪","smart.ok":"Bon entraînement. Refais-le quelques fois.","smart.say":"J'ai choisi tes touches les plus difficiles : {keys}. Lentement et avec précision !",
+  "bl.txt":"Choisis un chapitre : facile, moyen ou difficile. Une très bonne partie lui donne une étoile de plus.",
+  "b.easy":"Facile","b.mid":"Moyen","b.hard":"Difficile","b.goal":"{a} % de précision et {w} WPM","b.allDone":"Tous tes chapitres ont ★★★. Waouh ! 🎉","b.first":"Gagne d'abord 1 étoile sur un chapitre.",
+  "b.nextStar":"Étoile suivante :","b.focus":"Touches à travailler : {keys}.","b.say":"Boost vers {s} ! Il te faut {g}.","b.up":"BOOST ! {c} a maintenant {s} ! 🚀","b.close":"Presque ! Essaie encore une fois.",
+  "b.complete":"{c} est complet : ★★★","b.for":"Pour","b.again":"Booster un chapitre",
+  "cl.h":"🔤 Lettres au choix","cl.txt":"Clique sur les touches à entraîner, ou appuie dessus sur ton clavier. Tu reçois de vrais mots avec seulement ces lettres.",
+  "cl.home":"Rangée de base","cl.learned":"Touches apprises","cl.clear":"Effacer","cl.go":"Go ▶","cl.pick1":"Choisis au moins 1 touche.",
+  "cl.keys1":"touche","cl.keys":"touches","cl.words1":"vrai mot","cl.words":"vrais mots","cl.groups":"Keebo ajoute des groupes de lettres",
+  "cl.good":"Tes touches deviennent plus fortes ! 💪","cl.keysLbl":"Touches :","cl.other":"Choisir d'autres touches","cl.say":"Tes touches : {keys}.",
+  "cl.few":"Peu de vrais mots avec ces lettres, alors j'ai ajouté des groupes de lettres.","cl.eyes":"Les yeux sur l'écran !",
+  "wu.doneToday":"Fait aujourd'hui ✓ · rouvre demain","wu.done":"Échauffement terminé ☀️","wu.msg":"Tes doigts sont chauds. Prêt pour le vrai travail !",
+  "wu.say":"Échauffement. Mots faciles, sans score. Trouve F et J, et tape à un rythme calme.","wu.opens":"L'échauffement s'ouvre après le chapitre 1.","wu.toast":"Échauffement fait pour aujourd'hui. Il rouvre demain !",
+  "ds.doneToday":"Fait aujourd'hui ✓ · {w} WPM · à demain","ds.practice":"entraînement","ds.pMsg":"Partie d'entraînement. Seule la première partie du jour compte.",
+  "ds.flawless":"Phrase sans faute ! 💎 Reviens demain pour une nouvelle.","ds.record":"Nouveau record du jour : {w} WPM ! 🏆 Une nouvelle phrase t'attend demain.",
+  "ds.done":"La phrase du jour est faite. Une nouvelle t'attend demain !","ds.title":"Phrase du jour terminée 📜","ds.best":"Ton record : {w} WPM.",
+  "ds.pSay":"Partie d'entraînement. Elle ne change pas le score du jour.","ds.say":"Une phrase, un seul essai qui compte. Calme et précis !",
+  "ds.opens":"La phrase du jour s'ouvre après le chapitre 1.","ds.toast":"La phrase du jour est faite. Une nouvelle arrive demain !",
+  "race.h":"🏁 Course contre Keebo","race.txt":"Choisis la vitesse de Keebo. Gagne pour des XP bonus. Keebo utilise seulement les touches que tu as apprises.","race.lvA":"Niveau pour Comme moi",
+  "speeds":["Tranquille","Régulier","Rapide","Turbo","Dingue"],"race.match":"Comme moi","race.title":"Course contre Keebo ({l}, {w} WPM)",
+  "race.botFirst":"Bip ! J'ai fini le premier. Termine quand même ta course !","race.won":"Tu as battu Keebo ! 🏆","race.lost":"Keebo gagne cette fois 🤖",
+  "race.wonMsg":"Nooon ! Mes circuits ! Tu étais plus rapide. Tu essaies un niveau plus rapide ?","race.lostMsg":"J'étais plus rapide cette fois. Tu as tapé {w} WPM. Revanche ?",
+  "race.pick":"Choisir la vitesse","race.ready":"Prêt… Les doigts sur la rangée de base !",
+  "lv.txt":"Fun est plus détendu. Normal, c'est le jeu que tu connais. Super défi est plus dur.",
+  "lv.fun":"Fun","lv.normal":"Normal","lv.challenge":"Super défi","lv.keeboStart":"Keebo commence à {w} WPM",
+  "lv.metNormal":"Météores à vitesse normale","lv.metSlower":"Météores {p} % plus lents","lv.metFaster":"Météores {p} % plus rapides",
+  "rec.of":"Record : {b} sur {n}","rec.pts":"Record : {b}","rec.none":"Pas encore de record","rec.new":"Nouveau record ! 🏆",
+  "ll.h":"🪜 Mot le plus long est verrouillé","ll.txt":"Apprends d'abord toutes les lettres. Gagne au moins 1 étoile sur chaque chapitre jusqu'à la fin de la rangée du bas. Il t'en manque encore {n} :",
+  "lw.boss":"Mot boss","lw.letters1":"{n} lettre","lw.letters":"{n} lettres","lw.ramp":"🐢 accélère","lw.next":"Mot suivant",
+  "lw.say":"Tape chaque mot avant moi. Les fautes ne comptent pas, seulement le temps. Je commence à <b>{w} WPM</b>. Prêt ?",
+  "lw.sayMar":"Tape les mots à ton rythme. Je cours toute l'échelle sans m'arrêter. Si je te dépasse, je gagne. Je commence à <b>{w} WPM</b>. Prêt ?",
+  "lw.bossNext":"👑 Maintenant le MOT BOSS ! Le mot le plus long que je connaisse.","lw.cheer":["Oui ! Barreau suivant. 🪜","Joli ! Une lettre de plus.","Trop rapide pour moi !","Grimpe, grimpe ! 🧗","Bip ! Tu me bats encore."],
+  "lw.wonMar":"Tu as gagné le marathon de mots ! 👑","lw.won":"Tu as battu le mot le plus long ! 👑","lw.passed":"Keebo t'a dépassé à {n} lettres","lw.lost":"Keebo gagne à {n} lettres",
+  "lw.wonMsg":"QUOI ?! Même le mot boss ! Tu es une légende de l'échelle de mots ! 🤖💜","lw.climbed1":"Tu as grimpé {n} barreau.","lw.climbed":"Tu as grimpé {n} barreaux.",
+  "lw.firstLost":"J'étais plus rapide sur le premier mot. Réessaie !","lw.need":"Sous-niveaux : {c} sur {n} · Record : {b} · Dernier mot : {w}",
+  "lw.sayPassed":"Bip ! Je t'ai dépassé !","lw.sayLost":"Bip ! J'ai fini ce mot le premier.",
+  "rain.hint":"Tape un mot pour le détruire. Garde tes doigts sur la rangée de base. <b>Échap</b> = lâcher le mot en cours.","rain.again":"Rejouer","rain.over":"Partie terminée",
+  "rain.txt":"Score <b>{s}</b> · {k} météores arrêtés · +{x} XP","rain.goal":"🎯 Objectif du jour atteint ! 10 minutes aujourd'hui.",
+  "bc.unlocked":"Badge débloqué :","bc.done":"Réussi ! ✅","bc.notYet":"Pas encore","bc.of":"{c} sur {g} {u}","bc.earned":"Gagné le {d}","bc.notEarned":"Pas encore gagné. Tu peux le faire !",
+  "u.star":"étoile","u.stars":"étoiles","u.run":"partie","u.WPM":"WPM","u.race":"course","u.races":"courses","u.days":"jours","u.points":"points","u.win":"victoire","u.chapters":"chapitres",
+  "set.h":"⚙️ Réglages","set.name":"Prénom","set.kb":"Clavier","set.kbNote":"Chaque clavier a sa propre progression.",
+  "set.lang":"Langue","set.langNote":"Écrans, Keebo et tous les textes à taper.","set.help":"Aide du clavier à l'écran",
+  "set.full":"Complet","set.fullS":"lettres + couleurs","set.blind":"Aveugle","set.blindS":"sans lettres","set.proS":"sans clavier",
+  "set.hands":"Mains sous le clavier","set.handsOn":"montre quel doigt","set.handsOff":"pas d'aide pour les doigts",
+  "set.slide":"Texte qui glisse","set.slideOn":"une ligne, le texte glisse","set.slideOff":"lignes de texte",
+  "set.frame":"Cadre couleur du doigt","set.frameOn":"bord de l'écran à la couleur du doigt","set.frameOff":"pas de cadre",
+  "set.sound":"Son","set.clicks":"Son des clics","set.clicksOn":"petit tic sur les boutons","set.keys":"Raccourcis clavier",
+  "k.cont":"Continuer : chapitre suivant","k.game":"Ouvrir un jeu. Le numéro est sur la tuile.","k.tour":"Visite de l'écran","k.nextBack":"Suivant / retour",
+  "k.typing":"Pendant la frappe","k.stop":"Arrêter et revenir à la carte","k.again":"Relancer la même partie","k.escRain":"<kbd>Échap</kbd> dans Pluie de mots",
+  "k.letGo":"Lâcher le mot en cours","k.result":"Résultat","k.main":"Bouton principal (suivant ou recommencer)","k.mEsc":"<kbd>M</kbd> ou <kbd>Échap</kbd>",
+  "k.pop":"Fenêtres","k.pick":"Choisir dans Course contre Keebo et Booster",
+  "set.backup":"Sauvegarde","set.export":"Copier le code de sauvegarde","set.import":"Restaurer avec un code","set.reset":"Tout effacer","set.restore":"Restaurer",
+  "set.resetSure":"Clique encore pour effacer TOUTE la progression","set.copied":"Code copié. Colle-le dans une note ou un e-mail.","set.copyBox":"Copie le code dans la case (Ctrl+C).",
+  "set.pastePh":"Colle ici ton code de sauvegarde ou de chapitre","set.restored":"Progression restaurée !","set.badCode":"Ce code ne marche pas. Vérifie que tu as tout copié.",
+  "set.codes":"Codes de chapitre","set.codesTxt":"Un code ouvre tous les chapitres avant lui. À partir de ce chapitre, tout recommence. Colle un code dans \"Restaurer avec un code\", ou clique sur Aller.",
+  "set.chOpen":"{c} est ouvert ({l}).","set.newDay":"Nouveau jour",
+  "set.newDayTxt":"Recule les dates enregistrées d'1 jour : l'échauffement et la phrase du jour reviennent, l'objectif du jour repart de 0, la série continue.",
+  "set.newDayGo":"Commencer un nouveau jour","set.newDayToast":"Nouveau jour ! L'échauffement et la phrase du jour sont de retour.",
+  "set.tour":"Revoir la visite","set.tourHint":"ou touche ❓ sur la carte",
+  "tour.go":"On tape ! ▶","tour.goA":"Commencer à taper","tour.backT":"Retour (←)","tour.nextT":"Suivant (→)",
+  "lay.warn":"⌨️ Ton clavier ressemble à un <b>{g}</b>, mais l'appli est réglée sur {a}.","lay.later":"Pas maintenant","lay.fix":"Changer",
+  "titles":["Débutant des touches","Éclaireur de la rangée","Ninja des doigts","Chevalier du clavier","Cavalier du rythme","Surfeur de vitesse","Titan de la frappe","Légende du clavier"],
+  "badgeText":{first:["Premiers pas","Réussis ton premier chapitre"],home:["Héros de la rangée de base","Termine la rangée de base"],top:["Grimpeur du haut","Termine la rangée du haut"],
+    bottom:["Plongeur du bas","Termine la rangée du bas"],caps:["Maître de Maj","Termine Majuscules et phrases"],nums:["Croqueur de chiffres","Termine Chiffres"],
+    boss:["Tueur de boss","Termine le Labo de vitesse"],perfect:["Sans faute","100 % de précision sur une partie entière"],blind:["Sans tricher","95 %+ de précision en mode aveugle"],
+    w20:["20 WPM","Tape à 20 WPM (90 %+ de précision)"],w30:["30 WPM","Tape à 30 WPM"],w40:["40 WPM","Tape à 40 WPM"],w60:["60 WPM","Tape à 60 WPM"],
+    bot1:["Bat le robot","Gagne une course contre Keebo"],bot10:["Chef des robots","Gagne 10 courses"],s3:["En feu","Série de 3 jours"],s7:["Inarrêtable","Série de 7 jours"],
+    rain:["Bouclier anti-météores","Marque 500 dans Pluie de mots"],ladder:["Légende des mots","Gagne Mot le plus long ou Marathon de mots"],stars30:["Collectionneur d'étoiles","Collectionne 30 étoiles"]},
+  "rules":[["Tiens-toi droit. Pieds à plat. Les poignets flottent, ils ne s'appuient pas.","Tes mains restent fraîches et rapides plus longtemps."],
+    ["Trouve les petites bosses sur F et J avec tes index.","Tes doigts trouvent la maison sans regarder."],
+    ["Chaque doigt a ses propres touches. Reviens sur la rangée de base après chaque touche.","Petits trajets, moins de fautes."],
+    ["Les yeux sur l'écran. Ne regarde pas tes mains.","C'est le super-pouvoir. Fais confiance à tes doigts !"],
+    ["D'abord la précision. La vitesse vient toute seule.","Une faute coûte plus de temps qu'une touche lente."],
+    ["10 à 15 minutes chaque jour, c'est mieux que 2 heures une fois par semaine.","Ton cerveau apprend pendant que tu dors."]],
+  "tourSteps":[["Salut, je suis Keebo ! 🤖","Ton coach de frappe. Je te fais visiter. Ça prend 30 secondes."],
+    ["Ça, c'est toi 🧑‍🚀","Ton niveau, ton objectif du jour et ta vitesse. On zoome."],
+    ["XP = puissance ⚡","Chaque bonne touche donne des XP. Remplis la barre et monte de niveau."],
+    ["10 minutes par jour 🎯","Remplis la barre verte chaque jour. Petits pas, grande vitesse."],
+    ["C'est quoi, WPM ? 🏎️","Words Per Minute : les mots par minute, ta vitesse de frappe. 30 WPM ? Tu voles !"],
+    ["Jeux 🎮","Fais la course contre Keebo, arrête les météores, grimpe l'échelle de mots. 🔒 s'ouvre plus tard."],
+    ["Badges 🏅","Collectionne-les tous. Touche un badge pour voir comment le gagner."],
+    ["Réglages ⚙️","Son, clavier, langue, raccourcis. Fais de Typoo le tien."],
+    ["Perdu ? Touche ❓","Ça relance cette visite. Ou appuie sur ? sur ton clavier."],
+    ["Règles d'or ⭐","Les astuces de Keebo pour taper à l'aveugle. Touche ‹ › pour la suivante. ▴ réduit la carte."],
+    ["Ta carte 🗺️","Chaque chapitre t'apprend de nouvelles touches. 1 étoile ouvre le suivant."],
+    ["Prêt ? Go ! ▶️","Continuer lance ton prochain chapitre. Les doigts sur F et J !"]],
+  "$":{"Home Row":"Rangée de base","Top Row":"Rangée du haut","Bottom Row":"Rangée du bas","Capitals & Sentences":"Majuscules et phrases","Numbers":"Chiffres","Speed Lab":"Labo de vitesse",
+    "Fingers rest on A S D F and J K L ;":"Les doigts reposent sur A S D F et J K L ;","Fingers rest on Q S D F and J K L M":"Les doigts reposent sur Q S D F et J K L M",
+    "Reach up, then come back home.":"Monte, puis reviens à la maison.","Reach down, then come back home.":"Descends, puis reviens à la maison.",
+    "Shift with the pinky of the OTHER hand.":"Maj avec l'auriculaire de l'AUTRE main.","Reach up two rows and come back.":"Monte de deux rangées et reviens.",
+    "On AZERTY, numbers need Shift!":"Sur AZERTY, les chiffres demandent Maj !","Relax. Find a steady rhythm.":"Détends-toi. Trouve un rythme régulier.",
+    "Home row words":"Mots de la rangée de base","Home row review":"Révision de la rangée de base","Top row words":"Mots de la rangée du haut","All letters":"Toutes les lettres",
+    "Capitals":"Majuscules","First sentences":"Premières phrases","More sentences":"Encore des phrases","Numbers 1 to 5":"Chiffres 1 à 5","Numbers 6 to 0":"Chiffres 6 à 0",
+    "Numbers and words":"Chiffres et mots","Top words sprint":"Sprint des mots courants","Flow":"Flow","Boss level":"Niveau boss"}
+};
+I18N.it = {
+  "lang":"Lingua","chapter":"Capitolo","and":"e","space":"spazio","you":"Tu","player":"Giocatore","level":"Livello","lv":"Liv.","key":"Tasto",
+  "map":"Mappa","backMap":"← Mappa","cancel":"Annulla","close":"Chiudi","done":"Fatto","skip":"Salta","back":"Indietro","next":"Avanti","retry":"Riprova",
+  "on":"Sì","off":"No","settings":"Impostazioni","tour":"Tour","badges":"Medaglie","goal":"Obiettivo di oggi","go":"VIA!","go.btn":"Vai","letsGo":"Andiamo!","rematch":"Rivincita?",
+  "days1":"{n} giorno","days":"{n} giorni",
+  "fingers":["mignolo sinistro","anulare sinistro","medio sinistro","indice sinistro","indice destro","medio destro","anulare destro","mignolo destro","pollice"],
+  "f.space":"Spazio: pollice","f.shiftL":" + Maiusc con il mignolo sinistro","f.shiftR":" + Maiusc con il mignolo destro",
+  "lines.cheer":["Fluido! 😎","Bel ritmo!","Occhi sullo schermo. Ce la fai. 👀","Sei in fiamme! 🔥","Bip bop, che velocità!","Ottimo flusso, continua!","Le tue dita conoscono la strada."],
+  "lines.oops":["Calma… prima la precisione, la velocità arriva dopo.","Senti i rilievi su F e J e rimetti a posto le mani.","Piano è fluido, e fluido è veloce.","Respira. Guarda lo schermo, non le mani.","Quale dito va su quel tasto? Guarda il colore."],
+  "lines.hello":["Ciao {n}! Pronto ad allenare le dita?","Bentornato, {n}! 10 minuti oggi?","Ehi {n}! Ogni tasto ti rende più veloce.","Che bello vederti, {n}! Battiamo il punteggio di ieri."],
+  "ob.hi":"Ciao! Sono <b>Keebo</b>, il tuo allenatore di scrittura. Ti insegno a scrivere con dieci dita, senza guardare. Prima, qualche domanda.",
+  "ob.name":"Come ti chiami?","ob.namePh":"Il tuo nome","ob.kb":"Che tastiera hai?","ob.kbHint":"Guarda le prime lettere della fila in alto.",
+  "ob.detect":"Penso che tu abbia una {g}. Cambiala se sbaglio.","ob.go":"Andiamo! →","lay.az":"belga / francese","lay.qw":"USA / UK / olandese",
+  "h.streakT":"Serie: giorni di fila con l'obiettivo raggiunto","h.tourT":"Tour (?)","h.tourA":"Avvia il tour","h.week":"Serie: ultimi 7 giorni",
+  "h.wsave":"Raggiungi l'obiettivo di oggi per salvare la serie","h.toNext":"ancora {x} XP al prossimo livello",
+  "st.best":"WPM migliore","st.avg":"WPM medio","st.stars":"Stelle",
+  "m.warm":"Riscaldamento del giorno","m.warmS":"1 minuto · parole facili · senza punteggio","m.daily":"Frase del giorno","m.dailyS":"Una frase nuova ogni giorno",
+  "m.cont":"Continua","m.race":"Gara con Keebo","m.raceS":"Batti il robot in una gara di scrittura","m.rain":"Pioggia di parole","m.rainS":"Ferma i meteoriti prima che cadano",
+  "m.ladder":"Parola più lunga","m.ladderS":"Sali la scala di parole contro Keebo","m.ladderRec":"sali contro Keebo",
+  "m.mar":"Maratona di parole","m.marS":"Scrivi la scala al tuo ritmo. Resta davanti a Keebo","m.marRec":"resta davanti a Keebo",
+  "m.smart":"Allenamento smart","m.smartS":"Allena i tasti più deboli","m.custom":"Lettere a scelta","m.customS":"Scegli i tasti da allenare","m.customLast":"Ultimi: {k} · scegli i tuoi tasti",
+  "m.boost":"Booster","m.boostN1":"{n} capitolo può avere più stelle","m.boostN":"{n} capitoli possono avere più stelle","m.boostAll":"Tutti i capitoli hanno ★★★ 🎉","m.boostLock":"Bloccato: prendi prima 1 stella in un capitolo",
+  "lock.ch1":"Bloccato: supera prima il capitolo 1","lock.bottom":"Bloccato: finisci prima la fila in basso","map.target":"obiettivo {w}+ WPM",
+  "hi.warm":"Ciao {n}! Iniziamo la giornata con 1 minuto di riscaldamento? ☀️","hi.daily":"La frase di oggi è pronta, {n}. Conta un solo tentativo! 📜",
+  "hi.goal":"Obiettivo del giorno raggiunto, {n}! 🎉 Un po' di pratica in più ti rende ancora più veloce.","hi.frozen":"Bentornato, {n}! Raggiungi l'obiettivo di oggi per salvare la serie. ❄️",
+  "hi.broken":"Bentornato, {n}! Oggi iniziamo una nuova serie. 🔥",
+  "sk.risk":"a rischio","sk.wd":["D","L","M","M","G","V","S"],"sk.tip":{goal:"Obiettivo raggiunto",saved:"Congelato, poi salvato",frozen:"Congelato",miss:"Mancato",today:"Oggi"},
+  "sk.ready":"❄ Congelamento pronto","sk.back":"❄ Congelamento di nuovo tra {d}",
+  "rules.h":"Le regole d'oro di Keebo","rules.tap":"Tocca una regola per vedere perché","rules.prev":"Regola precedente","rules.next":"Regola successiva","rules.more":"Mostra di più",
+  "rules.all":"Tutte","rules.allT":"Mostra tutte le regole","rules.smaller":"Rimpicciolisci","rules.rule":"Regola",
+  "t.blindT":"Scegli quanta tastiera vedi","t.blind":["👀 Tasti: sì","🙈 Tasti: alla cieca","😎 Tasti: nascosti"],"t.caps":"⚠️ Bloc Maiusc è ATTIVO. Disattivalo.",
+  "t.ladderA":"Scala di parole","t.lightsA":"Semaforo di partenza",
+  "intro.first":"Metti gli indici sui rilievi di <b>F</b> e <b>J</b>. Le altre dita stanno accanto. Pollici sullo spazio. {keys}.",
+  "intro.new":"Nuovi tasti: {keys}. Allunga il dito, premi e torna a casa.",
+  "intro*words":"Parole vere con i tasti che conosci. Non guardare in basso!","intro*shift":"Maiuscole! Tieni Maiusc con il mignolo dell'ALTRA mano, poi premi la lettera.",
+  "intro*sentences":"Frasi intere. Tieni un ritmo calmo e regolare.","intro*numbers":"Numeri e parole. Sali, poi torna sulla fila di base.",
+  "intro*speed":"Sprint di velocità! Le parole più comuni. Resta rilassato.","intro*boss":"LIVELLO BOSS. Un testo lungo. Prima la precisione, poi la velocità. In bocca al lupo!",
+  "r.acc":"Precisione","r.time":"Tempo","r.retry":"↻ Riprova","r.next":"Avanti →","r.enter":"Premi <b>Invio</b> per il pulsante principale",
+  "r.tricky":"Tasti difficili:","r.noMiss":"Nessun errore. Wow! 💎",
+  "les.s3":"PERFETTO! Tre stelle! Sei una macchina da scrivere! 🤖💜","les.s2":"Bravo! Due stelle. Provi a prenderne tre?",
+  "les.s1":"Capitolo superato! La prossima volta prova un po' più veloce.","les.s0":"Quasi! Serve il 90% di precisione per passare. Vai più piano e sii preciso.",
+  "les.need1":"Serve: 90% di precisione per passare.","les.need2":"Per ★★: 94% di precisione e {w} WPM.","les.need3":"Per ★★★: 97% di precisione e {w} WPM.",
+  "les.next":"Capitolo successivo →","les.blindTip":"Consiglio: prova la modalità cieca nelle Impostazioni!",
+  "goal.done":"🎯 Obiettivo del giorno raggiunto!<small>10 minuti di pratica oggi. Puoi fermarti, o continuare per più velocità.</small>","goal.say":"Obiettivo del giorno raggiunto{name}! 🎉 Domani alla stessa ora?",
+  "lvl.up":"Livello su!","lvl.newTitle":"Nuovo titolo: {t}","lvl.toNext":"ancora {x} XP al livello {l}","lvl.sayTitle":"Livello {l}! Ora sei <b>{t}</b>! 🤖💃","lvl.say":"Livello {l}! Continua così! 🚀",
+  "train.ok":"Buon allenamento. Prima la precisione, poi la velocità.",
+  "smart.good":"I tuoi tasti deboli diventano più forti! 💪","smart.ok":"Buon allenamento. Ripetilo qualche volta.","smart.say":"Ho scelto i tuoi tasti più difficili: {keys}. Piano e preciso!",
+  "bl.txt":"Scegli un capitolo: facile, medio o difficile. Una partita molto buona gli dà una stella in più.",
+  "b.easy":"Facile","b.mid":"Medio","b.hard":"Difficile","b.goal":"{a}% di precisione e {w} WPM","b.allDone":"Tutti i tuoi capitoli hanno ★★★. Wow! 🎉","b.first":"Prendi prima 1 stella in un capitolo.",
+  "b.nextStar":"Prossima stella:","b.focus":"Tasti da allenare: {keys}.","b.say":"Boost a {s}! Ti serve {g}.","b.up":"BOOST! {c} ora ha {s}! 🚀","b.close":"Quasi! Prova ancora una volta.",
+  "b.complete":"{c} è completo: ★★★","b.for":"Per","b.again":"Potenzia un capitolo",
+  "cl.h":"🔤 Lettere a scelta","cl.txt":"Clicca i tasti da allenare, o premili sulla tastiera. Ricevi parole vere con solo queste lettere.",
+  "cl.home":"Fila di base","cl.learned":"Tasti imparati","cl.clear":"Cancella","cl.go":"Via ▶","cl.pick1":"Scegli almeno 1 tasto.",
+  "cl.keys1":"tasto","cl.keys":"tasti","cl.words1":"parola vera","cl.words":"parole vere","cl.groups":"Keebo aggiunge gruppi di lettere",
+  "cl.good":"I tuoi tasti diventano più forti! 💪","cl.keysLbl":"Tasti:","cl.other":"Scegli altri tasti","cl.say":"I tuoi tasti: {keys}.",
+  "cl.few":"Poche parole vere con queste lettere, quindi ho aggiunto gruppi di lettere.","cl.eyes":"Occhi sullo schermo!",
+  "wu.doneToday":"Fatto oggi ✓ · si riapre domani","wu.done":"Riscaldamento fatto ☀️","wu.msg":"Le tue dita sono calde. Pronto per il vero lavoro!",
+  "wu.say":"Riscaldamento. Parole facili, senza punteggio. Trova F e J, e scrivi con calma.","wu.opens":"Il riscaldamento si apre dopo il capitolo 1.","wu.toast":"Riscaldamento fatto per oggi. Si riapre domani!",
+  "ds.doneToday":"Fatto oggi ✓ · {w} WPM · a domani","ds.practice":"prova","ds.pMsg":"Partita di prova. Conta solo la prima partita del giorno.",
+  "ds.flawless":"Frase senza errori! 💎 Torna domani per una nuova.","ds.record":"Nuovo record del giorno: {w} WPM! 🏆 Domani ti aspetta una frase nuova.",
+  "ds.done":"La frase di oggi è fatta. Domani ne arriva una nuova!","ds.title":"Frase del giorno fatta 📜","ds.best":"Il tuo record: {w} WPM.",
+  "ds.pSay":"Partita di prova. Non cambia il punteggio di oggi.","ds.say":"Una frase, un solo tentativo che conta. Calma e precisione!",
+  "ds.opens":"La frase del giorno si apre dopo il capitolo 1.","ds.toast":"La frase di oggi è fatta. Domani ne arriva una nuova!",
+  "race.h":"🏁 Gara con Keebo","race.txt":"Scegli la velocità di Keebo. Vinci per avere XP bonus. Keebo usa solo i tasti che hai imparato.","race.lvA":"Livello per Come me",
+  "speeds":["Tranquillo","Costante","Veloce","Turbo","Pazzesco"],"race.match":"Come me","race.title":"Gara con Keebo ({l}, {w} WPM)",
+  "race.botFirst":"Bip! Ho finito prima io. Finisci comunque la tua gara!","race.won":"Hai battuto Keebo! 🏆","race.lost":"Questa volta vince Keebo 🤖",
+  "race.wonMsg":"Nooo! I miei circuiti! Sei stato più veloce. Provi un livello più veloce?","race.lostMsg":"Questa volta sono stato più veloce. Hai scritto a {w} WPM. Rivincita?",
+  "race.pick":"Scegli la velocità","race.ready":"Pronti… Dita sulla fila di base!",
+  "lv.txt":"Fun è più rilassato. Normale è il gioco che conosci. Super sfida è più difficile.",
+  "lv.fun":"Fun","lv.normal":"Normale","lv.challenge":"Super sfida","lv.keeboStart":"Keebo parte a {w} WPM",
+  "lv.metNormal":"Meteoriti a velocità normale","lv.metSlower":"Meteoriti {p}% più lenti","lv.metFaster":"Meteoriti {p}% più veloci",
+  "rec.of":"Record: {b} su {n}","rec.pts":"Record: {b}","rec.none":"Ancora nessun record","rec.new":"Nuovo record! 🏆",
+  "ll.h":"🪜 Parola più lunga è bloccata","ll.txt":"Prima impara tutte le lettere. Prendi almeno 1 stella in ogni capitolo fino alla fine della fila in basso. Te ne mancano ancora {n}:",
+  "lw.boss":"Parola boss","lw.letters1":"{n} lettera","lw.letters":"{n} lettere","lw.ramp":"🐢 accelera","lw.next":"Parola successiva",
+  "lw.say":"Scrivi ogni parola prima di me. Gli errori non contano, solo il tempo. Parto a <b>{w} WPM</b>. Pronto?",
+  "lw.sayMar":"Scrivi le parole al tuo ritmo. Io corro tutta la scala senza fermarmi. Se ti supero, vinco io. Parto a <b>{w} WPM</b>. Pronto?",
+  "lw.bossNext":"👑 Ora la PAROLA BOSS! La parola più lunga che conosco.","lw.cheer":["Sì! Prossimo gradino. 🪜","Bene! Una lettera in più.","Troppo veloce per me!","Sali, sali! 🧗","Bip! Mi hai battuto di nuovo."],
+  "lw.wonMar":"Hai vinto la maratona di parole! 👑","lw.won":"Hai battuto la parola più lunga! 👑","lw.passed":"Keebo ti ha superato a {n} lettere","lw.lost":"Keebo vince a {n} lettere",
+  "lw.wonMsg":"COSA?! Anche la parola boss! Sei una leggenda della scala di parole! 🤖💜","lw.climbed1":"Hai salito {n} gradino.","lw.climbed":"Hai salito {n} gradini.",
+  "lw.firstLost":"Sono stato più veloce sulla prima parola. Riprova!","lw.need":"Sottolivelli: {c} su {n} · Record: {b} · Ultima parola: {w}",
+  "lw.sayPassed":"Bip! Ti ho superato!","lw.sayLost":"Bip! Ho finito quella parola prima io.",
+  "rain.hint":"Scrivi una parola per distruggerla. Tieni le dita sulla fila di base. <b>Esc</b> = lascia la parola attuale.","rain.again":"Gioca ancora","rain.over":"Fine partita",
+  "rain.txt":"Punti <b>{s}</b> · {k} meteoriti fermati · +{x} XP","rain.goal":"🎯 Obiettivo del giorno raggiunto! 10 minuti oggi.",
+  "bc.unlocked":"Medaglia sbloccata:","bc.done":"Fatto! ✅","bc.notYet":"Non ancora","bc.of":"{c} su {g} {u}","bc.earned":"Vinta il {d}","bc.notEarned":"Non ancora vinta. Ce la puoi fare!",
+  "u.star":"stella","u.stars":"stelle","u.run":"partita","u.WPM":"WPM","u.race":"gara","u.races":"gare","u.days":"giorni","u.points":"punti","u.win":"vittoria","u.chapters":"capitoli",
+  "set.h":"⚙️ Impostazioni","set.name":"Nome","set.kb":"Tastiera","set.kbNote":"Ogni tastiera ha i suoi progressi.",
+  "set.lang":"Lingua","set.langNote":"Schermate, Keebo e tutti i testi da scrivere.","set.help":"Aiuto della tastiera sullo schermo",
+  "set.full":"Completo","set.fullS":"lettere + colori","set.blind":"Cieco","set.blindS":"senza lettere","set.proS":"senza tastiera",
+  "set.hands":"Mani sotto la tastiera","set.handsOn":"mostra quale dito","set.handsOff":"nessun aiuto per le dita",
+  "set.slide":"Testo che scorre","set.slideOn":"una riga, il testo scorre","set.slideOff":"righe di testo",
+  "set.frame":"Cornice colore del dito","set.frameOn":"bordo dello schermo nel colore del dito","set.frameOff":"nessuna cornice",
+  "set.sound":"Suono","set.clicks":"Suono dei clic","set.clicksOn":"piccolo tic sui pulsanti","set.keys":"Scorciatoie da tastiera",
+  "k.cont":"Continua: capitolo successivo","k.game":"Apri un gioco. Il numero è sulla tessera.","k.tour":"Tour dello schermo","k.nextBack":"Avanti / indietro",
+  "k.typing":"Mentre scrivi","k.stop":"Fermati e torna alla mappa","k.again":"Rifai la stessa partita","k.escRain":"<kbd>Esc</kbd> in Pioggia di parole",
+  "k.letGo":"Lascia la parola attuale","k.result":"Risultato","k.main":"Pulsante principale (avanti o riprova)","k.mEsc":"<kbd>M</kbd> o <kbd>Esc</kbd>",
+  "k.pop":"Finestre","k.pick":"Scegli in Gara con Keebo e Booster",
+  "set.backup":"Backup","set.export":"Copia il codice di backup","set.import":"Ripristina con un codice","set.reset":"Cancella tutto","set.restore":"Ripristina",
+  "set.resetSure":"Clicca ancora per cancellare TUTTI i progressi","set.copied":"Codice copiato. Incollalo in una nota o in un'e-mail.","set.copyBox":"Copia il codice nella casella (Ctrl+C).",
+  "set.pastePh":"Incolla qui il codice di backup o di capitolo","set.restored":"Progressi ripristinati!","set.badCode":"Questo codice non funziona. Controlla di averlo copiato tutto.",
+  "set.codes":"Codici capitolo","set.codesTxt":"Un codice apre tutti i capitoli prima. Da quel capitolo in poi si riparte da zero. Incolla un codice in \"Ripristina con un codice\", o clicca Vai.",
+  "set.chOpen":"{c} è aperto ({l}).","set.newDay":"Nuovo giorno",
+  "set.newDayTxt":"Sposta indietro di 1 giorno le date salvate: tornano il riscaldamento e la frase del giorno, l'obiettivo di oggi riparte da 0, la serie continua.",
+  "set.newDayGo":"Inizia un nuovo giorno","set.newDayToast":"Nuovo giorno! Il riscaldamento e la frase del giorno sono tornati.",
+  "set.tour":"Rivedi il tour","set.tourHint":"o tocca ❓ sulla mappa",
+  "tour.go":"Scriviamo! ▶","tour.goA":"Inizia a scrivere","tour.backT":"Indietro (←)","tour.nextT":"Avanti (→)",
+  "lay.warn":"⌨️ La tua tastiera sembra una <b>{g}</b>, ma l'app è impostata su {a}.","lay.later":"Non ora","lay.fix":"Cambia",
+  "titles":["Principiante dei tasti","Esploratore della fila","Ninja delle dita","Cavaliere dei tasti","Cavalcatore del ritmo","Surfista della velocità","Titano della scrittura","Leggenda della tastiera"],
+  "badgeText":{first:["Primi passi","Supera il tuo primo capitolo"],home:["Eroe della fila di base","Finisci la fila di base"],top:["Scalatore della fila alta","Finisci la fila in alto"],
+    bottom:["Sub della fila bassa","Finisci la fila in basso"],caps:["Maestro del Maiusc","Finisci Maiuscole e frasi"],nums:["Mangianumeri","Finisci Numeri"],
+    boss:["Ammazza-boss","Finisci il Laboratorio di velocità"],perfect:["Senza errori","100% di precisione in una partita intera"],blind:["Niente sbirciate","95%+ di precisione in modalità cieca"],
+    w20:["20 WPM","Scrivi a 20 WPM (90%+ di precisione)"],w30:["30 WPM","Scrivi a 30 WPM"],w40:["40 WPM","Scrivi a 40 WPM"],w60:["60 WPM","Scrivi a 60 WPM"],
+    bot1:["Batti-robot","Vinci una gara contro Keebo"],bot10:["Capo dei robot","Vinci 10 gare"],s3:["In fiamme","Serie di 3 giorni"],s7:["Inarrestabile","Serie di 7 giorni"],
+    rain:["Scudo anti-meteoriti","Fai 500 punti in Pioggia di parole"],ladder:["Leggenda delle parole","Vinci Parola più lunga o Maratona di parole"],stars30:["Collezionista di stelle","Raccogli 30 stelle"]},
+  "rules":[["Siediti dritto. Piedi a terra. I polsi restano sollevati, non appoggiati.","Le mani restano fresche e veloci più a lungo."],
+    ["Trova i rilievi su F e J con gli indici.","Le dita trovano casa senza guardare."],
+    ["Ogni dito ha i suoi tasti. Dopo ogni tasto torna sulla fila di base.","Viaggi corti, meno errori."],
+    ["Occhi sullo schermo. Non guardare le mani.","È questo il superpotere. Fidati delle tue dita!"],
+    ["Prima la precisione. La velocità arriva da sola.","Un errore costa più tempo di un tasto lento."],
+    ["10–15 minuti ogni giorno valgono più di 2 ore una volta a settimana.","Il cervello impara mentre dormi."]],
+  "tourSteps":[["Ciao, sono Keebo! 🤖","Il tuo allenatore di scrittura. Ti faccio fare un giro. Ci vogliono 30 secondi."],
+    ["Questo sei tu 🧑‍🚀","Il tuo livello, il tuo obiettivo del giorno e la tua velocità. Ingrandiamo."],
+    ["XP = potenza ⚡","Ogni tasto giusto dà XP. Riempi la barra e sali di livello."],
+    ["10 minuti al giorno 🎯","Riempi la barra verde ogni giorno. Piccoli passi, grande velocità."],
+    ["Cos'è WPM? 🏎️","Words Per Minute: parole al minuto, quanto scrivi veloce. 30 WPM? Voli!"],
+    ["Giochi 🎮","Gareggia con Keebo, ferma i meteoriti, sali la scala di parole. 🔒 si apre più avanti."],
+    ["Medaglie 🏅","Collezionale tutte. Tocca una medaglia per vedere come vincerla."],
+    ["Impostazioni ⚙️","Suono, tastiera, lingua, scorciatoie. Rendi Typoo tuo."],
+    ["Perso? Tocca ❓","Fa ripartire questo tour. Oppure premi ? sulla tastiera."],
+    ["Regole d'oro ⭐","I consigli di Keebo per scrivere alla cieca. Tocca ‹ › per la prossima. ▴ la rimpicciolisce."],
+    ["La tua mappa 🗺️","Ogni capitolo ti insegna nuovi tasti. 1 stella apre il successivo."],
+    ["Pronto? Via! ▶️","Continua avvia il tuo prossimo capitolo. Dita su F e J!"]],
+  "$":{"Home Row":"Fila di base","Top Row":"Fila in alto","Bottom Row":"Fila in basso","Capitals & Sentences":"Maiuscole e frasi","Numbers":"Numeri","Speed Lab":"Laboratorio di velocità",
+    "Fingers rest on A S D F and J K L ;":"Le dita stanno su A S D F e J K L ;","Fingers rest on Q S D F and J K L M":"Le dita stanno su Q S D F e J K L M",
+    "Reach up, then come back home.":"Sali, poi torna a casa.","Reach down, then come back home.":"Scendi, poi torna a casa.",
+    "Shift with the pinky of the OTHER hand.":"Maiusc con il mignolo dell'ALTRA mano.","Reach up two rows and come back.":"Sali di due file e torna.",
+    "On AZERTY, numbers need Shift!":"Su AZERTY, i numeri vogliono Maiusc!","Relax. Find a steady rhythm.":"Rilassati. Trova un ritmo regolare.",
+    "Home row words":"Parole della fila di base","Home row review":"Ripasso della fila di base","Top row words":"Parole della fila in alto","All letters":"Tutte le lettere",
+    "Capitals":"Maiuscole","First sentences":"Prime frasi","More sentences":"Altre frasi","Numbers 1 to 5":"Numeri da 1 a 5","Numbers 6 to 0":"Numeri da 6 a 0",
+    "Numbers and words":"Numeri e parole","Top words sprint":"Sprint delle parole comuni","Flow":"Flow","Boss level":"Livello boss"}
+};
 
 /* =========================================================================
    STATE & STORAGE
@@ -880,26 +1480,56 @@ try{ const raw = storage.get(); if(raw) state = Object.assign(freshState(), JSON
 function save(){ storage.set(JSON.stringify(state)); }
 
 /* =========================================================================
+   LANGUAGE (one language for all screens, Keebo and all typing texts: nl, en, fr, it)
+   t("key", {vars}) gives the text in state.lang. A missing key falls back to English.
+   Texts are in I18N (below the word lists). Static HTML uses data-t="key" (inner HTML)
+   and data-ta="attr=key,attr=key". applyLang() fills them.
+   ========================================================================= */
+const LANGS=["nl","en","fr","it"];
+const LOCALES={nl:"nl-BE",en:"en-GB",fr:"fr-BE",it:"it-IT"};
+if(!LANGS.includes(state.lang)) state.lang="en";
+function t(k, v){
+  let s=(I18N[state.lang]||I18N.en)[k]; if(s===undefined) s=I18N.en[k]; if(s===undefined) return k;
+  return v && typeof s==="string" ? s.replace(/\{(\w+)\}/g,(m,n)=>n in v ? v[n] : m) : s;
+}
+/* Singular/plural: key "x1" for 1, key "x" for other numbers. {n} = the number. */
+function tn(k, n, v){ return t(n===1 && (I18N[state.lang]||I18N.en)[k+"1"]!==undefined ? k+"1" : k, Object.assign({n}, v)); }
+/* Text of an English data string (stage names, tips, chapter titles) in the current language. */
+function tx(en){ const m=(I18N[state.lang]||{}).$; return (m && m[en]) || en; }
+function applyLang(){
+  document.documentElement.lang=state.lang;
+  $$("[data-t]").forEach(e=>{ e.innerHTML=t(e.dataset.t); });
+  $$("[data-ta]").forEach(e=>e.dataset.ta.split(",").forEach(p=>{ const [a,k]=p.split("="); e.setAttribute(a,t(k)); }));
+  applyBlind();
+}
+/* Language of the browser, for the first start. */
+function guessLang(){ const l=(navigator.language||"").slice(0,2).toLowerCase(); return LANGS.includes(l) ? l : "en"; }
+/* Accents: a letter with an accent (é, è, à, ç, ...) also takes its base letter, so French and
+   Italian texts work on every keyboard. The keyboard on screen shows the base letter. */
+const fold = c => c.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const keyOk = (exp, k) => k===exp || (k.length===1 && k===fold(exp));
+
+/* =========================================================================
    HELPERS
    ========================================================================= */
-const $ = s => document.querySelector(s);
-const $$ = s => [...document.querySelectorAll(s)];
 const rnd = a => a[Math.floor(Math.random()*a.length)];
 function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 const todayStr = (d=new Date()) => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const fmtTime = s => Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");
 const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const wordList = () => { const w = WORDS[state.lang]||WORDS.en; return [...new Set(w.split(/\s+/).filter(Boolean))]; };
-const fits = (w,set) => [...w].every(c=>set.has(c));
+const fits = (w,set) => [...w].every(c=>set.has(c) || set.has(fold(c)));
 const isDigit = c => c>="0" && c<="9";
 
 function lessonsFlat(layout=state.layout){
   const out=[]; CURRICULUM[layout].forEach((st,si)=>st.lessons.forEach(l=>{
-    out.push({idx:out.length, stage:si, stageName:st.stage, keys:l[0], title:l[1], target:l[2]||st.target, tip:st.tip});
+    out.push({idx:out.length, stage:si, stageName:tx(st.stage), keys:l[0], title:lessonTitle(l[1]), target:l[2]||st.target, tip:tx(st.tip)});
   })); return out;
 }
 /* UI label for one lesson. Internal names and saved data keep "lesson". */
-function chapterWord(){ return state.lang==="nl" ? "Hoofdstuk" : "Chapter"; }
+function chapterWord(){ return t("chapter"); }
+/* Chapter title in the current language. "F and J" style titles use the word "and". */
+function lessonTitle(en){ const m=/^(\S) and (\S)$/.exec(en); return m ? `${m[1]} ${t("and")} ${m[2]}` : tx(en); }
 function lessonRec(i){ return (state.lessons[state.layout]||{})[i]; }
 function isUnlocked(i){ return i===0 || (lessonRec(i-1)?.stars||0)>=1; }
 function currentLessonIdx(){
@@ -1005,12 +1635,8 @@ function botMood(scope, mood){
   bot.querySelector(".mouth").setAttribute("d", MOUTHS[mood]||MOUTHS.happy);
 }
 function say(scope, text, mood="happy"){ const b=$(scope+" .bubble"); if(b) b.innerHTML=text; botMood(scope,mood); }
-const LINES = {
-  cheer:["Smooth! 😎","Nice rhythm!","Eyes on the screen. You've got this. 👀","You're on fire! 🔥","Beep boop, that's fast!","Great flow, keep going!","Your fingers know the way now."],
-  oops:["Easy… accuracy first. Speed comes later.","Feel the bumps on F and J and reset your hands.","Slow is smooth, and smooth is fast.","Breathe. Look at the screen, not your hands.","Which finger is that key for? Check the colour."],
-  hello:["Hi {n}! Ready to train those fingers?","Welcome back, {n}! 10 minutes today?","Hey {n}! Every key you type makes you faster.","Good to see you, {n}! Let's beat yesterday."]
-};
-const pick = (k,n) => rnd(LINES[k]).replace("{n}", esc(n||""));
+/* Keebo's lines: I18N key "lines.cheer", "lines.oops", "lines.hello". */
+const pick = (k,n) => rnd(t("lines."+k)).replace("{n}", esc(n||""));
 
 /* =========================================================================
    KEYBOARD + HANDS
@@ -1037,7 +1663,7 @@ function buildKeyboard(){
     r.appendChild(rs); kb.appendChild(r);
   });
   const r=document.createElement("div"); r.className="krow"; r.style.justifyContent="center";
-  const sp=document.createElement("div"); sp.className="key sp space"; sp.style.flex="none"; sp.id="kspace"; sp.textContent="space"; sp.style.setProperty("--fc",FINGER_COLORS[8]);
+  const sp=document.createElement("div"); sp.className="key sp space"; sp.style.flex="none"; sp.id="kspace"; sp.textContent=t("space"); sp.style.setProperty("--fc",FINGER_COLORS[8]);
   r.appendChild(sp); kb.appendChild(r);
   CHARMAP[" "]={id:"kspace",finger:8,shift:false};
   buildHands();
@@ -1061,16 +1687,17 @@ function clearHighlights(){
 }
 function highlightChar(ch){
   clearHighlights();
-  const m=CHARMAP[ch]; if(!m){ $("#fingerLbl").textContent=""; return; }
+  const m=CHARMAP[fold(ch)]||CHARMAP[ch]; if(!m){ $("#fingerLbl").textContent=""; return; }
   const el=document.getElementById(m.id); if(el) el.classList.add("next");
   $("#fframe").style.setProperty("--ff", FINGER_COLORS[m.finger]);
   const fingers=[m.finger];
-  let txt = ch===" " ? "Space: thumb" : `${FINGER_NAMES[m.finger][0].toUpperCase()+FINGER_NAMES[m.finger].slice(1)}`;
+  const fn=t("fingers")[m.finger];
+  let txt = ch===" " ? t("f.space") : fn[0].toUpperCase()+fn.slice(1);
   if(m.shift){
     const left = m.finger>=4; // key on right hand -> left shift
     const sh=document.getElementById(left?"kshiftL":"kshiftR"); if(sh) sh.classList.add("next");
     fingers.push(left?0:7);
-    txt += ` + Shift with your ${left?"left":"right"} pinky`;
+    txt += t(left ? "f.shiftL" : "f.shiftR");
   }
   fingers.forEach(f=>{
     if(f===8) $$("#hands .hf8").forEach(e=>{e.classList.add("on");e.style.fill=e.dataset.c;});
@@ -1085,7 +1712,7 @@ function flashKey(ch, cls){
 function applyBlind(){
   $("#kb").classList.toggle("nolabels", state.blind===1);
   $("#type").classList.toggle("blind2", state.blind===2);
-  $("#tBlind").textContent = ["👀 Keys: on","🙈 Keys: blind","😎 Keys: hidden"][state.blind];
+  $("#tBlind").textContent = t("t.blind")[state.blind];
   applyFrame();
 }
 function applyFrame(){ document.body.classList.toggle("fframe", screen==="type" && state.frame!==0 && state.blind!==2); }
@@ -1220,8 +1847,8 @@ function onTypeKey(e){
   const exp=S.text[S.pos]; const k=e.key;
   if(S.mode==="ladder" && k===" " && exp!==" ") return;   // a space after a word is not an error
   S.keystrokes++;
-  const st = state.keys[exp] || (state.keys[exp]={h:0,m:0});
-  if(k===exp){
+  const fk=fold(exp), st = state.keys[fk] || (state.keys[fk]={h:0,m:0});
+  if(keyOk(exp,k)){
     st.h++;
     const el=document.getElementById("c"+S.pos); el.classList.remove("bad"); el.classList.add(S.errAt.has(S.pos)?"fx":"ok");
     flashKey(k,"hit");
@@ -1231,7 +1858,7 @@ function onTypeKey(e){
     updateCursor();
   } else {
     st.m++; S.errors++; S.errAt.add(S.pos); S.streak=0; S.wrongRow++;
-    S.miss[exp]=(S.miss[exp]||0)+1;
+    S.miss[fk]=(S.miss[fk]||0)+1;
     const el=document.getElementById("c"+S.pos); el.classList.remove("bad"); void el.offsetWidth; el.classList.add("bad");
     flashKey(k,"wrong"); beep(140,0.07);
     if(S.wrongRow===3) say("#type", pick("oops"), "oops");
@@ -1333,14 +1960,11 @@ let lastLesson=null;
 function starsFor(wpm,acc,target){ let s=0; if(acc>=90) s=1; if(acc>=94 && wpm>=target) s=2; if(acc>=97 && wpm>=target*1.3) s=3; return s; }
 function lessonIntro(L){
   if(L.keys[0]!=="*"){
-    const parts=[...L.keys].map(c=>{ const m=CHARMAP[c]; return m?`<b>${esc(c.toUpperCase())}</b> = ${FINGER_NAMES[m.finger]}${m.shift?" + Shift":""}`:esc(c); });
-    if(L.idx===0) return `Put your index fingers on the bumps of <b>F</b> and <b>J</b>. The other fingers rest next to them. Thumbs on space. ${parts.join(", ")}.`;
-    return `New keys: ${parts.join(", ")}. Reach, press, and go back home.`;
+    const parts=[...L.keys].map(c=>{ const m=CHARMAP[c]; return m?`<b>${esc(c.toUpperCase())}</b> = ${t("fingers")[m.finger]}${m.shift?" + Shift":""}`:esc(c); });
+    if(L.idx===0) return t("intro.first",{keys:parts.join(", ")});
+    return t("intro.new",{keys:parts.join(", ")});
   }
-  const m={"*words":"Real words with the keys you know. Do not look down!","*shift":"Capitals! Hold Shift with the pinky of the OTHER hand, then press the letter.",
-    "*sentences":"Full sentences. Keep a calm, steady rhythm.","*numbers":"Numbers and words. Reach up, then come back to the home row.",
-    "*speed":"Speed sprint! The most common words. Stay relaxed.","*boss":"BOSS LEVEL. A long text. Accuracy first, then speed. Good luck!"};
-  return m[L.keys]||"Let's go!";
+  return t("intro"+L.keys) || t("letsGo");
 }
 function startLesson(i){
   const L=lessonsFlat()[i]; if(!L || !isUnlocked(i)) return;
@@ -1356,19 +1980,16 @@ function lessonDone(L,res){
   const gained = Math.round(S.text.length*Math.pow(res.acc/100,2)/3) + Math.max(0,stars-prev.stars)*15 + stars*3;
   recs[L.idx]={stars:Math.max(prev.stars,stars), wpm:Math.max(prev.wpm,Math.round(res.wpm)), acc:Math.max(prev.acc,Math.round(res.acc))};
   state.xp+=gained;
-  const msg = stars===3 ? "PERFECT! Three stars! You're a typing machine! 🤖💜" :
-              stars===2 ? "Great job! Two stars. Want to go for three?" :
-              stars===1 ? `${chapterWord()} passed! Next time, try a bit faster.` :
-              "Almost! Get 90% accuracy to pass. Go slower, and be precise.";
+  const msg = t(["les.s0","les.s1","les.s2","les.s3"][stars]);
   let need="";
-  if(stars<1) need=`Need: 90% accuracy to pass.`;
-  else if(stars<2) need=`For ★★: 94% accuracy and ${L.target} WPM.`;
-  else if(stars<3) need=`For ★★★: 97% accuracy and ${Math.ceil(L.target*1.3)} WPM.`;
+  if(stars<1) need=t("les.need1");
+  else if(stars<2) need=t("les.need2",{w:L.target});
+  else if(stars<3) need=t("les.need3",{w:Math.ceil(L.target*1.3)});
   const L2=lessonsFlat(); const hasNext = L.idx+1<L2.length && isUnlocked(L.idx+1);
   showResult({title:L.title, stars, res, xp:gained, msg, mood:stars>=2?"wow":stars===1?"happy":"oops", need,
-    next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:`Next ${chapterWord().toLowerCase()} →`});
+    next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:t("les.next")});
   if(stars>=1) chime();
-  if(L.idx===5 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈","Tip: try Blind mode in Settings!"),1500);
+  if(L.idx===5 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈",t("les.blindTip")),1500);
 }
 /* Result lock. A player who is still typing must not start the next run by accident.
    Keys do nothing for RESULT_KEY_LOCK ms, clicks for RESULT_CLICK_LOCK ms. The main button fills up meanwhile. */
@@ -1388,10 +2009,10 @@ function showResult(o){
   showLevel(o.xp, o.stars, o.party!==false);
   $("#rNeed").textContent=o.need||"";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  $("#rWeak").innerHTML = weak.length ? "Tricky keys: "+weak.map(([c,n])=>`<kbd>${c===" "?"space":esc(c)}</kbd>×${n}`).join(" ") : "No mistakes. Wow! 💎";
+  $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd>${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
   say("#result", o.msg, o.mood);
   $("#rNext").style.display = o.next ? "" : "none";
-  $("#rNext").textContent = o.nextLabel||"Next →";
+  $("#rNext").textContent = o.nextLabel||t("r.next");
   resultActions = o;
   const main = o.next ? $("#rNext") : $("#rRetry");
   $$("#result .rbtns .btn").forEach(b=>b.classList.remove("filling")); void main.offsetWidth;
@@ -1404,9 +2025,9 @@ let resultActions=null, lvlTimer=null, goalTimer=null;
 function showGoal(){
   goalPending=false;
   const name=state.name ? `, ${esc(state.name)}` : "";
-  $("#rGoal").innerHTML=`🎯 Daily goal reached!<small>10 minutes of practice today. You can stop now, or go on for extra speed.</small>`;
+  $("#rGoal").innerHTML=t("goal.done");
   $("#rGoal").classList.add("on");
-  say("#result", `Daily goal done${name}! 🎉 Same time tomorrow?`, "wow");
+  say("#result", t("goal.say",{name}), "wow");
   confetti(160); chime();
 }
 /* XP sum after the summary. A new level gets a celebration. */
@@ -1414,7 +2035,7 @@ function showLevel(gained, stars, party=true){
   const now=levelInfo(state.xp), before=levelInfo(state.xp-gained);
   const up=now.lvl>before.lvl, newTitle=now.title!==before.title;
   clearTimeout(lvlTimer); clearTimeout(goalTimer); $("#rLvlUp").classList.remove("on"); $("#rGoal").classList.remove("on");
-  $("#rLvlName").textContent=`Level ${before.lvl} · ${before.title}`;
+  $("#rLvlName").textContent=`${t("level")} ${before.lvl} · ${before.title}`;
   $("#rLvlXp").textContent=`${before.into} / ${before.need} XP`;
   const bar=$("#rLvlBar"); bar.style.transition="none"; bar.style.width=(before.into/before.need*100)+"%"; void bar.offsetWidth; bar.style.transition="";
   const delay = stars===undefined ? 300 : 1300; // after the stars
@@ -1425,11 +2046,11 @@ function showLevel(gained, stars, party=true){
       lvlTimer=setTimeout(()=>{
         bar.style.transition="none"; bar.style.width="0"; void bar.offsetWidth; bar.style.transition="";
         bar.style.width=(now.into/now.need*100)+"%";
-        $("#rLvlName").textContent=`Level ${now.lvl} · ${now.title}`;
+        $("#rLvlName").textContent=`${t("level")} ${now.lvl} · ${now.title}`;
         $("#rLvlXp").textContent=`${now.into} / ${now.need} XP`;
-        $("#rLvlUp").innerHTML=`🎉 Level up! Level ${now.lvl}<small>${newTitle?`New title: ${esc(now.title)}`:`${now.need-now.into} XP to level ${now.lvl+1}`}</small>`;
+        $("#rLvlUp").innerHTML=`🎉 ${t("lvl.up")} ${t("level")} ${now.lvl}<small>${newTitle?t("lvl.newTitle",{t:esc(now.title)}):t("lvl.toNext",{x:now.need-now.into,l:now.lvl+1})}</small>`;
         $("#rLvlUp").classList.add("on");
-        say("#result", newTitle ? `Level ${now.lvl}! You are now a <b>${esc(now.title)}</b>! 🤖💃` : `Level ${now.lvl}! Keep going! 🚀`, "wow");
+        say("#result", newTitle ? t("lvl.sayTitle",{l:now.lvl,t:esc(now.title)}) : t("lvl.say",{l:now.lvl}), "wow");
         confetti(160); chime();
       },650);
     } else {
@@ -1449,12 +2070,12 @@ $("#rNext").onclick=()=>{ if(!resultClicksLocked() && resultActions.next) result
 function startSmart(){
   nextAgain=startSmart;
   const {text,weak}=genSmart();
-  startSession({mode:"smart", title:"Smart Practice", text, onFinish:res=>{
+  startSession({mode:"smart", title:t("m.smart"), text, onFinish:res=>{
     const xp=Math.round(text.length*Math.pow(res.acc/100,2)/3); state.xp+=xp;
-    showResult({title:"Smart Practice", res, xp, msg: res.acc>=95?"Your weak keys are getting stronger! 💪":"Good training. Repeat this a few times.", mood:"happy",
+    showResult({title:t("m.smart"), res, xp, msg: res.acc>=95?t("smart.good"):t("smart.ok"), mood:"happy",
       retry:startSmart, next:null});
   }});
-  say("#type", `I picked your trickiest keys: ${weak.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}. Slow and precise!`, "think");
+  say("#type", t("smart.say",{keys:weak.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}), "think");
 }
 
 /* =========================================================================
@@ -1477,7 +2098,7 @@ function boostGap(L){
   return Math.max(0,(w-r.wpm)/w) + Math.max(0,(a-r.acc)/10);
 }
 /* Three chapters for the lobby: easy (smallest gap), medium (middle gap) and hard (largest gap). */
-const BOOST_LEVELS=[{n:"Easy",c:"easy"},{n:"Medium",c:"mid"},{n:"Hard",c:"hard"}];
+const BOOST_LEVELS=[{n:"b.easy",c:"easy"},{n:"b.mid",c:"mid"},{n:"b.hard",c:"hard"}];
 function boostPicks(){
   const L=boostList().map(l=>({l,g:boostGap(l)})).sort((a,b)=>a.g-b.g || a.l.idx-b.l.idx), n=L.length;
   if(n>=3) return [0,1,2].map(k=>({l:L[[0,(n-1)>>1,n-1][k]].l, lvl:BOOST_LEVELS[k]}));
@@ -1487,7 +2108,7 @@ function boostPicks(){
 /* The rule for the next star of chapter L, as text. */
 function boostGoal(L){
   const s=lessonRec(L.idx)?.stars||0;
-  return s<2 ? `94% accuracy and ${L.target} WPM` : `97% accuracy and ${Math.ceil(L.target*1.3)} WPM`;
+  return s<2 ? t("b.goal",{a:94,w:L.target}) : t("b.goal",{a:97,w:Math.ceil(L.target*1.3)});
 }
 function weakKeys(letters, n){
   return letters.map(c=>{ const s=state.keys[c]||{h:0,m:0}, tot=s.h+s.m; return {c, r: tot<5 ? 0 : s.m/tot}; })
@@ -1513,14 +2134,14 @@ function openBoost(){
   const list=boostList();
   if(!list.length){
     const any=lessonsFlat().some(l=>(lessonRec(l.idx)?.stars||0)>=1);
-    toast("⚡", any ? "All your chapters have ★★★. Wow! 🎉" : `Get 1 star on a ${chapterWord().toLowerCase()} first.`);
+    toast("⚡", any ? t("b.allDone") : t("b.first"));
     return;
   }
   const picks=boostPicks();
   $("#boostChoices").style.gridTemplateColumns=`repeat(${picks.length},1fr)`;
   $("#boostChoices").innerHTML=picks.map(({l,lvl})=>{ const s=lessonRec(l.idx).stars;
-    return `<button class="choice${lvl?" "+lvl.c:""}" data-i="${l.idx}">${lvl?`<span class="blvl ${lvl.c}">${lvl.n}</span>`:""}<span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
-      `<span class="bst">${"★".repeat(s)}<i>${"★".repeat(3-s)}</i></span><br><span class="muted" style="font-size:12px">Next star: ${boostGoal(l)}</span></button>`; }).join("");
+    return `<button class="choice${lvl?" "+lvl.c:""}" data-i="${l.idx}">${lvl?`<span class="blvl ${lvl.c}">${t(lvl.n)}</span>`:""}<span class="muted" style="font-size:12px">${chapterWord().toUpperCase()} ${l.idx+1}</span><b>${esc(l.title)}</b>`+
+      `<span class="bst">${"★".repeat(s)}<i>${"★".repeat(3-s)}</i></span><br><span class="muted" style="font-size:12px">${t("b.nextStar")} ${boostGoal(l)}</span></button>`; }).join("");
   $$("#boostChoices .choice").forEach(b=>b.onclick=()=>{ $("#boostLobby").classList.remove("on"); startBoost(+b.dataset.i); });
   $("#boostLobby").classList.add("on");
 }
@@ -1530,9 +2151,9 @@ function startBoost(i){
   if(!L || s<1 || s>=3) return openBoost();
   nextAgain=()=>startBoost(i);
   const {text,focus}=genBoost(L);
-  startSession({mode:"boost", title:`⚡ Booster · ${i+1}. ${L.title}`, text, onFinish:res=>boostDone(L,res)});
-  const keys = focus.length ? ` Focus keys: ${focus.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}.` : "";
-  say("#type", `Boost to ${"★".repeat(s+1)}! You need ${boostGoal(L)}.${keys}`, "think");
+  startSession({mode:"boost", title:`⚡ ${t("m.boost")} · ${i+1}. ${L.title}`, text, onFinish:res=>boostDone(L,res)});
+  const keys = focus.length ? " "+t("b.focus",{keys:focus.map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}) : "";
+  say("#type", t("b.say",{s:"★".repeat(s+1),g:boostGoal(L)})+keys, "think");
 }
 function boostDone(L,res){
   const recs=state.lessons[state.layout]||(state.lessons[state.layout]={});
@@ -1543,10 +2164,10 @@ function boostDone(L,res){
   const b=state.boost || (state.boost={played:0,ups:0}); b.played++; if(up) b.ups++;
   const xp=Math.round(S.text.length*Math.pow(res.acc/100,2)/3) + (up?BOOST_XP:0); state.xp+=xp;
   const more=boostList().length>0, cw=`${chapterWord()} ${L.idx+1}`;
-  showResult({title:`⚡ Booster · ${L.title}`, stars, res, xp, party:up, mood: up?"wow":"happy",
-    msg: up ? `BOOST! ${cw} now has ${"★".repeat(stars)}! 🚀` : res.acc>=94 ? "So close! Try once more." : "Good training. Accuracy first, then speed.",
-    need: stars>=3 ? `${cw} is complete: ★★★` : `For ${"★".repeat(stars+1)}: ${boostGoal(L)}.`,
-    retry: stars<3 ? ()=>startBoost(L.idx) : openBoost, next: more ? openBoost : null, nextLabel:"Boost a chapter"});
+  showResult({title:`⚡ ${t("m.boost")} · ${L.title}`, stars, res, xp, party:up, mood: up?"wow":"happy",
+    msg: up ? t("b.up",{c:cw,s:"★".repeat(stars)}) : res.acc>=94 ? t("b.close") : t("train.ok"),
+    need: stars>=3 ? t("b.complete",{c:cw}) : `${t("b.for")} ${"★".repeat(stars+1)}: ${boostGoal(L)}.`,
+    retry: stars<3 ? ()=>startBoost(L.idx) : openBoost, next: more ? openBoost : null, nextLabel:t("b.again")});
   if(up) chime();
 }
 
@@ -1591,8 +2212,8 @@ function customToggle(c){
 function customDraw(){
   $$("#clKb .ckey").forEach(b=>{ const on=customPick.includes(b.dataset.c); b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); });
   const n=customPick.length, w=n?customWords(customPick).length:0;
-  $("#clInfo").innerHTML = !n ? "Pick at least 1 key." :
-    `<b>${n}</b> ${n===1?"key":"keys"} · <b>${w}</b> real ${w===1?"word":"words"}` + (w<CUSTOM_MIN_WORDS ? " · Keebo adds letter groups" : "");
+  $("#clInfo").innerHTML = !n ? t("cl.pick1") :
+    `<b>${n}</b> ${tn("cl.keys",n)} · <b>${w}</b> ${tn("cl.words",w)}` + (w<CUSTOM_MIN_WORDS ? " · "+t("cl.groups") : "");
   $("#clGo").disabled = !n;
 }
 $("#clHome").onclick=()=>{ customPick=customSort(customHome()); customDraw(); };
@@ -1605,15 +2226,15 @@ function startCustom(keys){
   keys=customSort(keys); if(!keys) return openCustom();
   state.custom=Object.assign({played:0}, state.custom, {keys}); save();
   const text=genCustom(keys), few=customWords(keys).length<CUSTOM_MIN_WORDS;
-  startSession({mode:"custom", title:`🔤 Custom Letters · ${keys.length>10 ? keys.length+" keys" : customLabel(keys)}`, text, onFinish:res=>{
+  startSession({mode:"custom", title:`🔤 ${t("m.custom")} · ${keys.length>10 ? keys.length+" "+tn("cl.keys",keys.length) : customLabel(keys)}`, text, onFinish:res=>{
     state.custom.played=(state.custom.played||0)+1;
     const xp=Math.round(text.length*Math.pow(res.acc/100,2)/3); state.xp+=xp;
-    showResult({title:"🔤 Custom Letters", res, xp, mood:"happy",
-      msg: res.acc>=95 ? "Your keys are getting stronger! 💪" : "Good training. Accuracy first, then speed.",
-      need:`Keys: ${customLabel(keys)}`,
-      retry:()=>startCustom(keys), next:openCustom, nextLabel:"Pick other keys"});
+    showResult({title:"🔤 "+t("m.custom"), res, xp, mood:"happy",
+      msg: res.acc>=95 ? t("cl.good") : t("train.ok"),
+      need:`${t("cl.keysLbl")} ${customLabel(keys)}`,
+      retry:()=>startCustom(keys), next:openCustom, nextLabel:t("cl.other")});
   }});
-  say("#type", `Your keys: ${[...keys].map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}.` + (few ? " Few real words with these letters, so I added letter groups." : " Eyes on the screen!"), "think");
+  say("#type", t("cl.say",{keys:[...keys].map(k=>`<b>${esc(k.toUpperCase())}</b>`).join(" ")}) + " " + t(few ? "cl.few" : "cl.eyes"), "think");
 }
 
 /* =========================================================================
@@ -1624,8 +2245,8 @@ const WARMUP_SECS = 60;                               // the run stops after 1 m
 function warmupDue(){ return !warmupLock(); }
 /* Why the warm-up is locked: "" = open. */
 function warmupLock(){
-  if(currentLessonIdx()===0) return `Locked: pass ${chapterWord().toLowerCase()} 1 first`;
-  if((state.warmup?.last||"")===todayStr()) return "Done today ✓ · unlocks again tomorrow";
+  if(currentLessonIdx()===0) return t("lock.ch1");
+  if((state.warmup?.last||"")===todayStr()) return t("wu.doneToday");
   return "";
 }
 /* Short words (2 to 5 letters) with only the learned keys. Not the weak keys: that is Smart Practice. */
@@ -1640,17 +2261,17 @@ function genWarmup(){
 }
 function startWarmup(){
   nextAgain=startWarmup;
-  startSession({mode:"warmup", title:"☀️ Daily warm-up", text:genWarmup(), noScore:true,
+  startSession({mode:"warmup", title:"☀️ "+t("m.warm"), text:genWarmup(), noScore:true,
     onTick(){ if(S.start && !S.done && elapsed()>=WARMUP_SECS) finishSession(); },   // stop at 1 minute, also with words left
     onFinish:res=>{
     state.warmup={last:todayStr(), count:(state.warmup?.count||0)+1};
     const xp=Math.round(S.pos*Math.pow(res.acc/100,2)/3); state.xp+=xp;
     const cur=currentLessonIdx();
-    showResult({title:"Warm-up done ☀️", res, xp, mood:"wow",
-      msg:"Your fingers are warm. Ready for the real work!",
+    showResult({title:t("wu.done"), res, xp, mood:"wow",
+      msg:t("wu.msg"),
       retry:startWarmup, next:()=>startLesson(cur), nextLabel:`${chapterWord()} ${cur+1} →`});
   }});
-  say("#type","Warm-up. Easy words, no score. Find F and J, and type at a calm pace.","happy");
+  say("#type",t("wu.say"),"happy");
 }
 
 /* =========================================================================
@@ -1688,6 +2309,38 @@ nl: [
 "de clown jongleert met vijf rode ballen","een vos liep over de stille weg","de bib heeft een boek voor iedereen",
 "rustig en precies wint de race","de bakker verkoopt warm brood","mijn plant groeit elke dag een beetje",
 "we zwaaiden naar de boot in de haven"
+],
+fr: [
+"le soleil brille et les oiseaux chantent","une petite grenouille dort sur une pierre","nous jouons dehors après la classe",
+"mon robot aime danser dans la cuisine","le chat dort sur le rebord de la fenêtre","des mains calmes tapent vite et bien",
+"la fusée vole très haut sur la mer","mamie fait des biscuits chaque dimanche","nous avons trouvé un coquillage sur la plage",
+"le chien creuse un grand trou dans le jardin","un chevalier courageux monte un cheval blanc","mon ami raconte les meilleures blagues",
+"la lune ressemble à une pièce en argent","la pluie tape doucement sur le toit","nous avons construit une cabane avec des cartons",
+"le bus était en retard, alors nous avons couru","une chanson joyeuse rend la journée meilleure","le hibou chante dans le grand chêne",
+"la soirée pizza est la meilleure soirée","la rivière coule vers la mer","garde les yeux sur ton écran",
+"une petite fourmi porte une grande feuille","le train roule vite dans les collines","nous lisons une histoire de dragon",
+"ma soeur joue de la batterie très fort","le vent a emporté mon chapeau","il a neigé toute la nuit et tout est blanc",
+"notre équipe a gagné à la dernière minute","un bon dactylo ne regarde jamais ses mains","les abeilles travaillent dans les fleurs",
+"nous avons mangé une glace au parc","les étoiles brillent sur le lac","mes chaussures sont mouillées par la pluie",
+"le clown jongle avec cinq balles rouges","un renard traverse la route calme","la bibliothèque a un livre pour chacun",
+"lentement et sûrement, on gagne la course","le boulanger vend du pain chaud le matin","ma plante grandit un peu chaque jour",
+"nous saluons le bateau dans le port"
+],
+it: [
+"il sole splende e gli uccelli cantano","una piccola rana dorme su un sasso","giochiamo fuori dopo la scuola",
+"il mio robot balla in cucina","il gatto dorme sul davanzale caldo","mani calme scrivono veloci e bene",
+"il razzo vola alto sopra il mare","la nonna fa i biscotti ogni domenica","abbiamo trovato una conchiglia sulla spiaggia",
+"il cane scava una buca nel giardino","un cavaliere coraggioso monta un cavallo bianco","il mio amico racconta le barzellette migliori",
+"la luna sembra una moneta di argento","la pioggia batte piano sul tetto","abbiamo costruito una capanna con le scatole",
+"il bus era in ritardo, quindi siamo corsi","una canzone allegra rende la giornata migliore","il gufo canta sulla grande quercia",
+"la sera della pizza è la sera migliore","il fiume scende verso il mare","tieni gli occhi sullo schermo",
+"una piccola formica porta una grande foglia","il treno corre veloce tra le colline","leggiamo una storia su un drago",
+"mia sorella suona la batteria molto forte","il vento ha portato via il mio cappello","ha nevicato tutta la notte e tutto è bianco",
+"la squadra ha vinto proprio alla fine","un bravo dattilografo non guarda mai in basso","le api lavorano tra i fiori",
+"abbiamo mangiato un gelato al parco","le stelle brillano sopra il lago","le mie scarpe sono bagnate di pioggia",
+"il pagliaccio gioca con cinque palle rosse","una volpe attraversa la strada tranquilla","la biblioteca ha un libro per tutti",
+"piano piano si vince la gara","il fornaio vende pane caldo la mattina","la mia pianta cresce un poco ogni giorno",
+"salutiamo la barca nel porto"
 ]};
 const DAILY_WORDS = 7;                                 // words in the sentence when no sentence fits the learned keys
 /* A number from a text. The same day gives the same number, so the sentence is the same all day. */
@@ -1696,8 +2349,8 @@ function seededRnd(seed){ let a=seed||1; return ()=>{ a=(a+0x6D2B79F5)|0; let t=
 /* Make a sentence fit the keys: no capitals before the Capitals chapter, no punctuation that is not learned. "" = it does not fit. */
 function dailyFit(t, allowed, caps){
   if(caps) return t[0].toUpperCase()+t.slice(1)+".";          // after the Capitals chapter: a full sentence
-  if(![...t].every(c=>allowed.has(c) || !/[a-z]/.test(c))) return "";
-  return [...t].filter(c=>allowed.has(c)).join("").replace(/ +/g," ").trim();
+  if(![...t].every(c=>allowed.has(fold(c)) || !/[a-z]/.test(fold(c)))) return "";
+  return [...t].filter(c=>allowed.has(fold(c))).join("").replace(/ +/g," ").trim();
 }
 /* Today's sentence for the keys the player knows. */
 function genDaily(day=todayStr(), lang=state.lang){
@@ -1712,9 +2365,9 @@ function genDaily(day=todayStr(), lang=state.lang){
 }
 /* Why the daily sentence is locked: "" = open. */
 function dailyLock(){
-  if(currentLessonIdx()===0) return `Locked: pass ${chapterWord().toLowerCase()} 1 first`;
+  if(currentLessonIdx()===0) return t("lock.ch1");
   const d=state.daily||{};
-  if(d.last===todayStr()) return `Done today ✓ · ${d.wpm||0} WPM · back tomorrow`;
+  if(d.last===todayStr()) return t("ds.doneToday",{w:d.wpm||0});
   return "";
 }
 function dailyDue(){ return !dailyLock(); }
@@ -1722,34 +2375,33 @@ function dailyDue(){ return !dailyLock(); }
 function startDaily(practice=false){
   nextAgain=()=>startDaily(practice);
   const text = practice && state.daily?.text ? state.daily.text : genDaily();
-  startSession({mode:"daily", title: practice ? "📜 Daily sentence · practice" : "📜 Daily sentence", text, noScore:true, onFinish:res=>{
+  startSession({mode:"daily", title: "📜 "+t("m.daily")+(practice ? " · "+t("ds.practice") : ""), text, noScore:true, onFinish:res=>{
     const d=state.daily||(state.daily={last:"",count:0,best:0});
     let xp=0, msg;
-    if(practice){ msg="Practice run. Only the first run of the day counts."; }
+    if(practice){ msg=t("ds.pMsg"); }
     else{
       const wpm=Math.round(res.wpm), acc=Math.round(res.acc), rec=acc>=90 && wpm>(d.best||0);
       Object.assign(d, {last:todayStr(), count:(d.count||0)+1, wpm, acc, text});
       if(rec) d.best=wpm;
       xp=Math.round(text.length*Math.pow(res.acc/100,2)/3) + (acc===100?10:0); state.xp+=xp;
-      msg = acc===100 ? "Flawless sentence! 💎 Come back tomorrow for a new one." :
-            rec ? `New daily record: ${wpm} WPM! 🏆 A new sentence waits tomorrow.` : "Today's sentence is done. A new one waits tomorrow!";
+      msg = acc===100 ? t("ds.flawless") : rec ? t("ds.record",{w:wpm}) : t("ds.done");
     }
-    showResult({title: practice ? "Daily sentence · practice" : "Daily sentence done 📜", res, xp, mood: practice?"happy":"wow", msg,
-      need: practice ? "" : `Your record: ${d.best||0} WPM.`, retry:()=>startDaily(true), next:null, party:!practice});
+    showResult({title: practice ? t("m.daily")+" · "+t("ds.practice") : t("ds.title"), res, xp, mood: practice?"happy":"wow", msg,
+      need: practice ? "" : t("ds.best",{w:d.best||0}), retry:()=>startDaily(true), next:null, party:!practice});
   }});
-  say("#type", practice ? "Practice run. It does not change today's score." : "One sentence, one try that counts. Calm and precise!", "happy");
+  say("#type", practice ? t("ds.pSay") : t("ds.say"), "happy");
 }
 
 /* =========================================================================
    RACE
    ========================================================================= */
-const BOT_SPEEDS=[{n:"Chill",w:12,i:"🐢"},{n:"Steady",w:20,i:"🚲"},{n:"Fast",w:30,i:"🛵"},{n:"Turbo",w:42,i:"🏎️"},{n:"Insane",w:60,i:"🚀"}];
+const BOT_SPEEDS=[{n:"Chill",w:12,i:"🐢"},{n:"Steady",w:20,i:"🚲"},{n:"Fast",w:30,i:"🛵"},{n:"Turbo",w:42,i:"🏎️"},{n:"Insane",w:60,i:"🚀"}].map((o,k)=>Object.assign(o,{k}));
 function openRaceLobby(){
   const avg = avgWpm(), lv=levelOf("race");
   // "Match me" follows the player's WPM, so it has a level. The fixed speeds do not.
-  const opts=[...BOT_SPEEDS]; if(avg>0) opts.unshift({n: lv==="normal" ? "Match me" : `Match me · ${levelInfoOf(lv).n}`, w:Math.max(8,levelWpm(avg,lv)+2), i: levelInfoOf(lv).i});
+  const opts=BOT_SPEEDS.map(o=>Object.assign({},o,{n:t("speeds")[o.k]})); if(avg>0) opts.unshift({n: lv==="normal" ? t("race.match") : `${t("race.match")} · ${levelName(lv)}`, w:Math.max(8,levelWpm(avg,lv)+2), i: levelInfoOf(lv).i});
   $("#raceLv").style.display = avg>0 ? "" : "none";
-  $("#raceLv").innerHTML = LEVELS.map(L=>`<button class="lv-${L.id}${L.id===lv?" on":""}" data-lv="${L.id}" aria-pressed="${L.id===lv}">${L.i} ${L.n} · ${Math.max(8,levelWpm(avg,L.id)+2)} WPM</button>`).join("");
+  $("#raceLv").innerHTML = LEVELS.map(L=>`<button class="lv-${L.id}${L.id===lv?" on":""}" data-lv="${L.id}" aria-pressed="${L.id===lv}">${L.i} ${levelName(L.id)} · ${Math.max(8,levelWpm(avg,L.id)+2)} WPM</button>`).join("");
   $$("#raceLv button").forEach(b=>b.onclick=()=>{ setLevel("race", b.dataset.lv); openRaceLobby(); });
   $("#raceChoices").innerHTML=opts.map((o,i)=>`<button class="choice" data-w="${o.w}" data-n="${o.n}"><span style="font-size:28px">${o.i}</span><b>${o.n}</b><span class="muted">${o.w} WPM</span></button>`).join("");
   $$("#raceChoices .choice").forEach(b=>b.onclick=()=>{ $("#raceLobby").classList.remove("on"); startRace(+b.dataset.w, b.dataset.n); });
@@ -1761,27 +2413,27 @@ function startRace(botWpm, label){
   const allowed=learnedSet();
   const text = hasCaps() ? genSentences(2) : genWords(allowed, 16);
   let botStart=0, botDone=false;
-  startSession({mode:"race", title:`Race vs Keebo (${label}, ${botWpm} WPM)`, text, locked:true,
+  startSession({mode:"race", title:t("race.title",{l:label,w:botWpm}), text, locked:true,
     onTick(){
       if(!botStart||!S) return;
       const chars = (performance.now()-botStart)/60000*botWpm*5;
       const bp=Math.min(1, chars/S.text.length);
       $("#rBot").style.left=`calc(${bp*100}% - ${bp*60}px + 6px)`;
       const yp=S.pos/S.text.length; $("#rYou").style.left=`calc(${yp*100}% - ${yp*60}px + 6px)`;
-      if(bp>=1 && !botDone){ botDone=true; S.botTime=(performance.now()-botStart)/1000; say("#type","Beep! I finished first. Finish your race anyway!","wow"); }
+      if(bp>=1 && !botDone){ botDone=true; S.botTime=(performance.now()-botStart)/1000; say("#type",t("race.botFirst"),"wow"); }
     },
     onFinish(res){
       const won=!botDone; state.races.played++; if(won) state.races.won++;
       const xp=Math.round(S.text.length*Math.pow(res.acc/100,2)/3)+(won?30:5); state.xp+=xp;
-      showResult({title: won?"You beat Keebo! 🏆":"Keebo wins this time 🤖", res, xp, mood: won?"wow":"happy",
-        msg: won ? "Nooo! My circuits! You were faster. Try a faster level?" : `I was faster this time. You typed ${Math.round(res.wpm)} WPM. Rematch?`,
-        retry:()=>startRace(botWpm,label), next:openRaceLobby, nextLabel:"Pick speed"});
+      showResult({title: won?t("race.won"):t("race.lost"), res, xp, mood: won?"wow":"happy",
+        msg: won ? t("race.wonMsg") : t("race.lostMsg",{w:Math.round(res.wpm)}),
+        retry:()=>startRace(botWpm,label), next:openRaceLobby, nextLabel:t("race.pick")});
       if(won) chime();
     },
     onAbort(){ stopLights(); }
   });
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
-  say("#type","Get ready… Fingers on the home row!","think");
+  say("#type",t("race.ready"),"think");
   countIn(()=>{ S.locked=false; S.start=performance.now(); botStart=performance.now(); say("#type","GO! 🏁","wow"); });
 }
 /* F1 start lights, then go(). The text stays visible (light blur), so the player can read it.
@@ -1812,7 +2464,8 @@ function avgWpm(){ const h=state.history.slice(-10); return h.length? Math.round
    Each step is 5% to 25% of avg. Fewer than 5 runs: a fixed step of 10%.
    Normal = the game as before. The last choice is kept per game. Records are kept per level.
    ========================================================================= */
-const LEVELS=[{id:"fun",n:"Fun",i:"😎"},{id:"normal",n:"Normal",i:"🎯"},{id:"challenge",n:"Super Challenge",i:"🔥"}];
+const LEVELS=[{id:"fun",i:"😎"},{id:"normal",i:"🎯"},{id:"challenge",i:"🔥"}];
+const levelName = id => t("lv."+id);
 const LEVEL_SHARE=0.5, LEVEL_MIN=0.05, LEVEL_MAX=0.25, LEVEL_FIXED=0.10, LEVEL_RUNS=5;
 /* The two steps as a part of avg: {down, up}. */
 function levelSteps(){
@@ -1828,24 +2481,24 @@ function levelInfoOf(lv){ return LEVELS.find(x=>x.id===lv)||LEVELS[1]; }
 function levelOf(game){ const l=(state.gameLv||{})[game]; return LEVELS.some(x=>x.id===l) ? l : "normal"; }
 function setLevel(game, lv){ (state.gameLv||(state.gameLv={}))[game]=lv; save(); }
 /* "😎 Fun" for a level other than Normal, else "". */
-function levelTag(lv){ const L=levelInfoOf(lv); return lv==="normal" ? "" : `${L.i} ${L.n}`; }
+function levelTag(lv){ const L=levelInfoOf(lv); return lv==="normal" ? "" : `${L.i} ${levelName(lv)}`; }
 /* Level lobby for Longest Word, Word Marathon and Word Rain. */
 const LEVEL_GAMES={
-  ladder:  {t:"🪜 Longest Word", base:()=>ladderRef(), sub:lv=>`Keebo starts at ${ladderPace(levelWpm(ladderRef(),lv),1)} WPM`,
-            rec:lv=>{ const b=ladderRecOf("ladder",lv).best; return b ? `Record: ${b} of ${LADDER_SUBS}` : "No record yet"; }, go:lv=>startLadder(false,lv)},
-  marathon:{t:"🏃 Word Marathon", base:()=>ladderRef(), sub:lv=>`Keebo starts at ${ladderPace(levelWpm(ladderRef(),lv),1)} WPM`,
-            rec:lv=>{ const b=ladderRecOf("marathon",lv).best; return b ? `Record: ${b} of ${LADDER_SUBS}` : "No record yet"; }, go:lv=>startLadder(true,lv)},
-  rain:    {t:"☄️ Word Rain", base:()=>avgWpm()||state.bestWpm||0,
-            sub:lv=>{ const p=Math.round(Math.abs(levelFactor(lv)-1)*100); return lv==="normal" ? "Meteors at normal speed" : `Meteors ${p}% ${lv==="fun"?"slower":"faster"}`; },
-            rec:lv=>{ const b=rainBestOf(lv); return b ? `Record: ${b}` : "No record yet"; }, go:lv=>startRain(lv)},
+  ladder:  {t:()=>"🪜 "+t("m.ladder"), base:()=>ladderRef(), sub:lv=>t("lv.keeboStart",{w:ladderPace(levelWpm(ladderRef(),lv),1)}),
+            rec:lv=>{ const b=ladderRecOf("ladder",lv).best; return b ? t("rec.of",{b,n:LADDER_SUBS}) : t("rec.none"); }, go:lv=>startLadder(false,lv)},
+  marathon:{t:()=>"🏃 "+t("m.mar"), base:()=>ladderRef(), sub:lv=>t("lv.keeboStart",{w:ladderPace(levelWpm(ladderRef(),lv),1)}),
+            rec:lv=>{ const b=ladderRecOf("marathon",lv).best; return b ? t("rec.of",{b,n:LADDER_SUBS}) : t("rec.none"); }, go:lv=>startLadder(true,lv)},
+  rain:    {t:()=>"☄️ "+t("m.rain"), base:()=>avgWpm()||state.bestWpm||0,
+            sub:lv=>{ const p=Math.round(Math.abs(levelFactor(lv)-1)*100); return lv==="normal" ? t("lv.metNormal") : t(lv==="fun"?"lv.metSlower":"lv.metFaster",{p}); },
+            rec:lv=>{ const b=rainBestOf(lv); return b ? t("rec.pts",{b}) : t("rec.none"); }, go:lv=>startRain(lv)},
 };
 let LVG="ladder";
 function openLevelLobby(game){
   const G=LEVEL_GAMES[game]; LVG=game;
   const base=G.base(), cur=levelOf(game);
-  $("#lvTitle").textContent=G.t;
-  $("#lvChoices").innerHTML=LEVELS.map((L,k)=>`<button class="choice lv-${L.id}${L.id===cur?" on":""}" data-lv="${L.id}" title="Key ${k+1}">
-    <span style="font-size:28px">${L.i}</span><b>${L.n}</b>${base>0?`<span class="wpm">${levelWpm(base,L.id)} WPM</span>`:""}<small>${G.sub(L.id)}</small><small>${G.rec(L.id)}</small></button>`).join("");
+  $("#lvTitle").textContent=G.t();
+  $("#lvChoices").innerHTML=LEVELS.map((L,k)=>`<button class="choice lv-${L.id}${L.id===cur?" on":""}" data-lv="${L.id}" title="${t("key")} ${k+1}">
+    <span style="font-size:28px">${L.i}</span><b>${levelName(L.id)}</b>${base>0?`<span class="wpm">${levelWpm(base,L.id)} WPM</span>`:""}<small>${G.sub(L.id)}</small><small>${G.rec(L.id)}</small></button>`).join("");
   $$("#lvChoices .choice").forEach(b=>b.onclick=()=>{ $("#levelLobby").classList.remove("on"); setLevel(game, b.dataset.lv); G.go(b.dataset.lv); });
   $("#levelLobby").classList.add("on");
   setTimeout(()=>$(`#lvChoices .choice[data-lv="${cur}"]`)?.focus(),30);
@@ -1884,9 +2537,23 @@ const LADDER_WORDS = {
     11:"ruimteschip voetballers sinterklaas bibliotheek regenwormen", 12:"zonnebloemen schildpadden dierentuinen kinderboeken pannenkoeken sneeuwpoppen",
     13:"chocolademelk speelgoedauto kampioenschap dinosaurussen brandweerauto", 14:"aardbeientaart vakantiehuisje schoolvakantie pannenkoekhuis chocoladetaart voetbalstadion",
     15:"brandweermannen kinderboerderij ruimtewandeling vakantiehuisjes tekenfilmfiguur"
+  },
+  fr: {
+    2:"il on tu un ou le", 3:"ami feu jeu lit nez roi mer", 4:"lune bois loup ours vent chat",
+    5:"livre pomme tigre robot pizza plage", 6:"girafe jungle bateau cheval ballon", 7:"dauphin château gâteaux musique planète fromage",
+    8:"éléphant aventure papillon montagne sandwich magicien", 9:"dinosaure crocodile tournesol parapluie chevalier", 10:"astronaute trampoline champignon skateboard chevaliers dinosaures",
+    11:"hélicoptère imagination grenouilles explorateur hippopotame", 12:"anniversaire bibliothèque championnats mathématique constructeur aventurières", 13:"photographies astronomiques constellation collectionner anniversaires bibliothèques",
+    14:"extraordinaire constellations mathématiciens collectionneur photographique", 15:"applaudissement collectionneurs extraordinaires photographiques électroménagers"
+  },
+  it: {
+    2:"io tu se su in no", 3:"blu sei tre due oro ape", 4:"sole mare luna cane pane",
+    5:"gatto pizza tigre robot fiore", 6:"gelato scuola banana pirata regalo", 7:"delfino vulcano giraffa pianeta cavallo",
+    8:"pinguino elefante castello chitarra coniglio", 9:"dinosauro avventura tartaruga pagliacci astronave", 10:"cioccolato astronauta arcobaleno elicottero biblioteca",
+    11:"coccodrillo monopattino videogiochi fotografare maglioncino", 12:"esploratrice meravigliosa scarabocchio pallavolista fantascienza", 13:"straordinario costellazione pallacanestro paracadutista temperamatite",
+    14:"trasformazioni accompagnatore investigatrice intrattenitore organizzazione", 15:"sperimentazione fantasticamente incredibilmente divertentissimo accompagnatrice"
   }
 };
-const LADDER_BOSS = { en:"supercalifragilisticexpialidocious", nl:"hottentottententententoonstelling" };
+const LADDER_BOSS = { en:"supercalifragilisticexpialidocious", nl:"hottentottententententoonstelling", fr:"anticonstitutionnellement", it:"precipitevolissimevolmente" };
 const LADDER_MIN = 2, LADDER_MAX = 15;
 const LADDER_SUBS = LADDER_MAX - LADDER_MIN + 2;      // 14 word lengths + the boss word
 const KEEBO_READ = 1.2;                               // seconds Keebo waits to read the new word
@@ -1934,7 +2601,7 @@ function ladderMissing(){
 function openLadder(marathon){
   const miss=ladderMissing();
   if(!miss.length) return openLevelLobby(marathon ? "marathon" : "ladder");
-  $("#llTxt").textContent=`Learn all the letters first. Get at least 1 star on each ${chapterWord().toLowerCase()} up to the end of the Bottom Row. You still need ${miss.length}:`;
+  $("#llTxt").textContent=t("ll.txt",{n:miss.length});
   $("#llList").innerHTML=miss.map(l=>`<li value="${l.idx+1}">${esc(l.title)}</li>`).join("");
   $("#ladderLock").classList.add("on");
   setTimeout(()=>$("#llClose").focus(),30);
@@ -1971,44 +2638,42 @@ function marathonKeebo(t){
 }
 function ladderDanger(on){ $("#fBot").parentElement.classList.toggle("danger", !!on); }
 function renderLadderBar(){
-  $("#ladder").innerHTML=LW.words.map((w,i)=>`<i class="${i<LW.sub-1?"done":i===LW.sub-1?"cur":""}" title="${i===LW.words.length-1?"Boss word":w.length+" letters"}">${i===LW.words.length-1?"👑":w.length}</i>`).join("");
+  $("#ladder").innerHTML=LW.words.map((w,i)=>`<i class="${i<LW.sub-1?"done":i===LW.sub-1?"cur":""}" title="${i===LW.words.length-1?t("lw.boss"):tn("lw.letters",w.length)}">${i===LW.words.length-1?"👑":w.length}</i>`).join("");
 }
 function startLadder(marathon, level){
   marathon=!!marathon; level=level||levelOf(marathon ? "marathon" : "ladder");
   nextAgain=()=>startLadder(marathon, level);
   const words=ladderWords(), best=levelWpm(ladderRef(), level);
   LW={words, sub:0, best, marathon, level, wait:KEEBO_READ, ramp:0, botV:1, botTotal:0, chars:0, secs:0, keys:0, errors:0, miss:{}, botStart:0, botSecs:0, botWpm:0, over:false};
-  startSession({mode:"ladder", marathon, title: marathon ? "Word Marathon" : "Longest Word", text:words[0], locked:true,
+  startSession({mode:"ladder", marathon, title: t(marathon ? "m.mar" : "m.ladder"), text:words[0], locked:true,
     onTick(){
       if(!LW || LW.over || !S) return;
       if(LW.marathon){
         if(!LW.mStart) return;
         const k=marathonKeebo((performance.now()-LW.mStart)/1000), tot=ladderTotal(), you=ladderDone()+S.pos;
         ladderPlace($("#fBot"), k.c/tot); ladderPlace($("#fYou"), you/tot);
-        $("#fBotLbl").textContent=`Keebo · ${k.wpm} WPM`+(k.ramp?" · 🐢 speeding up":"");
+        $("#fBotLbl").textContent=`Keebo · ${k.wpm} WPM`+(k.ramp?" · "+t("lw.ramp"):"");
         ladderDanger(k.c>=1 && you-k.c < MARATHON_DANGER);   // Keebo is close behind you
         if(k.c >= you+MARATHON_PASS && !S.locked) ladderOver(false);
         return;
       }
       if(!LW.botStart) return;
-      const t=(performance.now()-LW.botStart)/1000;
-      const bc=Math.min(S.text.length, keeboChars(t,LW.botV,LW.ramp)), bp=bc/S.text.length;
+      const ts=(performance.now()-LW.botStart)/1000;
+      const bc=Math.min(S.text.length, keeboChars(ts,LW.botV,LW.ramp)), bp=bc/S.text.length;
       ladderPlace($("#rBot"), bp); ladderPlace($("#rYou"), S.pos/S.text.length);
-      $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`+(t<LW.ramp?" · 🐢 speeding up":"");
+      $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`+(ts<LW.ramp?" · "+t("lw.ramp"):"");
       if(bp>=1 && !S.locked) ladderOver(false);
     },
     onWord(){ ladderWordDone(); },
     onAbort(){ stopLights(); ladderDanger(false); if(LW) LW.over=true; LW=null; }
   });
-  $("#rYouLbl").textContent="You";
-  say("#type", marathon
-    ? `Type the words at your own pace. I run the whole ladder without a stop. If I pass you, I win. My start pace is <b>${ladderPace(best,1)} WPM</b>. Ready?`
-    : `Type each word before I do. Errors do not count, only time. My start pace is <b>${ladderPace(best,1)} WPM</b>. Ready?`,"think");
+  $("#rYouLbl").textContent=t("you");
+  say("#type", t(marathon ? "lw.sayMar" : "lw.say",{w:ladderPace(best,1)}),"think");
   ladderNext();
   if(marathon){ marathonPlan(); ladderPlace($("#fBot"),0); ladderPlace($("#fYou"),0); ladderDanger(false); }
   countIn(()=>{ if(!LW) return; S.locked=false; LW.botStart=S.start=LW.wordStart=performance.now();
     if(LW.marathon) LW.mStart=LW.botStart; else ladderTiming(KEEBO_READ);
-    say("#type", LW.marathon ? "GO! 🏃" : "GO! 🪜","wow"); });
+    say("#type", t("go")+(LW.marathon ? " 🏃" : " 🪜"),"wow"); });
 }
 /* Show the next word and reset Keebo. */
 function ladderNext(){
@@ -2021,9 +2686,9 @@ function ladderNext(){
   renderText(); updateCursor(); renderLadderBar();
   // Preview of the next word, so the player can read ahead.
   const nx=LW.words[LW.sub];
-  if(nx){ const pk=document.createElement("span"); pk.className="peek"; pk.id="ladderPeek"; pk.textContent=nx; pk.title="Next word"; $("#text").append(pk); }
-  const name = (LW.level!=="normal" ? levelInfoOf(LW.level).i+" " : "") + (LW.marathon ? "Word Marathon" : "Longest Word");
-  $("#tTitle").textContent = boss ? `${name} · 👑 Boss word (${LW.sub}/${LADDER_SUBS})` : `${name} · ${w.length} letters (${LW.sub}/${LADDER_SUBS})`;
+  if(nx){ const pk=document.createElement("span"); pk.className="peek"; pk.id="ladderPeek"; pk.textContent=nx; pk.title=t("lw.next"); $("#text").append(pk); }
+  const name = (LW.level!=="normal" ? levelInfoOf(LW.level).i+" " : "") + t(LW.marathon ? "m.mar" : "m.ladder");
+  $("#tTitle").textContent = boss ? `${name} · 👑 ${t("lw.boss")} (${LW.sub}/${LADDER_SUBS})` : `${name} · ${tn("lw.letters",w.length)} (${LW.sub}/${LADDER_SUBS})`;
   $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
   $("#rBot").style.left="6px"; $("#rYou").style.left="6px";
 }
@@ -2043,8 +2708,7 @@ function ladderWordDone(){
   $("#rBotLbl").textContent=`Keebo · ${LW.botWpm} WPM`;
   if(!LW.marathon) LW.botStart=0;                      // Longest Word: Keebo waits. Marathon: Keebo runs on.
   S.hold=true; S.buf=[];
-  say("#type", LW.sub+1===LW.words.length ? "👑 BOSS WORD next! The longest word I know." :
-    rnd(["Yes! Next rung. 🪜","Nice! One letter more.","Too fast for me!","Climb, climb! 🧗","Beep! You beat me again."]), "wow");
+  say("#type", LW.sub+1===LW.words.length ? t("lw.bossNext") : rnd(t("lw.cheer")), "wow");
   const lw=LW;
   setTimeout(()=>{
     if(LW!==lw || LW.over || !S || S.done) return;
@@ -2078,15 +2742,15 @@ function ladderOver(won){
   const lw=LW, sess=S, again=()=>startLadder(lw.marathon, lw.level); LW=null;
   setTimeout(()=>{
     if(S!==sess || screen!=="type") return;      // the player left during the pause
-    showResult({title: won ? (lw.marathon ? "You won the Word Marathon! 👑" : "You beat the longest word! 👑") : (lw.marathon ? `Keebo passed you at ${last.length} letters` : `Keebo wins at ${last.length} letters`), res, xp,
+    showResult({title: won ? t(lw.marathon ? "lw.wonMar" : "lw.won") : t(lw.marathon ? "lw.passed" : "lw.lost",{n:last.length}), res, xp,
       mood: won ? "wow" : "happy",
-      msg: won ? "WHAT?! Even the boss word! You are a word ladder legend! 🤖💜" :
-           cleared ? `You climbed ${cleared} ${cleared===1?"rung":"rungs"}. ${record?"New record! 🏆":"Rematch?"}` : "I was faster on the first word. Try again!",
-      need: (lw.level!=="normal" ? `${levelTag(lw.level)} · ` : "") + `Sublevels: ${cleared} of ${lw.words.length} · Record: ${L.best} · Last word: ${last}`,
+      msg: won ? t("lw.wonMsg") :
+           cleared ? tn("lw.climbed",cleared)+" "+t(record ? "rec.new" : "rematch") : t("lw.firstLost"),
+      need: (lw.level!=="normal" ? `${levelTag(lw.level)} · ` : "") + t("lw.need",{c:cleared,n:lw.words.length,b:L.best,w:last}),
       retry: again, next: null});
     if(won||record){ chime(); confetti(won?200:80); }
   }, won ? 300 : 600);
-  if(!won) say("#type", lw.marathon ? "Beep! I passed you!" : "Beep! I finished that word first.","wow");
+  if(!won) say("#type", t(lw.marathon ? "lw.sayPassed" : "lw.sayLost"),"wow");
 }
 
 /* =========================================================================
@@ -2133,7 +2797,7 @@ function startRain(level){
   if(pool.length<15) pool=genWords(allowed,40).split(" ");
   const f=levelFactor(level);                       // Fun: slower meteors, Super Challenge: faster
   M={words:[],score:0,lives:3,speed:28*f,spawn:0,interval:2.4/f,last:0,target:null,pool,running:true,kills:0,t0:performance.now(),level,f,wind:Math.random()<.5?-1:1};   // wind: meteors fall at a slight slant, one way per game
-  $("#mBest").textContent=rainBestOf(level); $("#meteor h2").textContent = "Word Rain" + (level!=="normal" ? " · "+levelTag(level) : ""); updateRainHud();
+  $("#mBest").textContent=rainBestOf(level); $("#meteor h2").textContent = t("m.rain") + (level!=="normal" ? " · "+levelTag(level) : ""); updateRainHud();
   requestAnimationFrame(rainLoop);
 }
 function updateRainHud(){ $("#mScore").textContent=M.score; $("#mLives").textContent="❤️".repeat(M.lives)+"🖤".repeat(3-M.lives); }
@@ -2144,7 +2808,7 @@ function rainLoop(t){
   M.spawn-=dt;
   if(M.spawn<=0 && M.words.length<7){
     M.spawn=M.interval;
-    let w; let tries=0; do{ w=rnd(M.pool); tries++; } while(tries<20 && M.words.some(x=>x.text[0]===w[0]));
+    let w; let tries=0; do{ w=rnd(M.pool); tries++; } while(tries<20 && M.words.some(x=>fold(x.text[0])===fold(w[0])));
     const el=document.createElement("div"); el.className="met"; el.textContent=w; sky.appendChild(el);
     const x=cloudSpawnX(sky, el.offsetWidth, W);
     // slant of 6-14 degrees; less if the word would leave the sky before it lands
@@ -2172,13 +2836,13 @@ function onRainKey(e){
   e.preventDefault();
   const k=e.key;
   if(!M.target){
-    const c=M.words.filter(w=>w.text[0]===k).sort((a,b)=>b.y-a.y)[0];
+    const c=M.words.filter(w=>keyOk(w.text[0],k)).sort((a,b)=>b.y-a.y)[0];
     if(!c){ beep(140,0.06); return; }
     M.target=c; c.el.classList.add("tgt");
   }
   const w=M.target;
-  if(w.text[w.typed]===k){
-    w.typed++; renderMet(w); (state.keys[k]||(state.keys[k]={h:0,m:0})).h++;
+  if(keyOk(w.text[w.typed],k)){
+    const fk=fold(w.text[w.typed]); w.typed++; renderMet(w); (state.keys[fk]||(state.keys[fk]={h:0,m:0})).h++;
     if(w.typed>=w.text.length){
       M.score+=w.text.length*10; M.kills++;
       M.speed=Math.min(110*M.f, M.speed+1.6*M.f); M.interval=Math.max(0.85/M.f, M.interval-0.06/M.f);
@@ -2186,7 +2850,7 @@ function onRainKey(e){
       setTimeout(()=>w.el.remove(),300); M.words=M.words.filter(x=>x!==w); M.target=null;
       beep(660,0.06,"sine",0.05); updateRainHud();
     }
-  } else { beep(140,0.06); const exp=w.text[w.typed]; (state.keys[exp]||(state.keys[exp]={h:0,m:0})).m++; }
+  } else { beep(140,0.06); const exp=fold(w.text[w.typed]); (state.keys[exp]||(state.keys[exp]={h:0,m:0})).m++; }
 }
 function rainOver(){
   M.running=false;
@@ -2197,12 +2861,12 @@ function rainOver(){
   const xp=Math.round(M.score/15); state.xp+=xp;
   const goal=addToday(secs); goalPending=false;
   save(); checkBadges();
-  $("#rainTitle").textContent= best ? "New record! 🏆" : "Game over";
-  $("#rainTxt").innerHTML=`Score <b>${M.score}</b> · ${M.kills} meteors stopped · +${xp} XP`;
+  $("#rainTitle").textContent= best ? t("rec.new") : t("rain.over");
+  $("#rainTxt").innerHTML=t("rain.txt",{s:M.score,k:M.kills,x:xp});
   $("#rainOver").classList.add("on");
   const lv=levelInfo(state.xp), lb=levelInfo(state.xp-xp);
-  if(lv.lvl>lb.lvl){ $("#rainTxt").innerHTML+=`<br><b>🎉 Level up! Level ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
-  if(goal){ $("#rainTxt").innerHTML+=`<br><b class="goalok">🎯 Daily goal reached! 10 minutes today.</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
+  if(lv.lvl>lb.lvl){ $("#rainTxt").innerHTML+=`<br><b>🎉 ${t("lvl.up")} ${t("level")} ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
+  if(goal){ $("#rainTxt").innerHTML+=`<br><b class="goalok">${t("rain.goal")}</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
 }
 $("#rainAgain").onclick=()=>{ $("#rainOver").classList.remove("on"); startRain(M&&M.level); };
 $("#rainMap").onclick=()=>{ $("#rainOver").classList.remove("on"); goHome(); };
@@ -2212,7 +2876,10 @@ $("#mBack").onclick=()=>{ if(M) M.running=false; goHome(); };
    XP, LEVELS, BADGES
    ========================================================================= */
 const TITLES=["Key Rookie","Home Row Scout","Finger Ninja","Keystroke Knight","Rhythm Rider","Speed Surfer","Typing Titan","Keyboard Legend"];
-function levelInfo(xp){ let lvl=1, need=100, base=0; while(xp>=base+need){ base+=need; lvl++; need=Math.round(need*1.18); } return {lvl, into:xp-base, need, title:TITLES[Math.min(TITLES.length-1,Math.floor((lvl-1)/3))]}; }
+function levelInfo(xp){ let lvl=1, need=100, base=0; while(xp>=base+need){ base+=need; lvl++; need=Math.round(need*1.18); } return {lvl, into:xp-base, need, title:tl("titles",TITLES)[Math.min(TITLES.length-1,Math.floor((lvl-1)/3))]}; }
+/* A list in the current language (titles, badges, rules, tour), else the English one. */
+function tl(k, en){ return (I18N[state.lang]||{})[k] || en; }
+const bName = b => (tl("badgeText",{})[b.id]||[b.n])[0], bDesc = b => (tl("badgeText",{})[b.id]||[0,b.d])[1];
 function totalStars(){ let s=0; Object.values(state.lessons).forEach(L=>Object.values(L).forEach(r=>s+=r.stars||0)); return s; }
 function stageDone(si){ const L=lessonsFlat().filter(l=>l.stage===si); return L.every(l=>(lessonRec(l.idx)?.stars||0)>=1); }
 const BADGES=[
@@ -2243,24 +2910,24 @@ function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si); return [L
 function streakNow(){ return streakInfo().count; }
 function checkBadges(){
   const fresh=BADGES.filter(b=>!state.badges[b.id] && b.t());
-  fresh.forEach((b,i)=>{ state.badges[b.id]=todayStr(); setTimeout(()=>toast(b.i,`Badge unlocked: <b>${esc(b.n)}</b><small>${esc(b.d)}</small>`,3200), 900+i*3500); });
+  fresh.forEach((b,i)=>{ state.badges[b.id]=todayStr(); setTimeout(()=>toast(b.i,`${t("bc.unlocked")} <b>${esc(bName(b))}</b><small>${esc(bDesc(b))}</small>`,3200), 900+i*3500); });
   if(fresh.length) save();
 }
 let toastT=null;
 function toast(icon, html, ms=2400){ $("#toastI").textContent=icon; $("#toastT").innerHTML=html; $("#toast").classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>$("#toast").classList.remove("on"),ms); }
 
 /* Badge card: tap or click a badge to see its rule, progress and date. Works on touch. */
-function fmtDay(d){ const x=new Date(d+"T12:00:00"); return isNaN(x) ? d : x.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"}); }
+function fmtDay(d){ const x=new Date(d+"T12:00:00"); return isNaN(x) ? d : x.toLocaleDateString(LOCALES[state.lang],{day:"numeric",month:"long",year:"numeric"}); }
 function openBadge(id){
   const b=BADGES.find(x=>x.id===id); if(!b) return;
   const got=state.badges[b.id];
   const [cur,goal,unit]=b.p(); const c=Math.min(cur,goal);
   $("#bcIcon").textContent=b.i; $("#bcIcon").classList.toggle("off",!got);
-  $("#bcName").textContent=b.n;
-  $("#bcRule").textContent=b.d+".";
+  $("#bcName").textContent=bName(b);
+  $("#bcRule").textContent=bDesc(b)+".";
   $("#bcBar").style.width=(got?100:c/goal*100)+"%";
-  $("#bcProg").textContent= got ? "Done! ✅" : goal===1 && unit==="run" ? "Not yet" : `${c} of ${goal} ${unit}`;
-  $("#bcDate").textContent= got ? "Earned on "+fmtDay(got) : "Not earned yet. You can do it!";
+  $("#bcProg").textContent= got ? t("bc.done") : goal===1 && unit==="run" ? t("bc.notYet") : t("bc.of",{c,g:goal,u:t("u."+unit)});
+  $("#bcDate").textContent= got ? t("bc.earned",{d:fmtDay(got)}) : t("bc.notEarned");
   $("#badgeCard").classList.add("on");
   setTimeout(()=>$("#bcClose").focus(),30);
 }
@@ -2313,24 +2980,25 @@ function rulesSize(){
   if(["all","tip","mini"].includes(state.rules)) return state.rules;
   const c=currentLessonIdx(); return c<3 ? "all" : c<10 ? "tip" : "mini";
 }
+function rulesL(){ const L=tl("rules",null); return L ? RULES.map((r,i)=>({i:r.i, t:L[i][0], w:L[i][1]})) : RULES; }
 function ruleIdx(){ const n=RULES.length; return (((state.ruleI|0)%n)+n)%n; }
 function renderRules(){
   const box=$("#rules"); if(!box) return;
-  const size=rulesSize(), ri=ruleIdx(), R=RULES[ri], f=ruleFade?" fade":""; ruleFade=false;
+  const RL=rulesL(), size=rulesSize(), ri=ruleIdx(), R=RL[ri], f=ruleFade?" fade":""; ruleFade=false;
   box.className="rules "+size; box.dataset.size=size;
-  const nav=`<button class="rbtn" data-r="prev" title="Previous rule" aria-label="Previous rule">‹</button><button class="rbtn" data-r="next" title="Next rule" aria-label="Next rule">›</button>`;
+  const nav=`<button class="rbtn" data-r="prev" title="${t("rules.prev")}" aria-label="${t("rules.prev")}">‹</button><button class="rbtn" data-r="next" title="${t("rules.next")}" aria-label="${t("rules.next")}">›</button>`;
   if(size==="mini"){
     box.innerHTML=`<div class="rh"><span class="ri" aria-hidden="true">⭐</span><span class="rt${f}" title="${esc(R.t)}">${R.i} ${esc(R.t)}</span>${nav}
-      <button class="rbtn" data-r="tip" title="Show more" aria-label="Show more" aria-expanded="false">▾</button></div>`;
+      <button class="rbtn" data-r="tip" title="${t("rules.more")}" aria-label="${t("rules.more")}" aria-expanded="false">▾</button></div>`;
   } else if(size==="tip"){
-    box.innerHTML=`<div class="rh"><b>⭐ Keebo's golden rules</b><span class="rn">${ri+1} / ${RULES.length}</span>
-      <div class="dots">${RULES.map((r,i)=>`<button data-nofx data-go="${i}" class="${i===ri?"on":""}" aria-label="Rule ${i+1}"><i></i></button>`).join("")}</div>
-      <button class="rbtn" data-r="all" title="Show all rules">☰ All</button><button class="rbtn" data-r="mini" title="Make smaller" aria-label="Make smaller">▴</button></div>
+    box.innerHTML=`<div class="rh"><b>⭐ ${t("rules.h")}</b><span class="rn">${ri+1} / ${RULES.length}</span>
+      <div class="dots">${RULES.map((r,i)=>`<button data-nofx data-go="${i}" class="${i===ri?"on":""}" aria-label="${t("rules.rule")} ${i+1}"><i></i></button>`).join("")}</div>
+      <button class="rbtn" data-r="all" title="${t("rules.allT")}">☰ ${t("rules.all")}</button><button class="rbtn" data-r="mini" title="${t("rules.smaller")}" aria-label="${t("rules.smaller")}">▴</button></div>
       <div class="rtip"><span class="ri${f}" aria-hidden="true">${R.i}</span><div style="flex:1"><div class="rt${f}">${esc(R.t)}</div><div class="rw${f}">${esc(R.w)}</div></div>${nav}</div>`;
   } else {
-    box.innerHTML=`<div class="rh"><b>⭐ Keebo's golden rules</b><span class="rn">Tap a rule to see why</span><div class="spacer" style="flex:1"></div>
-      <button class="rbtn" data-r="tip" title="Make smaller" aria-label="Make smaller">▴</button></div>
-      <div class="rall">${RULES.map((r,i)=>`<button data-go="${i}" class="${i===ri?"on":""}"><span class="ri" aria-hidden="true">${r.i}</span><span><span class="rt" style="font-size:14px;font-weight:600">${esc(r.t)}</span><span class="rw">${esc(r.w)}</span></span></button>`).join("")}</div>`;
+    box.innerHTML=`<div class="rh"><b>⭐ ${t("rules.h")}</b><span class="rn">${t("rules.tap")}</span><div class="spacer" style="flex:1"></div>
+      <button class="rbtn" data-r="tip" title="${t("rules.smaller")}" aria-label="${t("rules.smaller")}">▴</button></div>
+      <div class="rall">${RL.map((r,i)=>`<button data-go="${i}" class="${i===ri?"on":""}"><span class="ri" aria-hidden="true">${r.i}</span><span><span class="rt" style="font-size:14px;font-weight:600">${esc(r.t)}</span><span class="rw">${esc(r.w)}</span></span></button>`).join("")}</div>`;
   }
   box.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
     const r=b.dataset.r;
@@ -2363,10 +3031,10 @@ addEventListener("resize", modesEnd);
 /* Streak pill and week strip (last 7 days) on home. */
 function renderStreak(sk=streakInfo()){
   const p=$("#hStreak");
-  p.textContent="🔥 "+sk.count+" day"+(sk.count===1?"":"s");
+  p.textContent="🔥 "+tn("days",sk.count);
   p.classList.toggle("risk", sk.atRisk);
-  if(sk.atRisk){ const r=document.createElement("small"); r.textContent=" · at risk"; p.append(r); }
-  const WD=["S","M","T","W","T","F","S"], TIP={goal:"Goal reached",saved:"Frozen, then saved",frozen:"Frozen",miss:"Missed",today:"Today"};
+  if(sk.atRisk){ const r=document.createElement("small"); r.textContent=" · "+t("sk.risk"); p.append(r); }
+  const WD=t("sk.wd"), TIP=t("sk.tip");
   let html="";
   for(let n=sk.T-6;n<=sk.T;n++){
     const d=numDay(n), m=sk.mark[n]||"miss", wd=WD[new Date(d+"T12:00:00").getDay()];
@@ -2374,19 +3042,19 @@ function renderStreak(sk=streakInfo()){
     html+=`<span class="wd ${m}${n===sk.T?" now":""}" title="${d}: ${TIP[m]}"><i>${ic}</i><small>${wd}</small></span>`;
   }
   $("#wDays").innerHTML=html;
-  $("#wFreeze").textContent = sk.freezeReady ? "❄ Freeze ready" : `❄ Freeze back in ${sk.freezeIn} day${sk.freezeIn===1?"":"s"}`;
+  $("#wFreeze").textContent = sk.freezeReady ? t("sk.ready") : t("sk.back",{d:tn("days",sk.freezeIn)});
   $("#wFreeze").classList.toggle("off", !sk.freezeReady);
   $("#wSave").hidden = !(sk.frozen && !sk.done);
 }
 function renderHome(){
   const li=levelInfo(state.xp);
-  $("#pName").textContent=state.name||"Player";
+  $("#pName").textContent=state.name||t("player");
   $("#pXp").textContent=state.xp+" XP";
-  $("#pTitle").textContent=`Level ${li.lvl} · ${li.title} · ${li.need-li.into} XP to next level`;
+  $("#pTitle").textContent=`${t("level")} ${li.lvl} · ${li.title} · ${t("h.toNext",{x:li.need-li.into})}`;
   $("#pBar").style.width=(li.into/li.need*100)+"%";
-  $("#hLevel").textContent="Lv "+li.lvl;
-  const t=todayStr(); const secs= state.today.date===t ? state.today.secs : 0;
-  const sk=streakInfo(t);
+  $("#hLevel").textContent=t("lv")+" "+li.lvl;
+  const td=todayStr(); const secs= state.today.date===td ? state.today.secs : 0;
+  const sk=streakInfo(td);
   renderStreak(sk);
   $("#gTxt").textContent=`${Math.min(10,Math.floor(secs/60))} / 10 min`+(secs>=GOAL_SECS?" ✅":"");
   $("#gBar").style.width=Math.min(100,secs/600*100)+"%";
@@ -2397,15 +3065,15 @@ function renderHome(){
   $("#mLadder").classList.toggle("locked", lmiss>0);
   const mrec=ladderRecOf("marathon",mlv).best;
   $("#mMarathon").classList.toggle("locked", lmiss>0);
-  $("#mMarathonText").textContent = lmiss ? `Locked: finish the Bottom Row first` : mrec ? `${mlv!=="normal"?levelInfoOf(mlv).i+" ":""}Record: ${mrec} of ${LADDER_SUBS} · stay ahead of Keebo` : "Type the ladder at your own pace. Stay ahead of Keebo";
-  $("#mLadderText").textContent = lmiss ? `Locked: finish the Bottom Row first` : lrec ? `${llv!=="normal"?levelInfoOf(llv).i+" ":""}Record: ${lrec} of ${LADDER_SUBS} · climb against Keebo` : "Climb the word ladder against Keebo";
+  $("#mMarathonText").textContent = lmiss ? t("lock.bottom") : mrec ? `${mlv!=="normal"?levelInfoOf(mlv).i+" ":""}${t("rec.of",{b:mrec,n:LADDER_SUBS})} · ${t("m.marRec")}` : t("m.marS");
+  $("#mLadderText").textContent = lmiss ? t("lock.bottom") : lrec ? `${llv!=="normal"?levelInfoOf(llv).i+" ":""}${t("rec.of",{b:lrec,n:LADDER_SUBS})} · ${t("m.ladderRec")}` : t("m.ladderS");
   const bn=boostList().length, bany=L.some(l=>(lessonRec(l.idx)?.stars||0)>=1);
   $("#mBoost").classList.toggle("locked", !bn);
-  $("#mBoostText").textContent = bn ? `${bn} ${bn===1?chapterWord().toLowerCase():state.lang==="nl"?"hoofdstukken":"chapters"} can get more stars` : bany ? "All chapters have ★★★ 🎉" : "Locked: get 1 star on a chapter first";
+  $("#mBoostText").textContent = bn ? tn("m.boostN",bn) : bany ? t("m.boostAll") : t("m.boostLock");
   // map
   const map=$("#map"); let html="";
   CURRICULUM[state.layout].forEach((st,si)=>{
-    html+=`<div class="stage"><h3>${st.stage} <span class="tgt">target ${st.target}+ WPM</span></h3><div class="lessons">`;
+    html+=`<div class="stage"><h3>${tx(st.stage)} <span class="tgt">${t("map.target",{w:st.target})}</span></h3><div class="lessons">`;
     L.filter(l=>l.stage===si).forEach(l=>{
       const r=lessonRec(l.idx); const st2=r?.stars||0; const un=isUnlocked(l.idx);
       const keys = l.keys[0]==="*" ? "" : `<span class="muted" style="font-family:var(--mono)"> ${esc(l.keys.toUpperCase().split("").join(" "))}</span>`;
@@ -2421,30 +3089,28 @@ function renderHome(){
   requestAnimationFrame(modesEnd);
   $$("#map .lesson").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(isUnlocked(i)) startLesson(i); });
   // badges
-  $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(b.n)}: ${esc(b.d)}" aria-label="${esc(b.n)}">${b.i}</button>`).join("");
+  $("#badges").innerHTML=BADGES.map(b=>`<button class="badge ${state.badges[b.id]?"got":""}" data-id="${b.id}" title="${esc(bName(b))}: ${esc(bDesc(b))}" aria-label="${esc(bName(b))}">${b.i}</button>`).join("");
   $$("#badges .badge").forEach(e=>e.onclick=()=>openBadge(e.dataset.id));
   $("#bCount").textContent=`${Object.keys(state.badges).length} / ${BADGES.length}`;
   const ck=state.custom?.keys||"";
-  $("#mCustomText").textContent = ck ? `Last: ${ck.length>8 ? ck.length+" keys" : customLabel(ck)} · pick your keys` : "Pick the keys you want to practise";
+  $("#mCustomText").textContent = ck ? t("m.customLast",{k:ck.length>8 ? ck.length+" "+tn("cl.keys",ck.length) : customLabel(ck)}) : t("m.customS");
   const wl=warmupLock();
   $("#mWarm").classList.toggle("locked", !!wl);
-  $("#mWarmText").textContent = wl || "1 minute · easy words · no score";
+  $("#mWarmText").textContent = wl || t("m.warmS");
   const dl=dailyLock();
   $("#mDaily").classList.toggle("locked", !!dl);
-  $("#mDailyText").textContent = dl || "One new sentence each day";
-  const hello = warmupDue() ? `Hi ${esc(state.name)}! Start the day with a 1-minute warm-up? ☀️` :
-                dailyDue() ? `Today's sentence is ready, ${esc(state.name)}. One try counts! 📜` :
-                secs>=600 ? `Daily goal done, ${esc(state.name)}! 🎉 Extra practice makes you even faster.` :
-                sk.frozen ? `Welcome back, ${esc(state.name)}! Reach today's goal to save your streak. ❄️` :
-                sk.broken ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
+  $("#mDailyText").textContent = dl || t("m.dailyS");
+  const nm={n:esc(state.name)};
+  const hello = warmupDue() ? t("hi.warm",nm) : dailyDue() ? t("hi.daily",nm) : secs>=600 ? t("hi.goal",nm) :
+                sk.frozen ? t("hi.frozen",nm) : sk.broken ? t("hi.broken",nm) : pick("hello", state.name);
   say("#home", hello, "happy");
   numberTiles();
 }
 $("#mContinue").onclick=()=>startLesson(currentLessonIdx());
 $("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
-  toast("☀️", currentLessonIdx()===0 ? `The warm-up opens after ${chapterWord().toLowerCase()} 1.` : "Warm-up done for today. It unlocks again tomorrow!"); };
+  toast("☀️", currentLessonIdx()===0 ? t("wu.opens") : t("wu.toast")); };
 $("#mDaily").onclick=()=>{ const dl=dailyLock(); if(!dl) return startDaily();
-  toast("📜", currentLessonIdx()===0 ? `The daily sentence opens after ${chapterWord().toLowerCase()} 1.` : "Today's sentence is done. A new one comes tomorrow!"); };
+  toast("📜", currentLessonIdx()===0 ? t("ds.opens") : t("ds.toast")); };
 $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=()=>openLevelLobby("rain");
 $("#mSmart").onclick=startSmart;
@@ -2462,7 +3128,7 @@ let layoutHinted=false, layoutGuess=null;
 /* Show the layout hint, if the app noted a mismatch. Called on the result and home screens. */
 function offerLayout(){
   const g=layoutGuess; if(!g || g===state.layout){ $("#layoutWarn").classList.remove("on"); return; }
-  $("#layoutWarnTxt").innerHTML=`⌨️ Your keyboard looks like <b>${g.toUpperCase()}</b>, but the app is set to ${state.layout.toUpperCase()}.`;
+  $("#layoutWarnTxt").innerHTML=t("lay.warn",{g:g.toUpperCase(),a:state.layout.toUpperCase()});
   $("#layoutWarn").classList.add("on");
   $("#layoutFix").onclick=()=>{ layoutGuess=null; state.layout=g; save(); $("#layoutWarn").classList.remove("on"); buildKeyboard(); goHome(); };
   $("#layoutLater").onclick=()=>{ layoutGuess=null; $("#layoutWarn").classList.remove("on"); };
@@ -2489,17 +3155,20 @@ async function guessLayout(){
 function segInit(sel, val, cb){
   $$(sel+" button").forEach(b=>{ b.classList.toggle("on", b.dataset.v===String(val)); b.onclick=()=>{ $$(sel+" button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); cb(b.dataset.v); }; });
 }
-let ob={layout:"azerty", lang:"nl"};
+let ob={layout:"azerty", detect:""};
+/* Onboarding. The language comes first: the screen changes at once. */
 async function startOnboarding(){
   show("onboard");
-  const g=await guessLayout(); if(g){ ob.layout=g; $("#obDetect").textContent=`I think you have ${g.toUpperCase()}. Change it if I'm wrong.`; }
+  state.lang=guessLang(); applyLang(); $("#obDetect").textContent="";
+  segInit("#obLang", state.lang, v=>{ state.lang=v; applyLang(); obDetectTxt(); });
+  const g=await guessLayout(); if(g){ ob.layout=g; ob.detect=g; obDetectTxt(); }
   segInit("#obLayout", ob.layout, v=>ob.layout=v);
-  segInit("#obLang", ob.lang, v=>ob.lang=v);
   setTimeout(()=>$("#obName").focus(),50);
 }
+function obDetectTxt(){ if(ob.detect) $("#obDetect").textContent=t("ob.detect",{g:ob.detect.toUpperCase()}); }
 $("#obGo").onclick=()=>{
   const n=$("#obName").value.trim(); if(!n){ $("#obName").focus(); $("#obName").style.borderColor="var(--bad)"; return; }
-  state.name=n; state.layout=ob.layout; state.lang=ob.lang; save(); buildKeyboard(); goHome();
+  state.name=n; state.layout=ob.layout; save(); buildKeyboard(); goHome();
   if(!state.flags.tour) setTimeout(startTour, 400);      // first visit: short tour of the home screen
 };
 $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#obGo").click(); });
@@ -2507,7 +3176,7 @@ $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#obGo").clic
 function openSettings(){
   $("#setName").value=state.name;
   segInit("#setLayout", state.layout, v=>{ state.layout=v; save(); buildKeyboard(); renderHome(); });
-  segInit("#setLang", state.lang, v=>{ state.lang=v; save(); });
+  segInit("#setLang", state.lang, v=>{ state.lang=v; save(); applyLang(); buildKeyboard(); renderChapterCodes(); renderHome(); });
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });
   segInit("#setSlide", state.slide===1?1:0, v=>{ state.slide=+v; save(); });
@@ -2523,17 +3192,17 @@ $("#setName").addEventListener("input",e=>{ state.name=e.target.value.trim()||st
 $("#setClose").onclick=()=>{ $("#settings").classList.remove("on"); renderHome(); };
 let resetArmed=false;
 $("#setReset").onclick=e=>{
-  if(!resetArmed){ resetArmed=true; e.currentTarget.textContent="Click again to delete ALL progress"; setTimeout(()=>{resetArmed=false;$("#setReset").textContent="Reset all";},4000); return; }
-  resetArmed=false; $("#setReset").textContent="Reset all"; state=freshState(); save(); $("#settings").classList.remove("on"); startOnboarding();
+  if(!resetArmed){ resetArmed=true; e.currentTarget.textContent=t("set.resetSure"); setTimeout(()=>{resetArmed=false;$("#setReset").textContent=t("set.reset");},4000); return; }
+  resetArmed=false; $("#setReset").textContent=t("set.reset"); state=freshState(); save(); $("#settings").classList.remove("on"); startOnboarding();
 };
 $("#setExport").onclick=async()=>{
   const code=btoa(unescape(encodeURIComponent(JSON.stringify(state))));
   $("#setCode").style.display=""; $("#setCode").value=code; $("#setCodeRow").style.display="none";
-  try{ await navigator.clipboard.writeText(code); toast("💾","Backup code copied. Paste it in a note or email."); }
-  catch(e){ $("#setCode").select(); toast("💾","Copy the code in the box (Ctrl+C)."); }
+  try{ await navigator.clipboard.writeText(code); toast("💾",t("set.copied")); }
+  catch(e){ $("#setCode").select(); toast("💾",t("set.copyBox")); }
 };
 $("#setImport").onclick=()=>{
-  $("#setCode").style.display=""; $("#setCode").value=""; $("#setCode").placeholder="Paste your backup code or chapter code here"; $("#setCode").focus();
+  $("#setCode").style.display=""; $("#setCode").value=""; $("#setCode").placeholder=t("set.pastePh"); $("#setCode").focus();
   $("#setCodeRow").style.display=""; $("#setCodeMsg").textContent="";
 };
 /* Chapter codes: jump to any chapter to test it. Format CH-<A|Q><nn>-<check>. */
@@ -2555,7 +3224,7 @@ function applyChapterCode(c){
   state.lessons[c.layout]=recs;
   save(); buildKeyboard();
   $("#setCode").style.display="none"; $("#setCodeRow").style.display="none"; $("#settings").classList.remove("on"); goHome();
-  toast("🧪",`${chapterWord()} ${c.i+1} is open (${c.layout.toUpperCase()}).`);
+  toast("🧪",t("set.chOpen",{c:`${chapterWord()} ${c.i+1}`,l:c.layout.toUpperCase()}));
 }
 /* Test (dev only): simulate a new day. Moves the saved dates back 1 day. */
 function dayBefore(d){ const x=new Date(d+"T12:00:00"); if(isNaN(x)) return d; x.setDate(x.getDate()-1); return todayStr(x); }
@@ -2567,20 +3236,20 @@ function newDay(){
   if(state.daily?.last) state.daily.last=dayBefore(state.daily.last);
   save();
 }
-$("#setNewDayGo").onclick=()=>{ newDay(); $("#settings").classList.remove("on"); goHome(); toast("🌅","New day! The warm-up and the daily sentence are back."); };
+$("#setNewDayGo").onclick=()=>{ newDay(); $("#settings").classList.remove("on"); goHome(); toast("🌅",t("set.newDayToast")); };
 function renderChapterCodes(){
   $("#setNewDay").style.display = IS_DEV ? "" : "none";
   $("#setChapters").style.display = IS_DEV ? "" : "none"; if(!IS_DEV) return;
   $("#setChList").innerHTML=["azerty","qwerty"].map(lay=>`<div style="font-weight:800;margin:6px 0 2px">${lay.toUpperCase()}</div>`+
     lessonsFlat(lay).map(l=>`<div class="row" style="gap:8px;margin:2px 0"><span style="font-family:var(--mono)">${chapterCode(lay,l.idx)}</span>
-      <span class="muted" style="flex:1">${l.idx+1}. ${esc(l.title)}</span><button class="btn ghost" style="padding:2px 10px" data-l="${lay}" data-i="${l.idx}">Go</button></div>`).join("")).join("");
+      <span class="muted" style="flex:1">${l.idx+1}. ${esc(l.title)}</span><button class="btn ghost" style="padding:2px 10px" data-l="${lay}" data-i="${l.idx}">${t("go.btn")}</button></div>`).join("")).join("");
   $$("#setChList button").forEach(b=>b.onclick=()=>applyChapterCode({layout:b.dataset.l, i:+b.dataset.i}));
 }
 $("#setCodeGo").onclick=()=>{
   const cc=parseChapterCode($("#setCode").value); if(cc) return applyChapterCode(cc);
-  try{ state=Object.assign(freshState(), JSON.parse(decodeURIComponent(escape(atob($("#setCode").value.trim()))))); save(); buildKeyboard();
-    $("#setCode").style.display="none"; $("#setCodeRow").style.display="none"; $("#settings").classList.remove("on"); goHome(); toast("✅","Progress restored!"); }
-  catch(e){ $("#setCodeMsg").textContent="That code does not work. Check that you copied all of it."; }
+  try{ state=Object.assign(freshState(), JSON.parse(decodeURIComponent(escape(atob($("#setCode").value.trim()))))); if(!LANGS.includes(state.lang)) state.lang="en"; save(); applyLang(); buildKeyboard();
+    $("#setCode").style.display="none"; $("#setCodeRow").style.display="none"; $("#settings").classList.remove("on"); goHome(); toast("✅",t("set.restored")); }
+  catch(e){ $("#setCodeMsg").textContent=t("set.badCode"); }
 };
 
 /* =========================================================================
@@ -2612,13 +3281,13 @@ function startTour(){
 function tourStep(i){
   if(!T) return;
   i=Math.max(0, Math.min(TOUR.length-1, i));
-  T.i=i; const st=TOUR[i], el=$(st.el);
-  $("#tourT").textContent=st.t; $("#tourP").textContent=st.p;
+  T.i=i; const st=TOUR[i], el=$(st.el), tt=tl("tourSteps",null);
+  $("#tourT").textContent=tt ? tt[i][0] : st.t; $("#tourP").textContent=tt ? tt[i][1] : st.p;
   $("#tourN").textContent=`${i+1}/${TOUR.length}`;
   $$("#tourDots i").forEach((d,k)=>d.className= k<i ? "done" : k===i ? "cur" : "");
   $("#tourBack").disabled = i===0;
-  const nx=$("#tourNext"); nx.textContent = st.last ? "Let's type! ▶" : "→"; nx.classList.toggle("tarr", !st.last);
-  nx.setAttribute("aria-label", st.last ? "Start typing" : "Next");
+  const nx=$("#tourNext"); nx.textContent = st.last ? t("tour.go") : "→"; nx.classList.toggle("tarr", !st.last);
+  nx.setAttribute("aria-label", st.last ? t("tour.goA") : t("next")); nx.title = st.last ? "" : t("tour.nextT");
   if(el){ const r=el.getBoundingClientRect(); if(r.top<0 || r.bottom>innerHeight) el.scrollIntoView({block: r.height>innerHeight ? "start" : "center", behavior:"instant"}); }
   tourPlace();
 }
@@ -2809,6 +3478,7 @@ if(history.state && history.state.typoo) navIdx=history.state.i;   // reload: th
    BOOT
    ========================================================================= */
 fitKeyboard();
+applyLang();
 if(state.name && state.layout){ buildKeyboard(); goHome(); } else { startOnboarding(); }
 navSync();
 </script>

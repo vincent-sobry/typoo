@@ -7,7 +7,7 @@ It is one file (`index.html`). It needs no install, no account and no server.
 
 - **27 chapters in 6 stages**: Home Row → Top Row → Bottom Row → Capitals & Sentences → Numbers → Speed Lab.
 - **AZERTY (Belgian) and QWERTY** layouts, each with its own chapter order. The app detects the layout.
-- **Dutch or English** practice words.
+- **Four languages: Dutch, English, French and Italian.** The player picks the language at the first start, and can change it in Settings. One language for all screens, Keebo and all typing texts. A letter with an accent (é, à, ç) also takes its base letter, so French and Italian texts work on every keyboard.
 - **Keebo the robot coach** gives tips, cheers and corrections.
 - **Gamification**: XP and levels, 1–3 stars per chapter, daily goal (10 min), day streak, 19 badges.
 - **Race Keebo**: a typing race against the bot at a speed you pick.
