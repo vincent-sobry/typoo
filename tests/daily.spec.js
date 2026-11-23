@@ -50,18 +50,18 @@ test("same sentence all day; another day can give another sentence", async ({ pa
   expect(r.n).toBeGreaterThan(3);
 });
 
-test("text uses only the learned keys, for every stage, in EN and NL", async ({ page }) => {
+test("text uses only the learned keys, for every stage, in EN, NL, FR and IT", async ({ page }) => {
   await openApp(page, withChapters(1));
   const bad = await page.evaluate(() => {
     const out = [];
-    for (const lang of ["en", "nl"]) {
+    for (const lang of ["en", "nl", "fr", "it"]) {
       for (let n = 1; n <= 18; n++) {
         state.lessons.qwerty = {};
         for (let i = 0; i < n; i++) state.lessons.qwerty[i] = { stars: 1, wpm: 15, acc: 95 };
         const allowed = learnedSet(), caps = hasCaps();
         for (let d = 1; d <= 15; d++) {
           const t = genDaily(`2026-01-${String(d).padStart(2, "0")}`, lang);
-          const ok = t.length > 5 && (caps || [...t].every((c) => allowed.has(c)));
+          const ok = t.length > 5 && (caps || [...t].every((c) => allowed.has(fold(c))));   // an accent letter is typed with its base key
           if (!ok) out.push(`${lang} ${n}: ${t}`);
         }
       }
