@@ -90,7 +90,7 @@ test("a run: no live score, no stars, no change to top WPM or history; then it h
   expect(st.bestWpm).toBe(22);
   expect(st.history).toEqual(hist);
   expect(st.today.secs).toBeGreaterThan(0);
-  expect(st.streak.last).toBe(today());
+  expect(st.days, "a short warm-up does not reach the goal, so it is no streak day").not.toContain(today());
   expect(st.xp).toBeGreaterThan(0);
   await page.click("#rMap");
   await expect(page.locator("#mWarm")).toHaveClass(/locked/);

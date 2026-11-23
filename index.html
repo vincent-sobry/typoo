@@ -38,6 +38,21 @@ h1,h2,h3{margin:0}
 .logo span{color:var(--accent2)}
 .spacer{flex:1}
 .pill{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;white-space:nowrap}
+.pill.risk{border-color:var(--warn);color:var(--warn)}
+.pill.risk small{font-size:12px;font-weight:700}
+/* Streak week strip (UX-26) */
+.week{display:flex;align-items:center;gap:10px;margin-top:8px}
+.week .days{display:flex;gap:3px}
+.week .wd{width:22px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.week .wd i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font-style:normal;font-size:11px;line-height:1;background:var(--card2);border:1px solid var(--line)}
+.week .wd small{font-size:10px;color:var(--muted);line-height:1}
+.week .wd.goal i,.week .wd.saved i{background:#f9731633;border-color:#f97316}
+.week .wd.frozen i{background:#38bdf833;border-color:#38bdf8}
+.week .wd.now i{outline:2px solid var(--line);outline-offset:1px}
+.week .wd.now small{color:inherit;font-weight:800}
+.week .frz{flex:1;min-width:0;font-size:12px;line-height:1.2;color:#38bdf8;text-align:right}
+.week .frz.off{color:var(--muted)}
+.wsave{font-size:12px;font-weight:700;color:#38bdf8;margin-top:4px}
 
 /* ---------- Home ---------- */
 .home-grid{display:grid;grid-template-columns:320px 1fr;gap:16px}
@@ -464,7 +479,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div class="top">
       <div class="logo">Typ<span>oo</span> ⌨️</div>
       <div class="spacer"></div>
-      <div class="pill" id="hStreak">🔥 0</div>
+      <div class="pill" id="hStreak" title="Streak: days in a row with today's goal reached">🔥 0</div>
       <div class="pill" id="hLevel">Lv 1</div>
       <button class="btn ghost" id="hHelp" title="Tour (?)" aria-label="Start the tour">❓</button>
       <button class="btn ghost" id="hSettings" title="Settings">⚙️</button>
@@ -484,6 +499,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
           <div style="margin-top:12px" id="gBox">
             <div class="row"><b style="font-size:14px">Today's goal</b><div class="spacer"></div><span class="muted" id="gTxt" style="font-size:13px">0 / 10 min</span></div>
             <div class="bar green"><i id="gBar" style="width:0"></i></div>
+            <div class="week" id="week" aria-label="Streak: last 7 days"><div class="days" id="wDays"></div><span class="frz" id="wFreeze"></span></div>
+            <div class="wsave" id="wSave" hidden>Reach today's goal to save your streak</div>
           </div>
           <div class="stats3">
             <div class="stat"><b id="sBest">0</b><small>Best WPM</small></div>
@@ -856,7 +873,7 @@ const storage = {
 };
 function freshState(){
   return {name:"", layout:"", lang:"nl", blind:0, sound:1, clicks:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
-    streak:{count:0,last:""}, today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, flags:{}};
+    streak:{count:0,last:""}, days:[], today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, flags:{}};
 }
 let state = freshState();
 try{ const raw = storage.get(); if(raw) state = Object.assign(freshState(), JSON.parse(raw)); }catch(e){}
@@ -1238,9 +1255,57 @@ let goalPending=false;
 function addToday(secs){
   const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0};
   const before=state.today.secs; state.today.secs+=secs;
-  if(before<GOAL_SECS && state.today.secs>=GOAL_SECS && !state.today.goal){ state.today.goal=1; goalPending=true; return true; }
+  if(before<GOAL_SECS && state.today.secs>=GOAL_SECS && !state.today.goal){ state.today.goal=1; goalPending=true; addStreakDay(t); return true; }
   return false;
 }
+
+/* =========================================================================
+   STREAK (UX-26)
+   A streak day is a day with today's goal reached (10 min). state.days keeps these days.
+   Freeze: 1 missed day uses the freeze and shows as frozen. Goal reached on the next day: the frozen
+   day becomes a streak day. Not reached: the streak breaks. The freeze comes back 5 days after the missed day.
+   ========================================================================= */
+const FREEZE_DAYS=5;
+const dayNum = d => { const [y,m,dd]=d.split("-").map(Number); return Math.round(Date.UTC(y,m-1,dd)/864e5); };
+const numDay = n => { const x=new Date(n*864e5); return x.getUTCFullYear()+"-"+String(x.getUTCMonth()+1).padStart(2,"0")+"-"+String(x.getUTCDate()).padStart(2,"0"); };
+function addStreakDay(t){
+  if(!state.days.includes(t)){ state.days.push(t); state.days.sort(); state.days=state.days.slice(-400); }
+  state.streak={count:streakInfo(t).count, last:t};   // old field, kept up to date
+}
+/* Streak state on day t. mark: day number -> "goal" | "saved" (frozen, then saved) | "frozen" | "miss" | "today" */
+function streakInfo(t=todayStr()){
+  const T=dayNum(t), goals=new Set((state.days||[]).filter(d=>/^\d{4}-\d\d-\d\d$/.test(d)).map(dayNum).filter(n=>n<=T));
+  let count=0, used=null, frozen=null, start=Math.min(T, ...goals);
+  const mark={};
+  for(let n=start;n<=T;n++){
+    if(goals.has(n)){
+      if(frozen!==null){ count++; mark[frozen]="saved"; frozen=null; }
+      count++; mark[n]="goal";
+    } else if(n===T) mark[n]="today";
+    else if(frozen!==null){ mark[frozen]="miss"; mark[n]="miss"; frozen=null; count=0; }
+    else if(count>0 && (used===null || n-used>=FREEZE_DAYS)){ frozen=n; used=n; mark[n]="frozen"; }
+    else { mark[n]="miss"; count=0; }
+  }
+  const done=goals.has(T), ready= used===null || T-used>=FREEZE_DAYS;
+  return {count, done, atRisk: count>0 && !done, frozen: frozen!==null, freezeReady: ready, freezeIn: ready?0:used+FREEZE_DAYS-T,
+    broken: count===0 && goals.size>0 && !done, mark, T};
+}
+/* Saved data from before UX-26 has only {count,last} (1 run per day). Keep the count: those days become streak days. */
+(function migrateStreak(){
+  if(state.flags.days2) return;
+  const t=todayStr(), T=dayNum(t), s=state.streak||{}, set=new Set(state.days||[]);
+  const goalToday = state.today && state.today.date===t && state.today.secs>=GOAL_SECS;
+  if(s.last && /^\d{4}-\d\d-\d\d$/.test(s.last)){
+    const L=dayNum(s.last);
+    if(s.count>0 && L<=T && T-L<=1){
+      const end = L===T && !goalToday ? T-1 : L;       // today counts only when today's goal is reached
+      for(let i=0;i<s.count;i++) set.add(numDay(end-i));
+    } else if(L<T) set.add(s.last);                       // broken streak: keep the last day for the "welcome back" text
+  }
+  if(goalToday) set.add(t);
+  state.days=[...set].sort().slice(-400);
+  state.flags.days2=1;
+})();
 function finishSession(){
   S.done=true; S.end=performance.now(); clearInterval(liveTimer); updateLive(); clearHighlights();
   $("#tProg").style.width="100%";
@@ -1248,11 +1313,6 @@ function finishSession(){
   // bookkeeping
   const t=todayStr();
   addToday(secs);
-  if(state.streak.last!==t){
-    const y=new Date(); y.setDate(y.getDate()-1);
-    state.streak.count = state.streak.last===todayStr(y) ? state.streak.count+1 : 1;
-    state.streak.last=t;
-  }
   if(!S.noScore){                              // the warm-up does not change the top WPM or the history
     if(acc>=90) state.bestWpm=Math.max(state.bestWpm, Math.round(wpm));
     state.history.push({d:t,wpm:Math.round(wpm),acc:Math.round(acc)}); state.history=state.history.slice(-40);
@@ -2009,9 +2069,8 @@ function ladderOver(won){
   L.played++; L.best=Math.max(L.best,cleared); if(won) L.boss++;
   const xp = LW.words.slice(0,cleared).reduce((a,w)=>a+w.length,0) + (won?50:0);
   state.xp+=xp;
-  // time and streak count, like the other games. The game adds no run to the history, so the reference WPM does not change.
-  const t=todayStr(); addToday(LW.secs);
-  if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
+  // time counts for today's goal (and so for the streak), like the other games. The game adds no run to the history, so the reference WPM does not change.
+  addToday(LW.secs);
   const acc = S.keystrokes ? (S.keystrokes-S.errors)/S.keystrokes*100 : 100;
   const res={wpm: LW.secs>0 ? (LW.chars/5)/(LW.secs/60) : 0, acc, secs:LW.secs, miss:S.miss};
   const last=LW.words[LW.sub-1];
@@ -2136,8 +2195,7 @@ function rainOver(){
   if(M.level==="normal") state.rainBest=Math.max(state.rainBest,M.score);
   else (state.rainLv||(state.rainLv={}))[M.level]=Math.max(rainBestOf(M.level),M.score);
   const xp=Math.round(M.score/15); state.xp+=xp;
-  const t=todayStr(); const goal=addToday(secs); goalPending=false;
-  if(state.streak.last!==t){ const y=new Date(); y.setDate(y.getDate()-1); state.streak.count= state.streak.last===todayStr(y)?state.streak.count+1:1; state.streak.last=t; }
+  const goal=addToday(secs); goalPending=false;
   save(); checkBadges();
   $("#rainTitle").textContent= best ? "New record! 🏆" : "Game over";
   $("#rainTxt").innerHTML=`Score <b>${M.score}</b> · ${M.kills} meteors stopped · +${xp} XP`;
@@ -2173,8 +2231,8 @@ const BADGES=[
   {id:"w60",i:"🚀",n:"60 WPM",d:"Type 60 WPM",t:()=>state.bestWpm>=60,p:()=>[state.bestWpm,60,"WPM"]},
   {id:"bot1",i:"🤖",n:"Bot Beater",d:"Win a race against Keebo",t:()=>state.races.won>=1,p:()=>[state.races.won,1,"race"]},
   {id:"bot10",i:"🦾",n:"Bot Boss",d:"Win 10 races",t:()=>state.races.won>=10,p:()=>[state.races.won,10,"races"]},
-  {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",t:()=>state.streak.count>=3,p:()=>[streakNow(),3,"days"]},
-  {id:"s7",i:"🌋",n:"Unstoppable",d:"7-day streak",t:()=>state.streak.count>=7,p:()=>[streakNow(),7,"days"]},
+  {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",t:()=>streakNow()>=3,p:()=>[streakNow(),3,"days"]},
+  {id:"s7",i:"🌋",n:"Unstoppable",d:"7-day streak",t:()=>streakNow()>=7,p:()=>[streakNow(),7,"days"]},
   {id:"rain",i:"☄️",n:"Meteor Shield",d:"Score 500 in Word Rain",t:()=>state.rainBest>=500,p:()=>[state.rainBest,500,"points"]},
   {id:"ladder",i:"🪜",n:"Word Legend",d:"Win Longest Word or Word Marathon",t:()=>ladderWins()>=1,p:()=>[ladderWins(),1,"win"]},
   {id:"stars30",i:"⭐",n:"Star Collector",d:"Collect 30 stars",t:()=>totalStars()>=30,p:()=>[totalStars(),30,"stars"]}
@@ -2182,7 +2240,7 @@ const BADGES=[
 /* Wins in Longest Word and Word Marathon, all levels together. */
 function ladderWins(){ return ["ladder","marathon"].reduce((a,k)=>{ const L=state[k]; return a+(L?(L.boss||0)+Object.values(L.lv||{}).reduce((b,x)=>b+(x.boss||0),0):0); },0); }
 function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si); return [L.filter(l=>(lessonRec(l.idx)?.stars||0)>=1).length, L.length, "chapters"]; }
-function streakNow(){ const t=todayStr(), y=new Date(); y.setDate(y.getDate()-1); return state.streak.last===t||state.streak.last===todayStr(y) ? state.streak.count : 0; }
+function streakNow(){ return streakInfo().count; }
 function checkBadges(){
   const fresh=BADGES.filter(b=>!state.badges[b.id] && b.t());
   fresh.forEach((b,i)=>{ state.badges[b.id]=todayStr(); setTimeout(()=>toast(b.i,`Badge unlocked: <b>${esc(b.n)}</b><small>${esc(b.d)}</small>`,3200), 900+i*3500); });
@@ -2302,6 +2360,24 @@ function nextRuleVisit(){ state.ruleI=ruleIdx()+1; ruleFade=true; }
 function modesEnd(){ const m=$("#home .modes"); if(m) m.classList.toggle("end", m.scrollTop+m.clientHeight>=m.scrollHeight-4); }
 $("#home .modes").addEventListener("scroll", modesEnd, {passive:true});
 addEventListener("resize", modesEnd);
+/* Streak pill and week strip (last 7 days) on home. */
+function renderStreak(sk=streakInfo()){
+  const p=$("#hStreak");
+  p.textContent="🔥 "+sk.count+" day"+(sk.count===1?"":"s");
+  p.classList.toggle("risk", sk.atRisk);
+  if(sk.atRisk){ const r=document.createElement("small"); r.textContent=" · at risk"; p.append(r); }
+  const WD=["S","M","T","W","T","F","S"], TIP={goal:"Goal reached",saved:"Frozen, then saved",frozen:"Frozen",miss:"Missed",today:"Today"};
+  let html="";
+  for(let n=sk.T-6;n<=sk.T;n++){
+    const d=numDay(n), m=sk.mark[n]||"miss", wd=WD[new Date(d+"T12:00:00").getDay()];
+    const ic = m==="goal"||m==="saved" ? "🔥" : m==="frozen" ? "❄️" : "";
+    html+=`<span class="wd ${m}${n===sk.T?" now":""}" title="${d}: ${TIP[m]}"><i>${ic}</i><small>${wd}</small></span>`;
+  }
+  $("#wDays").innerHTML=html;
+  $("#wFreeze").textContent = sk.freezeReady ? "❄ Freeze ready" : `❄ Freeze back in ${sk.freezeIn} day${sk.freezeIn===1?"":"s"}`;
+  $("#wFreeze").classList.toggle("off", !sk.freezeReady);
+  $("#wSave").hidden = !(sk.frozen && !sk.done);
+}
 function renderHome(){
   const li=levelInfo(state.xp);
   $("#pName").textContent=state.name||"Player";
@@ -2310,9 +2386,8 @@ function renderHome(){
   $("#pBar").style.width=(li.into/li.need*100)+"%";
   $("#hLevel").textContent="Lv "+li.lvl;
   const t=todayStr(); const secs= state.today.date===t ? state.today.secs : 0;
-  const y=new Date(); y.setDate(y.getDate()-1);
-  const alive = state.streak.last===t || state.streak.last===todayStr(y);
-  $("#hStreak").textContent="🔥 "+(alive?state.streak.count:0)+" day"+((alive?state.streak.count:0)===1?"":"s");
+  const sk=streakInfo(t);
+  renderStreak(sk);
   $("#gTxt").textContent=`${Math.min(10,Math.floor(secs/60))} / 10 min`+(secs>=GOAL_SECS?" ✅":"");
   $("#gBar").style.width=Math.min(100,secs/600*100)+"%";
   $("#sBest").textContent=state.bestWpm; $("#sAvg").textContent=avgWpm(); $("#sStars").textContent=totalStars();
@@ -2360,7 +2435,8 @@ function renderHome(){
   const hello = warmupDue() ? `Hi ${esc(state.name)}! Start the day with a 1-minute warm-up? ☀️` :
                 dailyDue() ? `Today's sentence is ready, ${esc(state.name)}. One try counts! 📜` :
                 secs>=600 ? `Daily goal done, ${esc(state.name)}! 🎉 Extra practice makes you even faster.` :
-                !alive && state.streak.count>0 ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
+                sk.frozen ? `Welcome back, ${esc(state.name)}! Reach today's goal to save your streak. ❄️` :
+                sk.broken ? `Welcome back, ${esc(state.name)}! Let's start a new streak today. 🔥` : pick("hello", state.name);
   say("#home", hello, "happy");
   numberTiles();
 }
@@ -2486,6 +2562,7 @@ function dayBefore(d){ const x=new Date(d+"T12:00:00"); if(isNaN(x)) return d; x
 function newDay(){
   if(state.today.date) state.today.date=dayBefore(state.today.date);
   if(state.streak.last) state.streak.last=dayBefore(state.streak.last);
+  state.days=(state.days||[]).map(dayBefore);
   if(state.warmup?.last) state.warmup.last=dayBefore(state.warmup.last);
   if(state.daily?.last) state.daily.last=dayBefore(state.daily.last);
   save();
