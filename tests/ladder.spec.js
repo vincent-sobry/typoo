@@ -68,16 +68,16 @@ test("reference WPM: average of the last 10 runs, else the top WPM", async ({ pa
   expect(await page.evaluate("ladderRef()")).toBe(55);
 });
 
-test("word lists: 5+ words per length from 2 to 15, letters only, boss word last", async ({ page }) => {
+test("word lists (EN, NL, FR, IT): 5+ words per length from 2 to 15, letters only, boss word last", async ({ page }) => {
   await openApp(page, withChapters(18));
   const r = await page.evaluate(() => {
     const out = {};
-    for (const lang of ["en", "nl"]) {
+    for (const lang of ["en", "nl", "fr", "it"]) {
       const bad = [];
       for (let n = 2; n <= 15; n++) {
         const ws = LADDER_WORDS[lang][n].split(" ");
         if (ws.length < 5) bad.push(`${n}: only ${ws.length}`);
-        ws.forEach((w) => { if (w.length !== n || !/^[a-z]+$/.test(w)) bad.push(w); });
+        ws.forEach((w) => { if (w.length !== n || !/^[a-z]+$/.test(fold(w))) bad.push(w); });   // FR/IT: accents are letters too
       }
       const run = ladderWords(lang);
       out[lang] = { bad, lengths: run.map((w) => w.length), boss: run[run.length - 1] };
@@ -91,6 +91,10 @@ test("word lists: 5+ words per length from 2 to 15, letters only, boss word last
   expect(r.nl.lengths).toEqual([...ladder, 33]);
   expect(r.en.boss).toBe("supercalifragilisticexpialidocious");
   expect(r.nl.boss).toBe("hottentottententententoonstelling");
+  expect(r.fr.bad).toEqual([]);
+  expect(r.it.bad).toEqual([]);
+  expect(r.fr.lengths).toEqual([...ladder, 25]);
+  expect(r.it.lengths).toEqual([...ladder, 26]);
 });
 
 test("climb all 15 sublevels and beat the boss word", async ({ page }) => {
