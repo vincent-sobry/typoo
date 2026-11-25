@@ -24,16 +24,17 @@ test("the run that reaches 10 minutes shows the goal moment after the summary", 
   await expect(page.locator("#result")).toBeVisible();
   const goal = page.locator("#rGoal");
   await expect(goal).toBeVisible({ timeout: 6000 });
-  await expect(goal).toContainText("Daily goal reached");
+  await expect(goal).toContainText("Goal reached, see you tomorrow");
   expect(await page.evaluate("confParts.length")).toBeGreaterThan(0);
   expect((await saved(page)).today.goal).toBe(1);
-  // The result buttons still work: no forced stop.
-  await page.click("#rNext");
+  // Soft line (UX-31): chapter 2 is new, so Next is gone. Retry still works: no forced stop.
+  await expect(page.locator("#rNext")).toBeHidden();
+  await page.click("#rRetry");
   await expect(page.locator("#type")).toBeVisible();
 });
 
 test("only one time per day", async ({ page }) => {
-  await openApp(page, player());
+  await openApp(page, player({ lessons: { qwerty: { 0: { stars: 0, wpm: 5, acc: 80 } }, azerty: {} } }));   // chapter 1 started: open after the goal
   const t = await todayStr(page);
   await page.evaluate((t) => { state.today = { date: t, secs: 700, goal: 1 }; save(); }, t);
   await page.click("#mContinue");
