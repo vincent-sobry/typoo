@@ -106,3 +106,47 @@ test("test tools: reach today's goal, then a new day brings the welcome back", a
   await expect(page.locator(W)).toHaveClass(/on/);
   expect((await saved(page)).dayOpen).toBe(day(-1));
 });
+
+// Quiet hours 23:00 to 5:00: no XP, stars, badges or goal time; Keebo says it is late. The app stays open.
+test.describe("quiet hours", () => {
+  test("a chapter run gives no XP, no stars and no goal time; Keebo says it is late", async ({ page }) => {
+    await openApp(page, veteran(), { hour: 23 });
+    await expect(page.locator("#home .botbox")).toContainText("It's late");
+    await page.click('#map .lesson[data-i="2"]');
+    await typeAll(page);
+    await expect(page.locator("#result")).toBeVisible();
+    await expect(page.locator("#rXp")).toHaveText("+0");
+    await expect(page.locator("#rXpL")).toContainText("quiet");
+    await expect(page.locator("#result .botbox")).toContainText("Sleep makes your fingers faster");
+    const s = await saved(page);
+    expect(s.xp).toBe(0);
+    expect(s.today.date).toBe(day(-1));               // no goal time today
+    expect(s.lessons.qwerty[2].wpm).toBe(15);          // record unchanged
+  });
+
+  test("new chapters wait until 5:00; games stay open", async ({ page }) => {
+    await openApp(page, veteran(), { hour: 2 });
+    await expect(page.locator("#mContText")).toContainText("after 5:00");
+    await page.click("#mContinue");
+    await expect(page.locator("#toast")).toContainText("Quiet hours");
+    await page.click("#mSmart");
+    await expect(page.locator("#type")).toBeVisible();
+  });
+
+  test("at 5:00 a new day starts: play at 2:00 counts for the day before", async ({ page }) => {
+    await openApp(page, veteran());
+    const r = await page.evaluate(() => {
+      const at = (h) => todayStr(new Date(new Date(2026, 10, 26, h, 30).getTime() - 5 * 36e5));
+      return [at(2), at(4), at(5), at(23)];
+    });
+    expect(r).toEqual(["2026-11-25", "2026-11-25", "2026-11-26", "2026-11-26"]);
+  });
+
+  test("test tool: quiet hours On in Settings", async ({ page }) => {
+    await openApp(page, veteran());
+    expect(await page.evaluate("isQuiet()")).toBe(false);
+    await page.evaluate("state.quietTest = 1");
+    // On main (IS_DEV false) the test switch does nothing.
+    expect(await page.evaluate("isQuiet()")).toBe(false);
+  });
+});
