@@ -114,3 +114,17 @@ test("map with review chapters fits a 1366x657 screen", async ({ page }) => {
   const w = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(w).toBeLessThanOrEqual(1366);
 });
+
+test("chapter tiles in one row line up: titles at the same height, stars at the same height", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 657 });
+  await openApp(page, fresh(20));
+  const rows = await page.evaluate(() => {
+    const out = {};
+    document.querySelectorAll("#map .lesson").forEach((e) => {
+      const top = Math.round(e.getBoundingClientRect().top), y = (s) => Math.round(e.querySelector(s).getBoundingClientRect().top) - top;
+      (out[top] = out[top] || new Set()).add(y(".t") + "/" + y(".s"));
+    });
+    return Object.values(out).map((s) => s.size);
+  });
+  rows.forEach((n) => expect(n).toBe(1));
+});

@@ -124,11 +124,13 @@ h1,h2,h3{margin:0}
 .stage h3{font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:4px 0 10px;display:flex;gap:10px;align-items:center}
 .stage h3 .tgt{font-size:12px;text-transform:none;letter-spacing:0;background:var(--bg2);padding:2px 8px;border-radius:99px}
 .lessons{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.lesson{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;min-height:92px;transition:transform .1s,border-color .1s}
+/* Chapter tile: label and title at the top, stars and score at the bottom, so tiles in one row line up. */
+.lesson{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;min-height:92px;transition:transform .1s,border-color .1s;display:flex;flex-direction:column;justify-content:flex-start}
 .lesson:hover:not(.locked){transform:translateY(-2px);border-color:var(--accent2)}
-.lesson .n{font-size:12px;color:var(--muted);font-weight:700}
+.lesson .n{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:18px}
 .lesson .t{font-weight:800;margin:3px 0 6px}
-.lesson .s{font-size:18px;letter-spacing:2px;color:#4a5288}
+.lesson .s{font-size:18px;letter-spacing:2px;color:#4a5288;margin-top:auto;line-height:1.2}
+.lesson .w{font-size:12px;min-height:1.4em}
 .lesson .s .on{color:#ffd43b;text-shadow:0 0 8px #ffd43b88}
 .lesson.review{border-style:dashed}
 .lesson.locked{opacity:.4;cursor:not-allowed}
@@ -3404,7 +3406,7 @@ function renderHome(){
       html+=`<button class="lesson${rv?" review":""} ${un?"":"locked"} ${l.idx===cur&&un?"current":""}" data-i="${l.idx}">
         <div class="n">${chapterWord().toUpperCase()} ${l.idx+1}${keys}</div><div class="t">${esc(l.title)}</div>
         <div class="s">${[0,1,2].map(i=>`<span class="${i<st2?"on":""}">★</span>`).join("")}</div>
-        ${r?`<div class="muted" style="font-size:12px">${r.wpm} WPM · ${r.acc}%</div>`:""}</button>`;
+        <div class="muted w">${r?`${r.wpm} WPM · ${r.acc}%`:""}</div></button>`;
     });
     html+=`</div></div>`;
   });
