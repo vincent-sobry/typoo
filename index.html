@@ -404,6 +404,16 @@ body.fframe #fframe{display:block}
 /* ---------- Onboarding & settings ---------- */
 .onboard{max-width:620px;margin:30px auto}
 .field{margin:14px 0;text-align:left}
+/* Settings: groups in a scroll area, the Done row stays at the bottom */
+#settings .setpanel{display:flex;flex-direction:column;overflow:hidden;padding-bottom:16px}
+#settings .setpanel h2{margin:0 0 8px}
+.setbody{flex:1;min-height:0;overflow:auto;margin:0 -24px;padding:0 24px}
+.setgrp{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.setgrp:first-child{border-top:0;margin-top:0;padding-top:0}
+.setgrp h3{margin:0;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.setgrp .field{margin:10px 0}
+#setTestGrp{border-top:1px dashed #ff8a9a66}
+.setfoot{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
 .field label{display:block;font-weight:700;margin-bottom:6px}
 .field input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:18px}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
@@ -655,16 +665,20 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <p id="rainTxt" class="muted"></p>
   <div class="rbtns"><button class="btn ghost" id="rainMap" data-t="map">Map</button><button class="btn" id="rainAgain" data-t="rain.again">Play again</button></div>
 </div></div>
-<div class="overlay" id="settings"><div class="panel" style="text-align:left">
+<div class="overlay" id="settings"><div class="panel setpanel" style="text-align:left">
   <h2 data-t="set.h">⚙️ Settings</h2>
+  <div class="setbody">
+  <section class="setgrp"><h3>👤 <span data-t="set.gPlayer">Player</span></h3>
   <div class="field"><label for="setName" data-t="set.name">Name</label><input id="setName" type="text" maxlength="20"></div>
+  <div class="field"><label data-t="set.lang">Language</label><div class="seg langseg" id="setLang">
+    <button data-v="nl">Nederlands</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="it">Italiano</button></div>
+    <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.langNote">Screens, Keebo and all typing texts.</div></div>
   <div class="field"><label data-t="set.kb">Keyboard</label><div class="seg" id="setLayout">
     <button data-v="azerty">AZERTY<small data-t="lay.az">Belgian / French</small></button>
     <button data-v="qwerty">QWERTY<small data-t="lay.qw">US / UK / Dutch</small></button></div>
     <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.kbNote">Each keyboard has its own chapter progress.</div></div>
-  <div class="field"><label data-t="set.lang">Language</label><div class="seg langseg" id="setLang">
-    <button data-v="nl">Nederlands</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="it">Italiano</button></div>
-    <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.langNote">Screens, Keebo and all typing texts.</div></div>
+  </section>
+  <section class="setgrp"><h3>⌨️ <span data-t="set.gHelp">Typing help</span></h3>
   <div class="field"><label data-t="set.help">Keyboard help on screen</label><div class="seg" id="setBlind">
     <button data-v="0"><span data-t="set.full">Full</span><small data-t="set.fullS">labels + colors</small></button>
     <button data-v="1"><span data-t="set.blind">Blind</span><small data-t="set.blindS">no letters</small></button>
@@ -672,16 +686,19 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="field"><label data-t="set.hands">Hands below the keyboard</label><div class="seg" id="setHands">
     <button data-v="1"><span data-t="on">On</span><small data-t="set.handsOn">show which finger</small></button>
     <button data-v="0"><span data-t="off">Off</span><small data-t="set.handsOff">no finger hint</small></button></div></div>
-  <div class="field"><label><span data-t="set.slide">Sliding text</span> <small class="muted">(test)</small></label><div class="seg" id="setSlide">
-    <button data-v="1"><span data-t="on">On</span><small data-t="set.slideOn">one row, the text slides</small></button>
-    <button data-v="0"><span data-t="off">Off</span><small data-t="set.slideOff">rows of text</small></button></div></div>
   <div class="field"><label data-t="set.frame">Finger colour frame</label><div class="seg" id="setFrame">
     <button data-v="1"><span data-t="on">On</span><small data-t="set.frameOn">screen border in the finger colour</small></button>
     <button data-v="0"><span data-t="off">Off</span><small data-t="set.frameOff">no frame</small></button></div></div>
+  </section>
+  <section class="setgrp"><h3>🔊 <span data-t="set.gSound">Sounds</span></h3>
   <div class="field"><label data-t="set.sound">Sound</label><div class="seg" id="setSound">
     <button data-v="1" data-t="on">On</button><button data-v="0" data-t="off">Off</button></div></div>
   <div class="field"><label data-t="set.clicks">Click sound</label><div class="seg" id="setClicks">
     <button data-v="1"><span data-t="on">On</span><small data-t="set.clicksOn">soft tick on buttons</small></button><button data-v="0" data-t="off">Off</button></div></div>
+  </section>
+  <section class="setgrp"><h3>❓ <span data-t="set.gGuide">Help</span></h3>
+  <div class="field"><label data-t="tour">Tour</label><button class="btn ghost" id="setTour" data-t="set.tour">Show the tour again</button>
+    <span class="muted" style="font-size:12px;margin-left:8px" data-t="set.tourHint">or tap ❓ on the map</span></div>
   <div class="field" id="setKeys"><label data-t="set.keys">Keyboard shortcuts</label>
     <table class="keys-list">
       <tr><th colspan="2" data-t="map">Map</th></tr>
@@ -703,6 +720,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <tr><td><kbd>1</kbd> … <kbd>4</kbd></td><td data-t="k.pick">Pick a choice in Race Keebo and Booster</td></tr>
       <tr><td><kbd>Esc</kbd></td><td data-t="close">Close</td></tr>
     </table></div>
+  </section>
+  <section class="setgrp"><h3>💾 <span data-t="set.gData">Your data</span></h3>
   <div class="field"><label data-t="set.backup">Backup</label>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn ghost" id="setExport" data-t="set.export">Copy backup code</button>
@@ -712,16 +731,21 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <textarea id="setCode" rows="3" style="display:none;width:100%;margin-top:8px;border-radius:10px;background:var(--bg2);color:var(--text);border:1px solid var(--line);padding:8px;font-family:var(--mono);font-size:11px"></textarea>
     <div class="row" id="setCodeRow" style="display:none;margin-top:6px"><span class="muted" id="setCodeMsg" style="font-size:13px"></span><div class="spacer"></div><button class="btn" id="setCodeGo" data-t="set.restore">Restore</button></div>
   </div>
-  <div class="field" id="setChapters" style="display:none"><label><span data-t="set.codes">Chapter codes</span> <small class="muted">(test)</small></label>
+  </section>
+  <section class="setgrp" id="setTestGrp"><h3>🧪 <span data-t="set.gTest">Test</span></h3>
+  <div class="field"><label><span data-t="set.slide">Sliding text</span></label><div class="seg" id="setSlide">
+    <button data-v="1"><span data-t="on">On</span><small data-t="set.slideOn">one row, the text slides</small></button>
+    <button data-v="0"><span data-t="off">Off</span><small data-t="set.slideOff">rows of text</small></button></div></div>
+  <div class="field" id="setChapters" style="display:none"><label><span data-t="set.codes">Chapter codes</span></label>
     <div class="muted" style="font-size:12px;margin-bottom:6px" data-t="set.codesTxt">A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in "Restore from code", or click Go.</div>
     <div id="setChList" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px"></div>
   </div>
-  <div class="field" id="setNewDay" style="display:none"><label><span data-t="set.newDay">New day</span> <small class="muted">(test)</small></label>
+  <div class="field" id="setNewDay" style="display:none"><label><span data-t="set.newDay">New day</span></label>
     <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1" data-t="set.newDayTxt">Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.</span>
     <button class="btn ghost" id="setNewDayGo" data-t="set.newDayGo">Start a new day</button></div></div>
-  <div class="field"><label data-t="tour">Tour</label><button class="btn ghost" id="setTour" data-t="set.tour">Show the tour again</button>
-    <span class="muted" style="font-size:12px;margin-left:8px" data-t="set.tourHint">or tap ❓ on the map</span></div>
-  <div class="row" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose" data-t="done">Done</button></div>
+  </section>
+  </div>
+  <div class="row setfoot" style="align-items:center"><span class="muted" id="setVersion" style="font-size:12px"></span><div class="spacer"></div><button class="btn" id="setClose" data-t="done">Done</button></div>
 </div></div>
 <div class="overlay" id="badgeCard"><div class="panel bcard" role="dialog" aria-modal="true" aria-labelledby="bcName">
   <div class="bic" id="bcIcon">🏅</div>
@@ -1011,6 +1035,7 @@ I18N.en = {
   "k.typing":"While you type","k.stop":"Stop and go back to the map","k.again":"Start the same run again","k.escRain":"<kbd>Esc</kbd> in Word Rain",
   "k.letGo":"Let go of the current word","k.result":"Result","k.main":"Main button (next or retry)","k.mEsc":"<kbd>M</kbd> or <kbd>Esc</kbd>",
   "k.pop":"Pop-ups","k.pick":"Pick a choice in Race Keebo and Booster",
+  "set.gPlayer":"Player","set.gHelp":"Typing help","set.gSound":"Sounds","set.gGuide":"Help","set.gData":"Your data","set.gTest":"Test",
   "set.backup":"Backup","set.export":"Copy backup code","set.import":"Restore from code","set.reset":"Reset all","set.restore":"Restore",
   "set.resetSure":"Click again to delete ALL progress","set.copied":"Backup code copied. Paste it in a note or email.","set.copyBox":"Copy the code in the box (Ctrl+C).",
   "set.pastePh":"Paste your backup code or chapter code here","set.restored":"Progress restored!","set.badCode":"That code does not work. Check that you copied all of it.",
@@ -1119,6 +1144,7 @@ I18N.nl = {
   "k.typing":"Tijdens het typen","k.stop":"Stop en ga terug naar de kaart","k.again":"Start dezelfde run opnieuw","k.escRain":"<kbd>Esc</kbd> in Woordenregen",
   "k.letGo":"Laat het huidige woord los","k.result":"Resultaat","k.main":"Hoofdknop (volgende of opnieuw)","k.mEsc":"<kbd>M</kbd> of <kbd>Esc</kbd>",
   "k.pop":"Pop-ups","k.pick":"Kies in Race tegen Keebo en Booster",
+  "set.gPlayer":"Speler","set.gHelp":"Typhulp","set.gSound":"Geluid","set.gGuide":"Hulp","set.gData":"Je gegevens","set.gTest":"Test",
   "set.backup":"Back-up","set.export":"Kopieer back-upcode","set.import":"Herstel met code","set.reset":"Alles wissen","set.restore":"Herstel",
   "set.resetSure":"Klik nog eens om ALLE voortgang te wissen","set.copied":"Back-upcode gekopieerd. Plak hem in een notitie of mail.","set.copyBox":"Kopieer de code in het vak (Ctrl+C).",
   "set.pastePh":"Plak hier je back-upcode of hoofdstukcode","set.restored":"Voortgang hersteld!","set.badCode":"Die code werkt niet. Kijk of je alles gekopieerd hebt.",
@@ -1259,6 +1285,7 @@ I18N.fr = {
   "k.typing":"Pendant la frappe","k.stop":"Arrêter et revenir à la carte","k.again":"Relancer la même partie","k.escRain":"<kbd>Échap</kbd> dans Pluie de mots",
   "k.letGo":"Lâcher le mot en cours","k.result":"Résultat","k.main":"Bouton principal (suivant ou recommencer)","k.mEsc":"<kbd>M</kbd> ou <kbd>Échap</kbd>",
   "k.pop":"Fenêtres","k.pick":"Choisir dans Course contre Keebo et Booster",
+  "set.gPlayer":"Joueur","set.gHelp":"Aide à la frappe","set.gSound":"Sons","set.gGuide":"Aide","set.gData":"Tes données","set.gTest":"Test",
   "set.backup":"Sauvegarde","set.export":"Copier le code de sauvegarde","set.import":"Restaurer avec un code","set.reset":"Tout effacer","set.restore":"Restaurer",
   "set.resetSure":"Clique encore pour effacer TOUTE la progression","set.copied":"Code copié. Colle-le dans une note ou un e-mail.","set.copyBox":"Copie le code dans la case (Ctrl+C).",
   "set.pastePh":"Colle ici ton code de sauvegarde ou de chapitre","set.restored":"Progression restaurée !","set.badCode":"Ce code ne marche pas. Vérifie que tu as tout copié.",
@@ -1399,6 +1426,7 @@ I18N.it = {
   "k.typing":"Mentre scrivi","k.stop":"Fermati e torna alla mappa","k.again":"Rifai la stessa partita","k.escRain":"<kbd>Esc</kbd> in Pioggia di parole",
   "k.letGo":"Lascia la parola attuale","k.result":"Risultato","k.main":"Pulsante principale (avanti o riprova)","k.mEsc":"<kbd>M</kbd> o <kbd>Esc</kbd>",
   "k.pop":"Finestre","k.pick":"Scegli in Gara con Keebo e Booster",
+  "set.gPlayer":"Giocatore","set.gHelp":"Aiuto per digitare","set.gSound":"Suoni","set.gGuide":"Aiuto","set.gData":"I tuoi dati","set.gTest":"Test",
   "set.backup":"Backup","set.export":"Copia il codice di backup","set.import":"Ripristina con un codice","set.reset":"Cancella tutto","set.restore":"Ripristina",
   "set.resetSure":"Clicca ancora per cancellare TUTTI i progressi","set.copied":"Codice copiato. Incollalo in una nota o in un'e-mail.","set.copyBox":"Copia il codice nella casella (Ctrl+C).",
   "set.pastePh":"Incolla qui il codice di backup o di capitolo","set.restored":"Progressi ripristinati!","set.badCode":"Questo codice non funziona. Controlla di averlo copiato tutto.",
@@ -3195,7 +3223,7 @@ function openSettings(){
   segInit("#setClicks", state.clicks===0?0:1, v=>{ state.clicks=+v; save(); });
   renderChapterCodes();
   $("#setVersion").textContent = "Typoo "+buildVersion()+(IS_DEV && BUILD.sha ? " · "+BUILD.sha : "");
-  $("#settings").classList.add("on");
+  $("#settings").classList.add("on"); $("#settings .setbody").scrollTop=0;
 }
 $("#hSettings").onclick=openSettings;
 $("#setName").addEventListener("input",e=>{ state.name=e.target.value.trim()||state.name; save(); });
