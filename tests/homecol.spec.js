@@ -46,12 +46,12 @@ test("short screen (under 780 px high, Chromebook): the whole page scrolls, the 
   expect(r.page).toBe(true);
 });
 
-test("badges: 20 badges in a full grid of 4 rows of 5", async ({ page }) => {
+test("badges: 24 badges in a full grid of 4 rows of 6", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await openApp(page, player());
   const rows = await page.evaluate(() => { const t = [...document.querySelectorAll("#badges .badge")].map((b) => Math.round(b.getBoundingClientRect().top));
     const r = {}; t.forEach((y) => (r[y] = (r[y] || 0) + 1)); return Object.values(r); });
-  expect(rows).toEqual([5, 5, 5, 5]);
+  expect(rows).toEqual([6, 6, 6, 6]);
   await expect(page.locator("#badges .badge").last()).toBeInViewport();
 });
 
