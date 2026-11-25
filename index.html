@@ -789,6 +789,9 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div class="muted" style="font-size:12px;margin-bottom:6px" data-t="set.codesTxt">A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in "Restore from code", or click Go.</div>
     <div id="setChList" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px"></div>
   </div>
+  <div class="field" id="setQuiet" style="display:none"><label><span data-t="set.quiet">Quiet hours</span></label>
+    <div class="muted" style="font-size:12px;margin-bottom:6px" data-t="set.quietTxt">From 23:00 to 5:00 there is no XP, no stars, no badges and no goal time.</div>
+    <div class="seg" id="setQuietSeg"><button data-v="0"><span data-t="set.quietAuto">Auto</span></button><button data-v="1"><span data-t="set.quietOn">On (test)</span></button></div></div>
   <div class="field" id="setNewDay" style="display:none"><label><span data-t="set.newDay">New day</span></label>
     <div class="row" style="gap:8px"><span class="muted" style="font-size:12px;flex:1" data-t="set.newDayTxt">Moves the saved dates back 1 day: the daily warm-up and the daily sentence show again, today's goal starts at 0, the streak goes on.</span>
     <button class="btn ghost" id="setNewDayGo" data-t="set.newDayGo">Start a new day</button>
@@ -1025,7 +1028,7 @@ I18N.en = {
   "m.boost":"Booster","m.boostN1":"{n} chapter can get more stars","m.boostN":"{n} chapters can get more stars","m.boostAll":"All chapters have ★★★ 🎉","m.boostLock":"Locked: get 1 star on a chapter first",
   "lock.ch1":"Locked: pass chapter 1 first","lock.bottom":"Locked: finish the Bottom Row first","map.target":"target {w}+ WPM",
   "hi.warm":"Hi {n}! Start the day with a 1-minute warm-up? ☀️","hi.daily":"Today's sentence is ready, {n}. One try counts! 📜",
-  "hi.goal":"Goal reached, {n}! 🌙 See you tomorrow. The games stay open, new chapters wait until tomorrow.","dw.h":"Hi {n}!","dw.warm":"Ready to warm up? One minute of easy words gets your fingers loose. Then all games open.","dw.ch1":"Ready for chapter 1? Put your fingers on F and J, and let's go.","dw.go":"Warm up","dw.goCh1":"Start chapter 1","dw.skip":"Skip","soft.cont":"🌙 Opens tomorrow","soft.toast":"New chapters open tomorrow. Replay a chapter or play a game!","soft.xp":"XP · 25%","set.goalGo":"Reach today's goal","set.goalToast":"Today's goal is reached. New chapters wait until tomorrow.","hi.frozen":"Welcome back, {n}! Reach today's goal to save your streak. ❄️",
+  "hi.goal":"Goal reached, {n}! 🌙 See you tomorrow. The games stay open, new chapters wait until tomorrow.","dw.h":"Hi {n}!","dw.warm":"Ready to warm up? One minute of easy words gets your fingers loose. Then all games open.","dw.ch1":"Ready for chapter 1? Put your fingers on F and J, and let's go.","dw.go":"Warm up","dw.goCh1":"Start chapter 1","dw.skip":"Skip","soft.cont":"🌙 Opens tomorrow","soft.toast":"New chapters open tomorrow. Replay a chapter or play a game!","soft.xp":"XP · 25%","hi.quiet":"It's late, {n}! 🌙 Quiet hours until 5:00: no XP, no stars. Time to sleep?","qh.say":"It's late{name}. 🌙 Sleep makes your fingers faster. No XP or stars now. See you tomorrow!","qh.xp":"XP · 🌙 quiet","qh.toast":"Quiet hours (23:00 to 5:00): no XP, stars or goal time. Sleep well! 🌙","qh.lock":"Quiet hours: new chapters open again after 5:00. 🌙","qh.cont":"🌙 Opens after 5:00","set.quiet":"Quiet hours","set.quietTxt":"From 23:00 to 5:00 there is no XP, no stars, no badges and no goal time. A new day starts at 5:00. On = test quiet hours now.","set.quietAuto":"Auto","set.quietOn":"On (test)","set.goalGo":"Reach today's goal","set.goalToast":"Today's goal is reached. New chapters wait until tomorrow.","hi.frozen":"Welcome back, {n}! Reach today's goal to save your streak. ❄️",
   "hi.broken":"Welcome back, {n}! Let's start a new streak today. 🔥",
   "sk.risk":"at risk","sk.wd":["S","M","T","W","T","F","S"],"sk.tip":{goal:"Goal reached",saved:"Frozen, then saved",frozen:"Frozen",miss:"Missed",today:"Today"},
   "sk.ready":"❄ Freeze ready","sk.back":"❄ Freeze back in {d}",
@@ -1154,7 +1157,7 @@ I18N.nl = {
   "m.boost":"Booster","m.boostN1":"{n} hoofdstuk kan meer sterren krijgen","m.boostN":"{n} hoofdstukken kunnen meer sterren krijgen","m.boostAll":"Alle hoofdstukken hebben ★★★ 🎉","m.boostLock":"Op slot: haal eerst 1 ster op een hoofdstuk",
   "lock.ch1":"Op slot: haal eerst hoofdstuk 1","lock.bottom":"Op slot: werk eerst de onderste rij af","map.target":"doel {w}+ WPM",
   "hi.warm":"Hoi {n}! Begin de dag met 1 minuut opwarmen? ☀️","hi.daily":"De zin van vandaag is klaar, {n}. Eén poging telt! 📜",
-  "hi.goal":"Doel gehaald, {n}! 🌙 Tot morgen. De spellen blijven open, nieuwe hoofdstukken wachten tot morgen.","dw.h":"Hoi {n}!","dw.warm":"Klaar om op te warmen? Eén minuut makkelijke woorden maakt je vingers los. Daarna gaan alle spellen open.","dw.ch1":"Klaar voor hoofdstuk 1? Zet je vingers op F en J, en we gaan.","dw.go":"Opwarmen","dw.goCh1":"Start hoofdstuk 1","dw.skip":"Overslaan","soft.cont":"🌙 Morgen open","soft.toast":"Nieuwe hoofdstukken gaan morgen open. Speel een hoofdstuk opnieuw of speel een spel!","soft.xp":"XP · 25%","set.goalGo":"Haal het doel van vandaag","set.goalToast":"Het doel van vandaag is gehaald. Nieuwe hoofdstukken wachten tot morgen.","hi.frozen":"Welkom terug, {n}! Haal het doel van vandaag om je reeks te redden. ❄️",
+  "hi.goal":"Doel gehaald, {n}! 🌙 Tot morgen. De spellen blijven open, nieuwe hoofdstukken wachten tot morgen.","dw.h":"Hoi {n}!","dw.warm":"Klaar om op te warmen? Eén minuut makkelijke woorden maakt je vingers los. Daarna gaan alle spellen open.","dw.ch1":"Klaar voor hoofdstuk 1? Zet je vingers op F en J, en we gaan.","dw.go":"Opwarmen","dw.goCh1":"Start hoofdstuk 1","dw.skip":"Overslaan","soft.cont":"🌙 Morgen open","soft.toast":"Nieuwe hoofdstukken gaan morgen open. Speel een hoofdstuk opnieuw of speel een spel!","soft.xp":"XP · 25%","hi.quiet":"Het is laat, {n}! 🌙 Stille uren tot 5:00: geen XP, geen sterren. Tijd om te slapen?","qh.say":"Het is laat{name}. 🌙 Slaap maakt je vingers sneller. Nu geen XP of sterren. Tot morgen!","qh.xp":"XP · 🌙 stil","qh.toast":"Stille uren (23:00 tot 5:00): geen XP, sterren of doeltijd. Slaap lekker! 🌙","qh.lock":"Stille uren: nieuwe hoofdstukken gaan weer open na 5:00. 🌙","qh.cont":"🌙 Open na 5:00","set.quiet":"Stille uren","set.quietTxt":"Van 23:00 tot 5:00 is er geen XP, geen sterren, geen badges en geen doeltijd. Een nieuwe dag start om 5:00. Aan = test de stille uren nu.","set.quietAuto":"Auto","set.quietOn":"Aan (test)","set.goalGo":"Haal het doel van vandaag","set.goalToast":"Het doel van vandaag is gehaald. Nieuwe hoofdstukken wachten tot morgen.","hi.frozen":"Welkom terug, {n}! Haal het doel van vandaag om je reeks te redden. ❄️",
   "hi.broken":"Welkom terug, {n}! Start vandaag een nieuwe reeks. 🔥",
   "sk.risk":"in gevaar","sk.wd":["Z","M","D","W","D","V","Z"],"sk.tip":{goal:"Doel gehaald",saved:"Bevroren, dan gered",frozen:"Bevroren",miss:"Gemist",today:"Vandaag"},
   "sk.ready":"❄ Bevriezing klaar","sk.back":"❄ Bevriezing terug over {d}",
@@ -1301,7 +1304,7 @@ I18N.fr = {
   "m.boost":"Booster","m.boostN1":"{n} chapitre peut gagner des étoiles","m.boostN":"{n} chapitres peuvent gagner des étoiles","m.boostAll":"Tous les chapitres ont ★★★ 🎉","m.boostLock":"Verrouillé : gagne d'abord 1 étoile sur un chapitre",
   "lock.ch1":"Verrouillé : réussis d'abord le chapitre 1","lock.bottom":"Verrouillé : termine d'abord la rangée du bas","map.target":"objectif {w}+ WPM",
   "hi.warm":"Salut {n} ! On commence la journée par 1 minute d'échauffement ? ☀️","hi.daily":"La phrase du jour est prête, {n}. Un seul essai compte ! 📜",
-  "hi.goal":"Objectif atteint, {n} ! 🌙 À demain. Les jeux restent ouverts, les nouveaux chapitres attendent demain.","dw.h":"Salut {n} !","dw.warm":"Prêt pour l'échauffement ? Une minute de mots faciles pour délier tes doigts. Ensuite, tous les jeux s'ouvrent.","dw.ch1":"Prêt pour le chapitre 1 ? Mets tes doigts sur F et J, et c'est parti.","dw.go":"S'échauffer","dw.goCh1":"Commencer le chapitre 1","dw.skip":"Passer","soft.cont":"🌙 Ouvre demain","soft.toast":"Les nouveaux chapitres s'ouvrent demain. Rejoue un chapitre ou joue à un jeu !","soft.xp":"XP · 25 %","set.goalGo":"Atteindre l'objectif du jour","set.goalToast":"L'objectif du jour est atteint. Les nouveaux chapitres attendent demain.","hi.frozen":"Re-bonjour, {n} ! Atteins l'objectif du jour pour sauver ta série. ❄️",
+  "hi.goal":"Objectif atteint, {n} ! 🌙 À demain. Les jeux restent ouverts, les nouveaux chapitres attendent demain.","dw.h":"Salut {n} !","dw.warm":"Prêt pour l'échauffement ? Une minute de mots faciles pour délier tes doigts. Ensuite, tous les jeux s'ouvrent.","dw.ch1":"Prêt pour le chapitre 1 ? Mets tes doigts sur F et J, et c'est parti.","dw.go":"S'échauffer","dw.goCh1":"Commencer le chapitre 1","dw.skip":"Passer","soft.cont":"🌙 Ouvre demain","soft.toast":"Les nouveaux chapitres s'ouvrent demain. Rejoue un chapitre ou joue à un jeu !","soft.xp":"XP · 25 %","hi.quiet":"Il est tard, {n} ! 🌙 Heures calmes jusqu'à 5:00 : pas d'XP, pas d'étoiles. C'est l'heure de dormir ?","qh.say":"Il est tard{name}. 🌙 Le sommeil rend tes doigts plus rapides. Pas d'XP ni d'étoiles maintenant. À demain !","qh.xp":"XP · 🌙 calme","qh.toast":"Heures calmes (23:00 à 5:00) : pas d'XP, d'étoiles ni de temps pour l'objectif. Dors bien ! 🌙","qh.lock":"Heures calmes : les nouveaux chapitres rouvrent après 5:00. 🌙","qh.cont":"🌙 Ouvre après 5:00","set.quiet":"Heures calmes","set.quietTxt":"De 23:00 à 5:00, pas d'XP, pas d'étoiles, pas de badges et pas de temps pour l'objectif. Un nouveau jour commence à 5:00. Activé = tester les heures calmes maintenant.","set.quietAuto":"Auto","set.quietOn":"Activé (test)","set.goalGo":"Atteindre l'objectif du jour","set.goalToast":"L'objectif du jour est atteint. Les nouveaux chapitres attendent demain.","hi.frozen":"Re-bonjour, {n} ! Atteins l'objectif du jour pour sauver ta série. ❄️",
   "hi.broken":"Re-bonjour, {n} ! On commence une nouvelle série aujourd'hui. 🔥",
   "sk.risk":"en danger","sk.wd":["D","L","M","M","J","V","S"],"sk.tip":{goal:"Objectif atteint",saved:"Gelé, puis sauvé",frozen:"Gelé",miss:"Manqué",today:"Aujourd'hui"},
   "sk.ready":"❄ Gel prêt","sk.back":"❄ Gel de retour dans {d}",
@@ -1448,7 +1451,7 @@ I18N.it = {
   "m.boost":"Booster","m.boostN1":"{n} capitolo può avere più stelle","m.boostN":"{n} capitoli possono avere più stelle","m.boostAll":"Tutti i capitoli hanno ★★★ 🎉","m.boostLock":"Bloccato: prendi prima 1 stella in un capitolo",
   "lock.ch1":"Bloccato: supera prima il capitolo 1","lock.bottom":"Bloccato: finisci prima la fila in basso","map.target":"obiettivo {w}+ WPM",
   "hi.warm":"Ciao {n}! Iniziamo la giornata con 1 minuto di riscaldamento? ☀️","hi.daily":"La frase di oggi è pronta, {n}. Conta un solo tentativo! 📜",
-  "hi.goal":"Obiettivo raggiunto, {n}! 🌙 A domani. I giochi restano aperti, i nuovi capitoli aspettano domani.","dw.h":"Ciao {n}!","dw.warm":"Pronto per il riscaldamento? Un minuto di parole facili scioglie le dita. Poi si aprono tutti i giochi.","dw.ch1":"Pronto per il capitolo 1? Metti le dita su F e J, e via.","dw.go":"Riscaldamento","dw.goCh1":"Inizia il capitolo 1","dw.skip":"Salta","soft.cont":"🌙 Apre domani","soft.toast":"I nuovi capitoli si aprono domani. Rigioca un capitolo o fai un gioco!","soft.xp":"XP · 25%","set.goalGo":"Raggiungi l'obiettivo di oggi","set.goalToast":"L'obiettivo di oggi è raggiunto. I nuovi capitoli aspettano domani.","hi.frozen":"Bentornato, {n}! Raggiungi l'obiettivo di oggi per salvare la serie. ❄️",
+  "hi.goal":"Obiettivo raggiunto, {n}! 🌙 A domani. I giochi restano aperti, i nuovi capitoli aspettano domani.","dw.h":"Ciao {n}!","dw.warm":"Pronto per il riscaldamento? Un minuto di parole facili scioglie le dita. Poi si aprono tutti i giochi.","dw.ch1":"Pronto per il capitolo 1? Metti le dita su F e J, e via.","dw.go":"Riscaldamento","dw.goCh1":"Inizia il capitolo 1","dw.skip":"Salta","soft.cont":"🌙 Apre domani","soft.toast":"I nuovi capitoli si aprono domani. Rigioca un capitolo o fai un gioco!","soft.xp":"XP · 25%","hi.quiet":"È tardi, {n}! 🌙 Ore tranquille fino alle 5:00: niente XP, niente stelle. Ora di dormire?","qh.say":"È tardi{name}. 🌙 Il sonno rende le dita più veloci. Ora niente XP né stelle. A domani!","qh.xp":"XP · 🌙 tranquillo","qh.toast":"Ore tranquille (23:00-5:00): niente XP, stelle o tempo per l'obiettivo. Dormi bene! 🌙","qh.lock":"Ore tranquille: i nuovi capitoli si riaprono dopo le 5:00. 🌙","qh.cont":"🌙 Apre dopo le 5:00","set.quiet":"Ore tranquille","set.quietTxt":"Dalle 23:00 alle 5:00 niente XP, niente stelle, niente badge e niente tempo per l'obiettivo. Un nuovo giorno inizia alle 5:00. Attivo = prova ora le ore tranquille.","set.quietAuto":"Auto","set.quietOn":"Attivo (test)","set.goalGo":"Raggiungi l'obiettivo di oggi","set.goalToast":"L'obiettivo di oggi è raggiunto. I nuovi capitoli aspettano domani.","hi.frozen":"Bentornato, {n}! Raggiungi l'obiettivo di oggi per salvare la serie. ❄️",
   "hi.broken":"Bentornato, {n}! Oggi iniziamo una nuova serie. 🔥",
   "sk.risk":"a rischio","sk.wd":["D","L","M","M","G","V","S"],"sk.tip":{goal:"Obiettivo raggiunto",saved:"Congelato, poi salvato",frozen:"Congelato",miss:"Mancato",today:"Oggi"},
   "sk.ready":"❄ Congelamento pronto","sk.back":"❄ Congelamento di nuovo tra {d}",
@@ -1665,7 +1668,10 @@ const keyOk = (exp, k) => k===exp || (k.length===1 && k===fold(exp));
    ========================================================================= */
 const rnd = a => a[Math.floor(Math.random()*a.length)];
 function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
-const todayStr = (d=new Date()) => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+/* A Typoo day starts at DAY_START (5:00), at the end of quiet hours: late play counts for the day before.
+   Tests set window.TYPOO_DAY_START = 0 and window.TYPOO_HOUR to fix the clock. */
+const DAY_START = window.TYPOO_DAY_START ?? 5, QUIET_FROM = 23, QUIET_TO = 5;
+const todayStr = (d=new Date(Date.now()-DAY_START*36e5)) => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const fmtTime = s => Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");
 const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const wordList = () => { const w = WORDS[state.lang]||WORDS.en; return [...new Set(w.split(/\s+/).filter(Boolean))]; };
@@ -1926,7 +1932,7 @@ function show(id){ $$(".screen").forEach(s=>s.classList.toggle("on", s.id===id))
    ========================================================================= */
 let S=null, liveTimer=null;
 function startSession(opts){
-  runSoft=goalDone();
+  runStart();
   $("#layoutWarn").classList.remove("on");
   const again=nextAgain; nextAgain=null;
   S = Object.assign({again, pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
@@ -2053,6 +2059,7 @@ function endSessionEarly(){
 const GOAL_SECS=600;
 let goalPending=false;
 function addToday(secs){
+  if(runQuiet) return false;                           // quiet hours: the time does not count
   const t=todayStr(); if(state.today.date!==t) state.today={date:t,secs:0};
   const before=state.today.secs; state.today.secs+=secs;
   if(before<GOAL_SECS && state.today.secs>=GOAL_SECS && !state.today.goal){ state.today.goal=1; goalPending=true; addStreakDay(t); return true; }
@@ -2066,10 +2073,14 @@ function addToday(secs){
    ========================================================================= */
 const SOFT_XP=0.25;
 const goalDone=()=>state.today.date===todayStr() && state.today.secs>=GOAL_SECS;
-let runSoft=false;                                     // the run started after today's goal (the run that reaches the goal gets full XP)
-function earnXp(x){ const v=runSoft ? Math.round(x*SOFT_XP) : x; state.xp+=v; return v; }
+let runSoft=false, runQuiet=false;
+/* Quiet hours 23:00 to 5:00: no XP, stars, badges or goal time. Keebo says it after each run. The app stays open. */
+const nowHour = () => window.TYPOO_HOUR ?? new Date().getHours();
+const isQuiet = () => (IS_DEV && state.quietTest===1) || nowHour()>=QUIET_FROM || nowHour()<QUIET_TO;
+function runStart(){ runSoft=goalDone(); runQuiet=isQuiet(); }                                     // the run started after today's goal (the run that reaches the goal gets full XP)
+function earnXp(x){ const v=runQuiet ? 0 : runSoft ? Math.round(x*SOFT_XP) : x; state.xp+=v; return v; }
 /* A new chapter (never played) waits until tomorrow when today's goal is reached. */
-const softLocked = i => goalDone() && !lessonRec(i);
+const softLocked = i => (goalDone() || isQuiet()) && !lessonRec(i);
 /* The day is open: the player skipped the welcome, did the warm-up or played today. */
 function dayOpened(){ const t=todayStr(); return state.dayOpen===t || state.warmup?.last===t || (state.today.date===t && state.today.secs>0); }
 function maybeWelcome(){
@@ -2167,7 +2178,7 @@ function lessonIntro(L){
 }
 function startLesson(i){
   const L=lessonsFlat()[i]; if(!L || !isUnlocked(i)) return;
-  if(softLocked(i)){ if(screen!=="home") goHome(); toast("🌙",t("soft.toast")); return; }
+  if(softLocked(i)){ if(screen!=="home") goHome(); toast("🌙",t(isQuiet() ? "qh.lock" : "soft.toast")); return; }
   nextAgain=()=>startLesson(i);
   lastLesson=i;
   startSession({mode:"lesson", title:`${i+1}. ${L.title}`, text:genForLesson(L), onFinish:res=>lessonDone(L,res)});
@@ -2177,6 +2188,7 @@ function lessonDone(L,res){
   const stars=starsFor(res.wpm,res.acc,L.target);
   const recs=state.lessons[state.layout]||(state.lessons[state.layout]={});
   const prev=recs[L.idx]||{stars:0,wpm:0,acc:0};
+  if(runQuiet) return quietResult(L.title, res, ()=>startLesson(L.idx));
   let gained = Math.round(S.text.length*Math.pow(res.acc/100,2)/3) + Math.max(0,stars-prev.stars)*15 + stars*3;
   recs[L.idx]={stars:Math.max(prev.stars,stars), wpm:Math.max(prev.wpm,Math.round(res.wpm)), acc:Math.max(prev.acc,Math.round(res.acc))};
   gained=earnXp(gained);
@@ -2190,6 +2202,10 @@ function lessonDone(L,res){
     next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:t("les.next")});
   if(stars>=1) chime();
   if(L.keys==="*words" && L.stage===0 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈",t("les.blindTip")),1500);
+}
+/* Quiet hours: a chapter or Booster run keeps no stars and no record. */
+function quietResult(title, res, retry){
+  showResult({title, res, xp:0, mood:"think", msg:"", retry, next:null});
 }
 /* Result lock. A player who is still typing must not start the next run by accident.
    Keys do nothing for RESULT_KEY_LOCK ms, clicks for RESULT_CLICK_LOCK ms. The main button fills up meanwhile. */
@@ -2205,12 +2221,12 @@ function showResult(o){
   $("#rWpm").textContent=Math.round(o.res.wpm);
   $("#rAcc").textContent=Math.round(o.res.acc)+"%";
   $("#rTime").textContent=o.res.secs<60?Math.round(o.res.secs)+"s":fmtTime(o.res.secs);
-  $("#rXp").textContent="+"+o.xp; $("#rXpL").textContent=runSoft ? t("soft.xp") : "XP";
+  $("#rXp").textContent="+"+o.xp; $("#rXpL").textContent=runQuiet ? t("qh.xp") : runSoft ? t("soft.xp") : "XP";
   showLevel(o.xp, o.stars, o.party!==false);
   $("#rNeed").textContent=o.need||"";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd>${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
-  say("#result", o.msg, o.mood);
+  say("#result", runQuiet ? t("qh.say",{name: state.name ? ", "+esc(state.name) : ""}) : o.msg, runQuiet ? "think" : o.mood);
   $("#rNext").style.display = o.next ? "" : "none";
   $("#rNext").textContent = o.nextLabel||t("r.next");
   resultActions = o;
@@ -2356,6 +2372,7 @@ function startBoost(i){
   say("#type", t("b.say",{s:"★".repeat(s+1),g:boostGoal(L)})+keys, "think");
 }
 function boostDone(L,res){
+  if(runQuiet) return quietResult(`⚡ ${t("m.boost")} · ${L.title}`, res, ()=>startBoost(L.idx));
   const recs=state.lessons[state.layout]||(state.lessons[state.layout]={});
   const prev=recs[L.idx]||{stars:0,wpm:0,acc:0};
   const up = starsFor(res.wpm,res.acc,L.target) > prev.stars;
@@ -2990,7 +3007,7 @@ function cloudSpawnX(sky, ew, W){
   return Math.max(4, Math.min(W-ew-4, hi>lo ? lo+Math.random()*(hi-lo) : (c.l+c.r-ew)/2));
 }
 function startRain(level){
-  runSoft=goalDone();
+  runStart();
   level=level||levelOf("rain");
   show("meteor"); $("#layoutWarn").classList.remove("on");
   const sky=$("#sky"); $$("#sky .met,#sky .star,#sky .cloud").forEach(e=>e.remove());
@@ -3067,7 +3084,7 @@ function rainOver(){
   save(); checkBadges();
   $("#rainTitle").textContent= best ? t("rec.new") : t("rain.over");
   $("#rainTxt").innerHTML=t("rain.txt",{s:M.score,k:M.kills,x:xp});
-  $("#rainOver").classList.add("on");
+  $("#rainOver").classList.add("on"); if(runQuiet) toast("🌙",t("qh.toast"),4000);
   const lv=levelInfo(state.xp), lb=levelInfo(state.xp-xp);
   if(lv.lvl>lb.lvl){ $("#rainTxt").innerHTML+=`<br><b>🎉 ${t("lvl.up")} ${t("level")} ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
   if(goal){ $("#rainTxt").innerHTML+=`<br><b class="goalok">${t("rain.goal")}</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
@@ -3138,7 +3155,7 @@ function lingoMark(guess, word){
 }
 function startLingo(){
   const pool=lingoPool(); if(pool.length<LINGO_MIN) return;
-  runSoft=goalDone();
+  runStart();
   show("lingo"); $("#layoutWarn").classList.remove("on");
   LG={pool, bag:[], lives:LINGO_LIVES, words:0, score:0, t0:performance.now(), running:true};
   $("#lgBest").textContent=lingoBest();
@@ -3220,7 +3237,7 @@ function lingoOver(){
   save(); checkBadges();
   $("#lingoTitle").textContent= rec ? t("rec.new") : t("rain.over");
   $("#lingoTxt").innerHTML=tn("lg.txt",LG.words,{x:xp})+"<br>"+tn("lg.best",s.best,{b:s.best});
-  $("#lingoOver").classList.add("on");
+  $("#lingoOver").classList.add("on"); if(runQuiet) toast("🌙",t("qh.toast"),4000);
   const lv=levelInfo(state.xp), lb=levelInfo(state.xp-xp);
   if(lv.lvl>lb.lvl){ $("#lingoTxt").innerHTML+=`<br><b>🎉 ${t("lvl.up")} ${t("level")} ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
   if(goal){ $("#lingoTxt").innerHTML+=`<br><b class="goalok">${t("rain.goal")}</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
@@ -3273,6 +3290,7 @@ function ladderWins(){ return ["ladder","marathon"].reduce((a,k)=>{ const L=stat
 function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si && l.keys!=="*review"); return [L.filter(l=>(lessonRec(l.idx)?.stars||0)>=1).length, L.length, "chapters"]; }
 function streakNow(){ return streakInfo().count; }
 function checkBadges(){
+  if(runQuiet) return;                                 // quiet hours: no badges (they come with the next run by day)
   const fresh=BADGES.filter(b=>!state.badges[b.id] && b.t());
   fresh.forEach((b,i)=>{ state.badges[b.id]=todayStr(); setTimeout(()=>toast(b.i,`${t("bc.unlocked")} <b>${esc(bName(b))}</b><small>${esc(bDesc(b))}</small>`,3200), 900+i*3500); });
   if(fresh.length) save();
@@ -3424,7 +3442,7 @@ function renderHome(){
   $("#sBest").textContent=state.bestWpm; $("#sAvg").textContent=avgWpm(); $("#sStars").textContent=totalStars();
   const cur=currentLessonIdx(); const L=lessonsFlat();
   const rest=softLocked(cur);
-  $("#mContText").textContent= rest ? t("soft.cont") : `${cur+1}. ${L[cur].title}`;
+  $("#mContText").textContent= rest ? t(isQuiet() && !goalDone() ? "qh.cont" : "soft.cont") : `${cur+1}. ${L[cur].title}`;
   $("#mContinue").classList.toggle("rest", rest);
   const lmiss=ladderMissing().length, llv=levelOf("ladder"), mlv=levelOf("marathon"), lrec=ladderRecOf("ladder",llv).best;
   $("#mLadder").classList.toggle("locked", lmiss>0);
@@ -3471,7 +3489,7 @@ function renderHome(){
   $("#mDaily").classList.toggle("locked", !!dl);
   $("#mDailyText").textContent = dl || t("m.dailyS");
   const nm={n:esc(state.name)};
-  const hello = secs>=GOAL_SECS ? t("hi.goal",nm) : warmupDue() ? t("hi.warm",nm) : dailyDue() ? t("hi.daily",nm) :
+  const hello = isQuiet() ? t("hi.quiet",nm) : secs>=GOAL_SECS ? t("hi.goal",nm) : warmupDue() ? t("hi.warm",nm) : dailyDue() ? t("hi.daily",nm) :
                 sk.frozen ? t("hi.frozen",nm) : sk.broken ? t("hi.broken",nm) : pick("hello", state.name);
   say("#home", hello, "happy");
   numberTiles();
@@ -3552,6 +3570,7 @@ function openSettings(){
   segInit("#setSlide", state.slide===1?1:0, v=>{ state.slide=+v; save(); });
   segInit("#setFrame", state.frame===0?0:1, v=>{ state.frame=+v; save(); applyFrame(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
+  segInit("#setQuietSeg", state.quietTest===1?1:0, v=>{ state.quietTest=+v; save(); });
   segInit("#setClicks", state.clicks===0?0:1, v=>{ state.clicks=+v; save(); });
   renderChapterCodes();
   $("#setVersion").textContent = "Typoo "+buildVersion()+(IS_DEV && BUILD.sha ? " · "+BUILD.sha : "");
@@ -3616,6 +3635,7 @@ $("#setGoalGo").onclick=()=>{
 $("#setNewDayGo").onclick=()=>{ newDay(); $("#settings").classList.remove("on"); goHome(); toast("🌅",t("set.newDayToast")); };
 function renderChapterCodes(){
   $("#setNewDay").style.display = IS_DEV ? "" : "none";
+  $("#setQuiet").style.display = IS_DEV ? "" : "none";
   $("#setChapters").style.display = IS_DEV ? "" : "none"; if(!IS_DEV) return;
   $("#setChList").innerHTML=["azerty","qwerty"].map(lay=>`<div style="font-weight:800;margin:6px 0 2px">${lay.toUpperCase()}</div>`+
     lessonsFlat(lay).map(l=>`<div class="row" style="gap:8px;margin:2px 0"><span style="font-family:var(--mono)">${chapterCode(lay,l.idx)}</span>
