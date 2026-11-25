@@ -121,10 +121,14 @@ test("chapter tiles in one row line up: titles at the same height, stars at the 
   const rows = await page.evaluate(() => {
     const out = {};
     document.querySelectorAll("#map .lesson").forEach((e) => {
-      const top = Math.round(e.getBoundingClientRect().top), y = (s) => Math.round(e.querySelector(s).getBoundingClientRect().top) - top;
-      (out[top] = out[top] || new Set()).add(y(".t") + "/" + y(".s"));
+      const top = e.getBoundingClientRect().top, y = (s) => e.querySelector(s).getBoundingClientRect().top - top;
+      (out[Math.round(top)] = out[Math.round(top)] || []).push({ i: e.dataset.i, t: y(".t"), s: y(".s") });
     });
-    return Object.values(out).map((s) => s.size);
+    return Object.values(out);
   });
-  rows.forEach((n) => expect(n).toBe(1));
+  for (const row of rows) {
+    const spread = (k) => Math.max(...row.map((x) => x[k])) - Math.min(...row.map((x) => x[k]));
+    expect(spread("t"), JSON.stringify(row)).toBeLessThanOrEqual(1);   // sub-pixel font rounding differs per system
+    expect(spread("s"), JSON.stringify(row)).toBeLessThanOrEqual(1);
+  }
 });
