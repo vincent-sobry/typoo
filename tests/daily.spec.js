@@ -21,17 +21,45 @@ const today = () => {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 };
 
-test("locked for a new player who did not pass chapter 1", async ({ page }) => {
+test("locked until 3 sentences fit the learned keys; the chapter shows in the tile and the toast", async ({ page }) => {
   await openApp(page, player());
   await expect(page.locator("#mDaily")).toHaveClass(/locked/);
-  await expect(page.locator("#mDailyText")).toContainText("chapter 1");
+  await expect(page.locator("#mDailyText")).toHaveText("Locked: pass chapter 13 first");
   await page.click("#mDaily");
   await expect(page.locator("#home")).toBeVisible();
-  await expect(page.locator("#toast")).toContainText("after chapter 1");
+  await expect(page.locator("#toast")).toContainText("after chapter 13");
+});
+
+test("still locked after chapter 12, open after chapter 13 (QWERTY, EN)", async ({ page }) => {
+  await openApp(page, withChapters(12));
+  await expect(page.locator("#mDaily")).toHaveClass(/locked/);
+  expect(await page.evaluate(() => genDaily())).toBe("");
+  await page.evaluate(() => { state.lessons.qwerty[12] = { stars: 1 }; goHome(); });
+  await expect(page.locator("#mDaily")).not.toHaveClass(/locked/);
+});
+
+test("the unlock chapter differs per language and keyboard", async ({ page }) => {
+  await openApp(page, player());
+  const r = await page.evaluate(() => {
+    const out = {};
+    for (const layout of ["qwerty", "azerty"]) {
+      state.layout = layout;
+      for (const lang of ["en", "nl", "fr", "it"]) out[layout + "/" + lang] = dailyOpensAfter(lang);
+    }
+    return out;
+  });
+  expect(r).toEqual({ "qwerty/en": 13, "qwerty/nl": 14, "qwerty/fr": 14, "qwerty/it": 14,
+                      "azerty/en": 14, "azerty/nl": 14, "azerty/fr": 13, "azerty/it": 13 });
+});
+
+test("an extra game: the tile is just below Continue, not with the warm-up", async ({ page }) => {
+  await openApp(page, withChapters(14));
+  const ids = await page.$$eval("#home .modes .mode", (b) => b.map((e) => e.id));
+  expect(ids.indexOf("mDaily")).toBe(ids.indexOf("mContinue") + 1);
 });
 
 test("locked when done today: shows the score and 'back tomorrow'", async ({ page }) => {
-  await openApp(page, withChapters(8, { daily: { last: today(), count: 2, best: 30, wpm: 27, acc: 98 } }));
+  await openApp(page, withChapters(14, { daily: { last: today(), count: 2, best: 30, wpm: 27, acc: 98 } }));
   await expect(page.locator("#mDaily")).toHaveClass(/locked/);
   await expect(page.locator("#mDailyText")).toHaveText("Done today ✓ · 27 WPM · back tomorrow");
   await page.click("#mDaily");
@@ -58,9 +86,10 @@ test("text uses only the learned keys, for every stage, in EN, NL, FR and IT", a
       for (let n = 1; n <= 18; n++) {
         state.lessons.qwerty = {};
         for (let i = 0; i < n; i++) state.lessons.qwerty[i] = { stars: 1, wpm: 15, acc: 95 };
-        const allowed = learnedSet(), caps = hasCaps();
+        const allowed = learnedSet(), caps = hasCaps(), open = dailyPool(lang).length >= 3;
         for (let d = 1; d <= 15; d++) {
           const t = genDaily(`2026-01-${String(d).padStart(2, "0")}`, lang);
+          if (!open) { if (t !== "") out.push(`${lang} ${n}: text while locked`); continue; }
           const ok = t.length > 5 && (caps || [...t].every((c) => allowed.has(fold(c))));   // an accent letter is typed with its base key
           if (!ok) out.push(`${lang} ${n}: ${t}`);
         }
@@ -114,7 +143,7 @@ test("a run counts one time: score saved, tile locked; a retry does not change t
 });
 
 test("Escape stops the run; it does not count", async ({ page }) => {
-  await openApp(page, withChapters(3));
+  await openApp(page, withChapters(14));
   await page.click("#mDaily");
   await page.keyboard.press("Escape");
   await expect(page.locator("#home")).toBeVisible();
@@ -124,7 +153,7 @@ test("Escape stops the run; it does not count", async ({ page }) => {
 
 test("test tool 'new day' opens the daily sentence again", async ({ page }) => {
   const d = today();
-  await openApp(page, withChapters(3, { daily: { last: d, count: 1, best: 10, wpm: 10, acc: 95 } }));
+  await openApp(page, withChapters(14, { daily: { last: d, count: 1, best: 10, wpm: 10, acc: 95 } }));
   await expect(page.locator("#mDaily")).toHaveClass(/locked/);
   const r = await page.evaluate(() => { newDay(); goHome(); return { last: state.daily.last, y: dayBefore(todayStr()), open: !$("#mDaily").classList.contains("locked") }; });
   expect(r.last).toBe(r.y);

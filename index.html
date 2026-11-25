@@ -523,8 +523,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
           </div>
           <div class="modes">
             <button class="mode warm" id="mWarm"><span class="ic">☀️</span><span><b data-t="m.warm">Daily warm-up</b><small id="mWarmText">1 minute · easy words · no score</small></span></button>
-            <button class="mode daily" id="mDaily"><span class="ic">📜</span><span><b data-t="m.daily">Daily sentence</b><small id="mDailyText">One new sentence each day</small></span></button>
             <button class="mode" id="mContinue"><span class="ic">▶️</span><span><b data-t="m.cont">Continue</b><small id="mContText">Next chapter</small></span></button>
+            <button class="mode daily" id="mDaily"><span class="ic">📜</span><span><b data-t="m.daily">Daily sentence</b><small id="mDailyText">One new sentence each day</small></span></button>
             <button class="mode" id="mRace"><span class="ic">🏁</span><span><b data-t="m.race">Race Keebo</b><small data-t="m.raceS">Beat the bot in a typing race</small></span></button>
             <button class="mode" id="mRain"><span class="ic">☄️</span><span><b data-t="m.rain">Word Rain</b><small data-t="m.rainS">Stop the meteors before they land</small></span></button>
             <button class="mode" id="mLadder"><span class="ic">🪜</span><span><b data-t="m.ladder">Longest Word</b><small id="mLadderText">Climb the word ladder against Keebo</small></span></button>
@@ -995,7 +995,7 @@ I18N.en = {
   "ds.flawless":"Flawless sentence! 💎 Come back tomorrow for a new one.","ds.record":"New daily record: {w} WPM! 🏆 A new sentence waits tomorrow.",
   "ds.done":"Today's sentence is done. A new one waits tomorrow!","ds.title":"Daily sentence done 📜","ds.best":"Your record: {w} WPM.",
   "ds.pSay":"Practice run. It does not change today's score.","ds.say":"One sentence, one try that counts. Calm and precise!",
-  "ds.opens":"The daily sentence opens after chapter 1.","ds.toast":"Today's sentence is done. A new one comes tomorrow!",
+  "ds.opens":"The daily sentence opens after chapter {c}: then you know enough letters for real sentences.","ds.lock":"Locked: pass chapter {c} first","ds.toast":"Today's sentence is done. A new one comes tomorrow!",
   /* race */
   "race.h":"🏁 Race Keebo","race.txt":"Pick Keebo's speed. Win to earn bonus XP. Keebo uses only the keys you have learned.","race.lvA":"Level for Match me",
   "speeds":["Chill","Steady","Fast","Turbo","Insane"],"race.match":"Match me","race.title":"Race vs Keebo ({l}, {w} WPM)",
@@ -1110,7 +1110,7 @@ I18N.nl = {
   "ds.flawless":"Foutloze zin! 💎 Kom morgen terug voor een nieuwe.","ds.record":"Nieuw dagrecord: {w} WPM! 🏆 Morgen wacht een nieuwe zin.",
   "ds.done":"De zin van vandaag is klaar. Morgen wacht een nieuwe!","ds.title":"Zin van de dag klaar 📜","ds.best":"Je record: {w} WPM.",
   "ds.pSay":"Oefenrun. Je score van vandaag verandert niet.","ds.say":"Eén zin, één poging die telt. Rustig en precies!",
-  "ds.opens":"De zin van de dag gaat open na hoofdstuk 1.","ds.toast":"De zin van vandaag is klaar. Morgen komt er een nieuwe!",
+  "ds.opens":"De zin van de dag gaat open na hoofdstuk {c}: dan ken je genoeg letters voor echte zinnen.","ds.lock":"Op slot: haal eerst hoofdstuk {c}","ds.toast":"De zin van vandaag is klaar. Morgen komt er een nieuwe!",
   "race.h":"🏁 Race tegen Keebo","race.txt":"Kies de snelheid van Keebo. Win voor bonus-XP. Keebo gebruikt alleen de toetsen die jij al kent.","race.lvA":"Level voor Zoals ik",
   "speeds":["Relax","Rustig","Snel","Turbo","Waanzinnig"],"race.match":"Zoals ik","race.title":"Race tegen Keebo ({l}, {w} WPM)",
   "race.botFirst":"Biep! Ik ben eerst klaar. Maak je race toch af!","race.won":"Je hebt Keebo verslagen! 🏆","race.lost":"Keebo wint deze keer 🤖",
@@ -1251,7 +1251,7 @@ I18N.fr = {
   "ds.flawless":"Phrase sans faute ! 💎 Reviens demain pour une nouvelle.","ds.record":"Nouveau record du jour : {w} WPM ! 🏆 Une nouvelle phrase t'attend demain.",
   "ds.done":"La phrase du jour est faite. Une nouvelle t'attend demain !","ds.title":"Phrase du jour terminée 📜","ds.best":"Ton record : {w} WPM.",
   "ds.pSay":"Partie d'entraînement. Elle ne change pas le score du jour.","ds.say":"Une phrase, un seul essai qui compte. Calme et précis !",
-  "ds.opens":"La phrase du jour s'ouvre après le chapitre 1.","ds.toast":"La phrase du jour est faite. Une nouvelle arrive demain !",
+  "ds.opens":"La phrase du jour s'ouvre après le chapitre {c} : tu connaîtras alors assez de lettres pour de vraies phrases.","ds.lock":"Verrouillé : réussis d'abord le chapitre {c}","ds.toast":"La phrase du jour est faite. Une nouvelle arrive demain !",
   "race.h":"🏁 Course contre Keebo","race.txt":"Choisis la vitesse de Keebo. Gagne pour des XP bonus. Keebo utilise seulement les touches que tu as apprises.","race.lvA":"Niveau pour Comme moi",
   "speeds":["Tranquille","Régulier","Rapide","Turbo","Dingue"],"race.match":"Comme moi","race.title":"Course contre Keebo ({l}, {w} WPM)",
   "race.botFirst":"Bip ! J'ai fini le premier. Termine quand même ta course !","race.won":"Tu as battu Keebo ! 🏆","race.lost":"Keebo gagne cette fois 🤖",
@@ -1392,7 +1392,7 @@ I18N.it = {
   "ds.flawless":"Frase senza errori! 💎 Torna domani per una nuova.","ds.record":"Nuovo record del giorno: {w} WPM! 🏆 Domani ti aspetta una frase nuova.",
   "ds.done":"La frase di oggi è fatta. Domani ne arriva una nuova!","ds.title":"Frase del giorno fatta 📜","ds.best":"Il tuo record: {w} WPM.",
   "ds.pSay":"Partita di prova. Non cambia il punteggio di oggi.","ds.say":"Una frase, un solo tentativo che conta. Calma e precisione!",
-  "ds.opens":"La frase del giorno si apre dopo il capitolo 1.","ds.toast":"La frase di oggi è fatta. Domani ne arriva una nuova!",
+  "ds.opens":"La frase del giorno si apre dopo il capitolo {c}: allora conosci abbastanza lettere per frasi vere.","ds.lock":"Bloccato: supera prima il capitolo {c}","ds.toast":"La frase di oggi è fatta. Domani ne arriva una nuova!",
   "race.h":"🏁 Gara con Keebo","race.txt":"Scegli la velocità di Keebo. Vinci per avere XP bonus. Keebo usa solo i tasti che hai imparato.","race.lvA":"Livello per Come me",
   "speeds":["Tranquillo","Costante","Veloce","Turbo","Pazzesco"],"race.match":"Come me","race.title":"Gara con Keebo ({l}, {w} WPM)",
   "race.botFirst":"Bip! Ho finito prima io. Finisci comunque la tua gara!","race.won":"Hai battuto Keebo! 🏆","race.lost":"Questa volta vince Keebo 🤖",
@@ -2381,30 +2381,34 @@ it: [
 "piano piano si vince la gara","il fornaio vende pane caldo la mattina","la mia pianta cresce un poco ogni giorno",
 "salutiamo la barca nel porto"
 ]};
-const DAILY_WORDS = 7;                                 // words in the sentence when no sentence fits the learned keys
 /* A number from a text. The same day gives the same number, so the sentence is the same all day. */
 function hashStr(t){ let h=2166136261; for(const c of t){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; }
-function seededRnd(seed){ let a=seed||1; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 /* Make a sentence fit the keys: no capitals before the Capitals chapter, no punctuation that is not learned. "" = it does not fit. */
 function dailyFit(t, allowed, caps){
   if(caps) return t[0].toUpperCase()+t.slice(1)+".";          // after the Capitals chapter: a full sentence
   if(![...t].every(c=>allowed.has(fold(c)) || !/[a-z]/.test(fold(c)))) return "";
   return [...t].filter(c=>allowed.has(fold(c))).join("").replace(/ +/g," ").trim();
 }
-/* Today's sentence for the keys the player knows. */
+/* Sentences of the language list that fit the keys up to lesson idx. */
+function dailyPool(lang=state.lang, idx=currentLessonIdx()){
+  const L=lessonsFlat(), s=L.findIndex(l=>l.keys==="*shift"), allowed=allowedUpTo(idx), caps=s>=0 && s<idx;
+  return (DAILY_SENTENCES[lang]||DAILY_SENTENCES.en).map(t=>dailyFit(t,allowed,caps)).filter(Boolean);
+}
+const DAILY_MIN = 3;                                   // sentences that must fit before the game opens; with fewer, the same sentence comes back too often
+/* Chapter number after which the daily sentence opens. It differs per language and keyboard. */
+function dailyOpensAfter(lang=state.lang){
+  const n=lessonsFlat().length;
+  for(let i=0;i<n;i++) if(dailyPool(lang,i).length>=DAILY_MIN) return i;   // lesson i is open when chapter i (number) is passed
+  return n;
+}
+/* Today's sentence for the keys the player knows. "" = not enough sentences fit yet. */
 function genDaily(day=todayStr(), lang=state.lang){
-  const allowed=learnedSet(), caps=hasCaps(), seed=hashStr(day+"|"+lang);
-  const fit=(DAILY_SENTENCES[lang]||DAILY_SENTENCES.en).map(t=>dailyFit(t,allowed,caps)).filter(Boolean);
-  if(fit.length>=3) return fit[seed%fit.length];          // with fewer, the same sentence would come back each day
-  // Early chapters: a short line of real words with only the learned keys.
-  const r=seededRnd(seed), words=wordList().filter(w=>w.length>=2 && fits(w,allowed)).sort();
-  if(words.length<3) return genWords(allowed, DAILY_WORDS);
-  const out=[]; for(let i=0;i<DAILY_WORDS;i++) out.push(words[Math.floor(r()*words.length)]);
-  return out.join(" ");
+  const fit=dailyPool(lang);
+  return fit.length>=DAILY_MIN ? fit[hashStr(day+"|"+lang)%fit.length] : "";
 }
 /* Why the daily sentence is locked: "" = open. */
 function dailyLock(){
-  if(currentLessonIdx()===0) return t("lock.ch1");
+  if(dailyPool().length<DAILY_MIN) return t("ds.lock",{c:dailyOpensAfter()});
   const d=state.daily||{};
   if(d.last===todayStr()) return t("ds.doneToday",{w:d.wpm||0});
   return "";
@@ -3148,7 +3152,7 @@ $("#mContinue").onclick=()=>startLesson(currentLessonIdx());
 $("#mWarm").onclick=()=>{ const wl=warmupLock(); if(!wl) return startWarmup();
   toast("☀️", currentLessonIdx()===0 ? t("wu.opens") : t("wu.toast")); };
 $("#mDaily").onclick=()=>{ const dl=dailyLock(); if(!dl) return startDaily();
-  toast("📜", currentLessonIdx()===0 ? t("ds.opens") : t("ds.toast")); };
+  toast("📜", dailyPool().length<DAILY_MIN ? t("ds.opens",{c:dailyOpensAfter()}) : t("ds.toast")); };
 $("#mRace").onclick=openRaceLobby;
 $("#mRain").onclick=()=>openLevelLobby("rain");
 $("#mSmart").onclick=startSmart;
