@@ -130,6 +130,7 @@ h1,h2,h3{margin:0}
 .lesson .t{font-weight:800;margin:3px 0 6px}
 .lesson .s{font-size:18px;letter-spacing:2px;color:#4a5288}
 .lesson .s .on{color:#ffd43b;text-shadow:0 0 8px #ffd43b88}
+.lesson.review{border-style:dashed}
 .lesson.locked{opacity:.4;cursor:not-allowed}
 .lesson.locked::after{content:"🔒";position:absolute;right:10px;top:10px}
 .lesson.current{border-color:var(--accent);box-shadow:0 0 0 2px #7c5cff55,0 0 24px #7c5cff44}
@@ -845,7 +846,7 @@ const FINGER_COLORS = ["#ff6b8b","#ffa94d","#ffd43b","#3ee089","#3ee089","#ffd43
 /* =========================================================================
    DATA: curriculum. A lesson is [newKeys or *type, title, optional target WPM]
    ========================================================================= */
-const CURRICULUM = {
+let CURRICULUM = {
   qwerty: [
     {stage:"Home Row", target:10, tip:"Fingers rest on A S D F and J K L ;", lessons:[["fj","F and J"],["dk","D and K"],["sl","S and L"],["a;","A and ;"],["gh","G and H"],["*words","Home row words"]]},
     {stage:"Top Row", target:14, tip:"Reach up, then come back home.", lessons:[["ei","E and I"],["ru","R and U"],["ty","T and Y"],["wo","W and O"],["qp","Q and P"],["*words","Top row words"]]},
@@ -863,6 +864,26 @@ const CURRICULUM = {
     {stage:"Speed Lab", target:25, tip:"Relax. Find a steady rhythm.", lessons:[["*speed","Top words sprint",25],["*sentences","Flow",28],["*boss","Boss level",30]]}
   ]
 };
+/* Review chapters: after each new-letter chapter, from the 2nd one, a review of all keys learned
+   up to then. No review before a "*words" chapter, because that chapter is already a review.
+   BASE_CURRICULUM keeps the old list, to move saved progress to the new chapter numbers. */
+const BASE_CURRICULUM = CURRICULUM;
+const isLetterChapter = k => k[0]!=="*" && ![...k].every(isDigitCh);
+function isDigitCh(c){ return c>="0" && c<="9"; }
+function withReviews(stages){
+  let n=0;
+  return stages.map(st=>{ const out=[];
+    st.lessons.forEach((l,i)=>{ out.push(l);
+      if(!isLetterChapter(l[0])) return;
+      n++; const nx=st.lessons[i+1];
+      if(n>=2 && !(nx && nx[0]==="*words")) out.push(["*review","Review"]);
+    });
+    return Object.assign({}, st, {lessons:out});
+  });
+}
+CURRICULUM = {qwerty:withReviews(BASE_CURRICULUM.qwerty), azerty:withReviews(BASE_CURRICULUM.azerty)};
+/* Chapter length factor for letter chapters (drills, words, capitals, reviews). */
+const CH_LEN = 1.5;
 
 /* =========================================================================
    DATA: words and sentences
@@ -1005,7 +1026,7 @@ I18N.en = {
   "t.ladderA":"Word ladder","t.lightsA":"Start lights",
   "intro.first":"Put your index fingers on the bumps of <b>F</b> and <b>J</b>. The other fingers rest next to them. Thumbs on space. {keys}.",
   "intro.new":"New keys: {keys}. Reach, press, and go back home.",
-  "intro*words":"Real words with the keys you know. Do not look down!","intro*shift":"Capitals! Hold Shift with the pinky of the OTHER hand, then press the letter.",
+  "intro*words":"Real words with the keys you know. Do not look down!","intro*review":"Review! All the keys you know, mixed. Keep your eyes on the screen.","intro*shift":"Capitals! Hold Shift with the pinky of the OTHER hand, then press the letter.",
   "intro*sentences":"Full sentences. Keep a calm, steady rhythm.","intro*numbers":"Numbers and words. Reach up, then come back to the home row.",
   "intro*speed":"Speed sprint! The most common words. Stay relaxed.","intro*boss":"BOSS LEVEL. A long text. Accuracy first, then speed. Good luck!",
   /* result */
@@ -1132,7 +1153,7 @@ I18N.nl = {
   "t.ladderA":"Woordladder","t.lightsA":"Startlichten",
   "intro.first":"Leg je wijsvingers op de bultjes van <b>F</b> en <b>J</b>. De andere vingers liggen ernaast. Duimen op de spatie. {keys}.",
   "intro.new":"Nieuwe toetsen: {keys}. Strek, druk en ga terug naar huis.",
-  "intro*words":"Echte woorden met de toetsen die je kent. Niet naar beneden kijken!","intro*shift":"Hoofdletters! Hou Shift in met de pink van de ANDERE hand en druk dan de letter.",
+  "intro*words":"Echte woorden met de toetsen die je kent. Niet naar beneden kijken!","intro*review":"Herhaling! Alle toetsen die je kent, door elkaar. Hou je ogen op het scherm.","intro*shift":"Hoofdletters! Hou Shift in met de pink van de ANDERE hand en druk dan de letter.",
   "intro*sentences":"Volledige zinnen. Hou een rustig, vast ritme.","intro*numbers":"Cijfers en woorden. Strek naar boven en kom terug naar de thuisrij.",
   "intro*speed":"Snelheidssprint! De meest gebruikte woorden. Blijf ontspannen.","intro*boss":"EINDBAAS. Een lange tekst. Eerst juist, dan snel. Succes!",
   "r.acc":"Nauwkeurigheid","r.time":"Tijd","r.retry":"↻ Opnieuw","r.next":"Volgende →","r.enter":"Druk op <b>Enter</b> voor de hoofdknop",
@@ -1241,7 +1262,7 @@ I18N.nl = {
     "Reach up, then come back home.":"Strek naar boven en kom terug naar huis.","Reach down, then come back home.":"Strek naar beneden en kom terug naar huis.",
     "Shift with the pinky of the OTHER hand.":"Shift met de pink van de ANDERE hand.","Reach up two rows and come back.":"Strek twee rijen omhoog en kom terug.",
     "On AZERTY, numbers need Shift!":"Op AZERTY heb je Shift nodig voor cijfers!","Relax. Find a steady rhythm.":"Ontspan. Zoek een vast ritme.",
-    "Home row words":"Woorden op de thuisrij","Home row review":"Herhaling thuisrij","Top row words":"Woorden op de bovenste rij","All letters":"Alle letters",
+    "Home row words":"Woorden op de thuisrij","Home row review":"Herhaling thuisrij","Review":"Herhaling","Top row words":"Woorden op de bovenste rij","All letters":"Alle letters",
     "Capitals":"Hoofdletters","First sentences":"Eerste zinnen","More sentences":"Meer zinnen","Numbers 1 to 5":"Cijfers 1 tot 5","Numbers 6 to 0":"Cijfers 6 tot 0",
     "Numbers and words":"Cijfers en woorden","Top words sprint":"Sprint met topwoorden","Flow":"Flow","Boss level":"Eindbaas"}
 };
@@ -1279,7 +1300,7 @@ I18N.fr = {
   "t.ladderA":"Échelle de mots","t.lightsA":"Feux de départ",
   "intro.first":"Pose tes index sur les petites bosses de <b>F</b> et <b>J</b>. Les autres doigts se posent à côté. Les pouces sur l'espace. {keys}.",
   "intro.new":"Nouvelles touches : {keys}. Tends le doigt, appuie et reviens à la maison.",
-  "intro*words":"De vrais mots avec les touches que tu connais. Ne regarde pas en bas !","intro*shift":"Majuscules ! Tiens Maj avec l'auriculaire de l'AUTRE main, puis appuie sur la lettre.",
+  "intro*words":"De vrais mots avec les touches que tu connais. Ne regarde pas en bas !","intro*review":"Révision ! Toutes les touches que tu connais, mélangées. Garde les yeux sur l'écran.","intro*shift":"Majuscules ! Tiens Maj avec l'auriculaire de l'AUTRE main, puis appuie sur la lettre.",
   "intro*sentences":"Des phrases entières. Garde un rythme calme et régulier.","intro*numbers":"Chiffres et mots. Monte, puis reviens sur la rangée de base.",
   "intro*speed":"Sprint de vitesse ! Les mots les plus courants. Reste détendu.","intro*boss":"NIVEAU BOSS. Un long texte. D'abord juste, puis rapide. Bonne chance !",
   "r.acc":"Précision","r.time":"Temps","r.retry":"↻ Recommencer","r.next":"Suivant →","r.enter":"Appuie sur <b>Entrée</b> pour le bouton principal",
@@ -1388,7 +1409,7 @@ I18N.fr = {
     "Reach up, then come back home.":"Monte, puis reviens à la maison.","Reach down, then come back home.":"Descends, puis reviens à la maison.",
     "Shift with the pinky of the OTHER hand.":"Maj avec l'auriculaire de l'AUTRE main.","Reach up two rows and come back.":"Monte de deux rangées et reviens.",
     "On AZERTY, numbers need Shift!":"Sur AZERTY, les chiffres demandent Maj !","Relax. Find a steady rhythm.":"Détends-toi. Trouve un rythme régulier.",
-    "Home row words":"Mots de la rangée de base","Home row review":"Révision de la rangée de base","Top row words":"Mots de la rangée du haut","All letters":"Toutes les lettres",
+    "Home row words":"Mots de la rangée de base","Home row review":"Révision de la rangée de base","Review":"Révision","Top row words":"Mots de la rangée du haut","All letters":"Toutes les lettres",
     "Capitals":"Majuscules","First sentences":"Premières phrases","More sentences":"Encore des phrases","Numbers 1 to 5":"Chiffres 1 à 5","Numbers 6 to 0":"Chiffres 6 à 0",
     "Numbers and words":"Chiffres et mots","Top words sprint":"Sprint des mots courants","Flow":"Flow","Boss level":"Niveau boss"}
 };
@@ -1426,7 +1447,7 @@ I18N.it = {
   "t.ladderA":"Scala di parole","t.lightsA":"Semaforo di partenza",
   "intro.first":"Metti gli indici sui rilievi di <b>F</b> e <b>J</b>. Le altre dita stanno accanto. Pollici sullo spazio. {keys}.",
   "intro.new":"Nuovi tasti: {keys}. Allunga il dito, premi e torna a casa.",
-  "intro*words":"Parole vere con i tasti che conosci. Non guardare in basso!","intro*shift":"Maiuscole! Tieni Maiusc con il mignolo dell'ALTRA mano, poi premi la lettera.",
+  "intro*words":"Parole vere con i tasti che conosci. Non guardare in basso!","intro*review":"Ripasso! Tutti i tasti che conosci, mescolati. Tieni gli occhi sullo schermo.","intro*shift":"Maiuscole! Tieni Maiusc con il mignolo dell'ALTRA mano, poi premi la lettera.",
   "intro*sentences":"Frasi intere. Tieni un ritmo calmo e regolare.","intro*numbers":"Numeri e parole. Sali, poi torna sulla fila di base.",
   "intro*speed":"Sprint di velocità! Le parole più comuni. Resta rilassato.","intro*boss":"LIVELLO BOSS. Un testo lungo. Prima la precisione, poi la velocità. In bocca al lupo!",
   "r.acc":"Precisione","r.time":"Tempo","r.retry":"↻ Riprova","r.next":"Avanti →","r.enter":"Premi <b>Invio</b> per il pulsante principale",
@@ -1535,7 +1556,7 @@ I18N.it = {
     "Reach up, then come back home.":"Sali, poi torna a casa.","Reach down, then come back home.":"Scendi, poi torna a casa.",
     "Shift with the pinky of the OTHER hand.":"Maiusc con il mignolo dell'ALTRA mano.","Reach up two rows and come back.":"Sali di due file e torna.",
     "On AZERTY, numbers need Shift!":"Su AZERTY, i numeri vogliono Maiusc!","Relax. Find a steady rhythm.":"Rilassati. Trova un ritmo regolare.",
-    "Home row words":"Parole della fila di base","Home row review":"Ripasso della fila di base","Top row words":"Parole della fila in alto","All letters":"Tutte le lettere",
+    "Home row words":"Parole della fila di base","Home row review":"Ripasso della fila di base","Review":"Ripasso","Top row words":"Parole della fila in alto","All letters":"Tutte le lettere",
     "Capitals":"Maiuscole","First sentences":"Prime frasi","More sentences":"Altre frasi","Numbers 1 to 5":"Numeri da 1 a 5","Numbers 6 to 0":"Numeri da 6 a 0",
     "Numbers and words":"Numeri e parole","Top words sprint":"Sprint delle parole comuni","Flow":"Flow","Boss level":"Livello boss"}
 };
@@ -1580,10 +1601,22 @@ const storage = {
 };
 function freshState(){
   return {name:"", layout:"", lang:"nl", blind:0, sound:1, clicks:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
-    streak:{count:0,last:""}, days:[], today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, lingo:{best:0,played:0,words:0}, flags:{}};
+    streak:{count:0,last:""}, days:[], today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, lingo:{best:0,played:0,words:0}, flags:{rev:1}};
 }
 let state = freshState();
 try{ const raw = storage.get(); if(raw) state = Object.assign(freshState(), JSON.parse(raw)); }catch(e){}
+/* Saved progress from before the review chapters: move each chapter to its new number. */
+function migrateReviews(){
+  if(state.flags?.rev) return;
+  ["qwerty","azerty"].forEach(lay=>{
+    const old=state.lessons?.[lay]; if(!old) return;
+    const pos=[]; let k=0; CURRICULUM[lay].forEach(st=>st.lessons.forEach(l=>{ if(l[0]!=="*review") pos.push(k); k++; }));
+    const recs={}; Object.keys(old).forEach(i=>{ if(pos[+i]!==undefined) recs[pos[+i]]=old[i]; });
+    state.lessons[lay]=recs;
+  });
+  state.flags=Object.assign({}, state.flags, {rev:1});
+}
+migrateReviews();
 function save(){ storage.set(JSON.stringify(state)); }
 
 /* =========================================================================
@@ -1638,10 +1671,12 @@ function chapterWord(){ return t("chapter"); }
 /* Chapter title in the current language. "F and J" style titles use the word "and". */
 function lessonTitle(en){ const m=/^(\S) and (\S)$/.exec(en); return m ? `${m[1]} ${t("and")} ${m[2]}` : tx(en); }
 function lessonRec(i){ return (state.lessons[state.layout]||{})[i]; }
-function isUnlocked(i){ return i===0 || (lessonRec(i-1)?.stars||0)>=1; }
-function currentLessonIdx(){
-  const L=lessonsFlat(); for(let i=0;i<L.length;i++){ if(!(lessonRec(i)?.stars>=1)) return i; } return L.length-1;
-}
+/* Index of the last chapter with a star, or -1. */
+function lastStarIdx(){ const L=lessonsFlat(); for(let i=L.length-1;i>=0;i--) if((lessonRec(i)?.stars||0)>=1) return i; return -1; }
+/* A chapter opens when the chapter before it has a star. Chapters at or before the player's last
+   star are open too: progress from before the review chapters keeps its place. */
+function isUnlocked(i){ return i===0 || (lessonRec(i-1)?.stars||0)>=1 || i<=lastStarIdx(); }
+function currentLessonIdx(){ const L=lessonsFlat(); return Math.min(L.length-1, lastStarIdx()+1); }
 /* letters the player has met, up to and including lesson idx */
 function allowedUpTo(idx){
   const set=new Set([" "]); const L=lessonsFlat();
@@ -1662,13 +1697,13 @@ function genDrill(newKeys, allowed){
   nk.forEach(k=>{ intro.push(k.repeat(3)); intro.push(k+k); });
   if(nk.length>1){ intro.push(nk.join("")); intro.push([...nk].reverse().join("")); intro.push(nk[0]+nk[1]+nk[0]); intro.push(nk[1]+nk[0]+nk[1]); }
   const mix=[];
-  for(let i=0;i<12;i++){
+  for(let i=0;i<Math.round(12*CH_LEN);i++){
     const len=2+Math.floor(Math.random()*3); let g="";
     for(let j=0;j<len;j++) g += Math.random()<0.5 ? rnd(nk) : rnd(pool);
     mix.push(g);
   }
   if(!digits){
-    const words=shuffle(wordList().filter(w=>fits(w,allowed) && nk.some(k=>w.includes(k)))).slice(0,9);
+    const words=shuffle(wordList().filter(w=>fits(w,allowed) && nk.some(k=>w.includes(k)))).slice(0,Math.round(9*CH_LEN));
     mix.push(...words);
   } else {
     const words=shuffle(wordList().filter(w=>w.length<=5)).slice(0,5);
@@ -1699,14 +1734,33 @@ function genSpeed(){
 function genForLesson(L){
   const allowed=allowedUpTo(L.idx);
   switch(L.keys){
-    case "*words": return genWords(allowed, 24);
-    case "*shift": return genWords(allowed, 20, true);
+    case "*words": return genWords(allowed, Math.round(24*CH_LEN));
+    case "*shift": return genWords(allowed, Math.round(20*CH_LEN), true);
+    case "*review": return genReview(L, allowed);
     case "*sentences": return genSentences(L.target>=28?4:3);
     case "*numbers": return genNumbers();
     case "*speed": return genSpeed();
     case "*boss": return genSentences(6);
     default: return genDrill(L.keys, allowed);
   }
+}
+/* Review chapter: all keys learned up to now. Letter groups use every key, with extra weight on
+   the keys of the last two new-letter chapters. Real words fill the rest. */
+function reviewRecent(L){
+  const all=lessonsFlat(), out=[]; let n=0;
+  for(let i=L.idx-1;i>=0 && n<2;i--) if(isLetterChapter(all[i].keys)){ out.push(...all[i].keys); n++; }
+  return out;
+}
+function genReview(L, allowed){
+  const pool=[...allowed].filter(c=>c!==" " && !isDigit(c)), recent=reviewRecent(L);
+  const groups=[];
+  /* Each key once at the start of a group, so no key is left out. */
+  shuffle(pool).forEach(k=>{ let g=k; const len=1+Math.floor(Math.random()*3); for(let j=0;j<len;j++) g+=Math.random()<0.4 && recent.length ? rnd(recent) : rnd(pool); groups.push(g); });
+  const words=shuffle(wordList().filter(w=>fits(w,allowed))).slice(0,Math.round(14*CH_LEN));
+  let out=[...groups, ...words];
+  const n=Math.round(30*CH_LEN);
+  while(out.length<n){ let g=""; const len=2+Math.floor(Math.random()*3); for(let j=0;j<len;j++) g+=Math.random()<0.4 && recent.length ? rnd(recent) : rnd(pool); out.push(g); }
+  return shuffle(out).join(" ");
 }
 function genSmart(){
   const allowed=learnedSet();
@@ -2096,7 +2150,7 @@ function lessonDone(L,res){
   showResult({title:L.title, stars, res, xp:gained, msg, mood:stars>=2?"wow":stars===1?"happy":"oops", need,
     next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:t("les.next")});
   if(stars>=1) chime();
-  if(L.idx===5 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈",t("les.blindTip")),1500);
+  if(L.keys==="*words" && L.stage===0 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈",t("les.blindTip")),1500);
 }
 /* Result lock. A player who is still typing must not start the next run by accident.
    Keys do nothing for RESULT_KEY_LOCK ms, clicks for RESULT_CLICK_LOCK ms. The main button fills up meanwhile. */
@@ -2707,7 +2761,7 @@ function ladderWords(lang=state.lang){
 /* Unlock: at least 1 star on each chapter up to the end of the Bottom Row stage. */
 function ladderMissing(){
   const L=lessonsFlat(); const si=CURRICULUM[state.layout].findIndex(s=>s.stage==="Bottom Row");
-  return L.filter(l=>l.stage<=si && !((lessonRec(l.idx)?.stars||0)>=1));
+  return L.filter(l=>l.stage<=si && l.keys!=="*review" && !((lessonRec(l.idx)?.stars||0)>=1));
 }
 function openLadder(marathon){
   const miss=ladderMissing();
@@ -3146,7 +3200,8 @@ function levelInfo(xp){ let lvl=1, need=100, base=0; while(xp>=base+need){ base+
 function tl(k, en){ return (I18N[state.lang]||{})[k] || en; }
 const bName = b => (tl("badgeText",{})[b.id]||[b.n])[0], bDesc = b => (tl("badgeText",{})[b.id]||[0,b.d])[1];
 function totalStars(){ let s=0; Object.values(state.lessons).forEach(L=>Object.values(L).forEach(r=>s+=r.stars||0)); return s; }
-function stageDone(si){ const L=lessonsFlat().filter(l=>l.stage===si); return L.every(l=>(lessonRec(l.idx)?.stars||0)>=1); }
+/* A stage is done when its chapters have a star. Review chapters do not count. */
+function stageDone(si){ const L=lessonsFlat().filter(l=>l.stage===si && l.keys!=="*review"); return L.every(l=>(lessonRec(l.idx)?.stars||0)>=1); }
 const BADGES=[
   {id:"first",i:"🎯",n:"First Steps",d:"Finish your first chapter",t:()=>totalStars()>=1,p:()=>[totalStars(),1,"star"]},
   {id:"home",i:"🏠",n:"Home Row Hero",d:"Finish the Home Row",t:()=>stageDone(0),p:()=>stageProg(0)},
@@ -3175,7 +3230,7 @@ const BADGES=[
 ];
 /* Wins in Longest Word and Word Marathon, all levels together. */
 function ladderWins(){ return ["ladder","marathon"].reduce((a,k)=>{ const L=state[k]; return a+(L?(L.boss||0)+Object.values(L.lv||{}).reduce((b,x)=>b+(x.boss||0),0):0); },0); }
-function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si); return [L.filter(l=>(lessonRec(l.idx)?.stars||0)>=1).length, L.length, "chapters"]; }
+function stageProg(si){ const L=lessonsFlat().filter(l=>l.stage===si && l.keys!=="*review"); return [L.filter(l=>(lessonRec(l.idx)?.stars||0)>=1).length, L.length, "chapters"]; }
 function streakNow(){ return streakInfo().count; }
 function checkBadges(){
   const fresh=BADGES.filter(b=>!state.badges[b.id] && b.t());
@@ -3344,8 +3399,9 @@ function renderHome(){
     html+=`<div class="stage"><h3>${tx(st.stage)} <span class="tgt">${t("map.target",{w:st.target})}</span></h3><div class="lessons">`;
     L.filter(l=>l.stage===si).forEach(l=>{
       const r=lessonRec(l.idx); const st2=r?.stars||0; const un=isUnlocked(l.idx);
-      const keys = l.keys[0]==="*" ? "" : `<span class="muted" style="font-family:var(--mono)"> ${esc(l.keys.toUpperCase().split("").join(" "))}</span>`;
-      html+=`<button class="lesson ${un?"":"locked"} ${l.idx===cur&&un?"current":""}" data-i="${l.idx}">
+      const rv=l.keys==="*review";
+      const keys = rv ? " 🔁" : l.keys[0]==="*" ? "" : `<span class="muted" style="font-family:var(--mono)"> ${esc(l.keys.toUpperCase().split("").join(" "))}</span>`;
+      html+=`<button class="lesson${rv?" review":""} ${un?"":"locked"} ${l.idx===cur&&un?"current":""}" data-i="${l.idx}">
         <div class="n">${chapterWord().toUpperCase()} ${l.idx+1}${keys}</div><div class="t">${esc(l.title)}</div>
         <div class="s">${[0,1,2].map(i=>`<span class="${i<st2?"on":""}">★</span>`).join("")}</div>
         ${r?`<div class="muted" style="font-size:12px">${r.wpm} WPM · ${r.acc}%</div>`:""}</button>`;

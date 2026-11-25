@@ -24,17 +24,19 @@ const today = () => {
 test("locked until 3 sentences fit the learned keys; the chapter shows in the tile and the toast", async ({ page }) => {
   await openApp(page, player());
   await expect(page.locator("#mDaily")).toHaveClass(/locked/);
-  await expect(page.locator("#mDailyText")).toHaveText("Locked: pass chapter 13 first");
+  await expect(page.locator("#mDailyText")).toHaveText("Locked: pass chapter 21 first");
   await page.click("#mDaily");
   await expect(page.locator("#home")).toBeVisible();
-  await expect(page.locator("#toast")).toContainText("after chapter 13");
+  await expect(page.locator("#toast")).toContainText("after chapter 21");
 });
 
-test("still locked after chapter 12, open after chapter 13 (QWERTY, EN)", async ({ page }) => {
-  await openApp(page, withChapters(12));
+test("still locked after chapter 20, open after chapter 21 (QWERTY, EN)", async ({ page }) => {
+  const q = {};
+  for (let i = 0; i < 20; i++) q[i] = { stars: 1, wpm: 15, acc: 95 };
+  await openApp(page, player({ lessons: { qwerty: q, azerty: {} }, flags: { rev: 1 } }));
   await expect(page.locator("#mDaily")).toHaveClass(/locked/);
   expect(await page.evaluate(() => genDaily())).toBe("");
-  await page.evaluate(() => { state.lessons.qwerty[12] = { stars: 1 }; goHome(); });
+  await page.evaluate(() => { state.lessons.qwerty[20] = { stars: 1 }; goHome(); });
   await expect(page.locator("#mDaily")).not.toHaveClass(/locked/);
 });
 
@@ -48,8 +50,8 @@ test("the unlock chapter differs per language and keyboard", async ({ page }) =>
     }
     return out;
   });
-  expect(r).toEqual({ "qwerty/en": 13, "qwerty/nl": 14, "qwerty/fr": 14, "qwerty/it": 14,
-                      "azerty/en": 14, "azerty/nl": 14, "azerty/fr": 13, "azerty/it": 13 });
+  expect(r).toEqual({ "qwerty/en": 21, "qwerty/nl": 23, "qwerty/fr": 23, "qwerty/it": 23,
+                      "azerty/en": 23, "azerty/nl": 23, "azerty/fr": 21, "azerty/it": 21 });
 });
 
 test("an extra game: the tile is just below Continue, not with the warm-up", async ({ page }) => {

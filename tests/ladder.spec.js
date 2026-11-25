@@ -35,7 +35,7 @@ test("locked before the Bottom Row: the lock screen lists what is missing", asyn
   await expect(lock).toBeVisible();
   await expect(page.locator("#llTxt")).toContainText("You still need 3");
   await expect(page.locator("#llList li")).toHaveCount(3);
-  await expect(page.locator("#llList li").first()).toHaveText(await page.evaluate("lessonsFlat()[15].title"));
+  await expect(page.locator("#llList li").first()).toHaveText(await page.evaluate("lessonsFlat()[25].title"));   // old chapter 16 = new 26
   await page.keyboard.press("Escape");
   await expect(lock).toBeHidden();
   await expect(page.locator("#home")).toBeVisible();
@@ -47,7 +47,7 @@ test("a chapter with 0 stars inside the first stages keeps it locked", async ({ 
   await openApp(page, st);
   await page.click("#mLadder");
   await expect(page.locator("#llList li")).toHaveCount(1);
-  await expect(page.locator("#llList li")).toHaveAttribute("value", "4");
+  await expect(page.locator("#llList li")).toHaveAttribute("value", "6");   // old chapter 4 = new 6
 });
 
 test("pace: 80% of the reference WPM, plus 3% per sublevel, minimum 10", async ({ page }) => {
