@@ -84,7 +84,7 @@ test("a run: no live score, no stars, no change to top WPM or history; then it h
   await expect(page.locator("#result")).toBeVisible();
   await expect(page.locator("#rTitle")).toContainText("Warm-up done");
   await expect(page.locator("#rStars")).toBeHidden();
-  await expect(page.locator("#rNext")).toHaveText("Chapter 7 →");
+  await expect(page.locator("#rNext")).toHaveText("Chapter 10 →");   // old chapter 7 = new 10
   const st = await saved(page);
   expect(st.warmup).toEqual({ last: today(), count: 2 });
   expect(st.bestWpm).toBe(22);
@@ -101,7 +101,7 @@ test("Next on the result opens the current chapter; live score is back", async (
   await page.click("#mWarm");
   await typeAll(page);
   await page.click("#rNext");
-  await expect(page.locator("#tTitle")).toHaveText(await page.evaluate("`4. ${lessonsFlat()[3].title}`"));
+  await expect(page.locator("#tTitle")).toHaveText(await page.evaluate("`5. ${lessonsFlat()[4].title}`"));   // after old chapter 3 (new 4) comes a review
   await expect(page.locator("#type .live")).toBeVisible();
 });
 

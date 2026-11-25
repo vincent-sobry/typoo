@@ -10,7 +10,8 @@ test.afterEach(async ({ page }) => {
   expect(page.errors, "no JavaScript errors").toEqual([]);
 });
 
-/** A player with the given stars per chapter (QWERTY). */
+/** A player with the given stars per chapter (QWERTY), saved before the review chapters.
+ *  The app moves them: old 0..5 = new 0, 1, 3, 5, 7, 8 (review chapters are 2, 4, 6). */
 function withStars(stars, extra = {}) {
   const q = {};
   stars.forEach((s, i) => { q[i] = { stars: s, wpm: 12, acc: 92 }; });
@@ -47,7 +48,7 @@ test("lobby: chapters with 1 or 2 stars only; one or two choices without a full 
   await page.click("#mBoost");
   const c = page.locator("#boostChoices .choice");
   await expect(c).toHaveCount(3);
-  expect((await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).sort()).toEqual([1, 2, 4]);
+  expect((await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).sort()).toEqual([1, 3, 7]);
   await expect(c.first()).toContainText("Next star:");
   await page.keyboard.press("Escape");
   await expect(page.locator("#boostLobby")).toBeHidden();
@@ -67,7 +68,7 @@ test("lobby: 3 chapters in one row, easy / medium / hard by the gap to the next 
   await page.click("#mBoost");
   const c = page.locator("#boostChoices .choice");
   await expect(c).toHaveCount(3);
-  expect(await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).toEqual([0, 3, 4]);
+  expect(await c.evaluateAll((b) => b.map((x) => +x.dataset.i))).toEqual([0, 5, 7]);
   expect(await c.locator(".blvl").allTextContents()).toEqual(["Easy", "Medium", "Hard"]);
   expect(await c.evaluateAll((b) => b.map((x) => x.classList.contains("easy") || x.classList.contains("mid") || x.classList.contains("hard")))).toEqual([true, true, true]);
   const borders = await c.evaluateAll((b) => b.map((x) => getComputedStyle(x).borderTopColor));
@@ -90,7 +91,7 @@ test("lobby: 2 chapters = easy and hard, 1 chapter = no label", async ({ page })
 test("text uses only learned keys and drills the chapter keys", async ({ page }) => {
   await openApp(page, withStars([2, 2, 1]));
   const r = await page.evaluate(() => {
-    const L = lessonsFlat()[2], allowed = allowedUpTo(2), out = [];
+    const L = lessonsFlat()[3], allowed = allowedUpTo(3), out = [];
     for (let i = 0; i < 20; i++) out.push(genBoost(L));
     return { keys: L.keys, ok: out.every((o) => [...o.text].every((c) => allowed.has(c))), focus: out[0].focus, len: out[0].text.split(" ").length };
   });
@@ -102,8 +103,8 @@ test("text uses only learned keys and drills the chapter keys", async ({ page })
 test("weakest learned keys join the focus keys", async ({ page }) => {
   const keys = { d: { h: 5, m: 5 }, f: { h: 20, m: 0 }, k: { h: 8, m: 2 }, j: { h: 2, m: 2 } }; // j: too few hits to count
   await openApp(page, withStars([2, 1, 1], { keys }));
-  const focus = await page.evaluate("genBoost(lessonsFlat()[2]).focus");
-  expect(await page.evaluate("lessonsFlat()[2].keys")).toBe("sl");
+  const focus = await page.evaluate("genBoost(lessonsFlat()[3]).focus");
+  expect(await page.evaluate("lessonsFlat()[3].keys")).toBe("sl");
   expect(focus).toEqual(["s", "l", "d", "k"]);
 });
 
