@@ -73,7 +73,7 @@ h1,h2,h3{margin:0}
     -webkit-mask-image:linear-gradient(#000 calc(100% - 18px),transparent);mask-image:linear-gradient(#000 calc(100% - 18px),transparent)}
   #home aside .modes.end{-webkit-mask-image:none;mask-image:none}
   #home aside>.card:last-child{flex:none;padding:12px 16px}
-  #home aside .badges{display:grid;grid-template-columns:repeat(5,40px);justify-content:space-between;gap:6px;margin-top:8px}
+  #home aside .badges{display:grid;grid-template-columns:repeat(6,40px);justify-content:space-between;gap:6px;margin-top:8px}
   #home aside .badge{width:40px;height:40px;font-size:20px}
 }
 /* Wide screens 780-900 px high: a smaller top part gives the games list more room. */
@@ -998,7 +998,7 @@ I18N.en = {
   "rain.txt":"Score <b>{s}</b> · {k} meteors stopped · +{x} XP","rain.goal":"🎯 Daily goal reached! 10 minutes today.",
   /* badges */
   "bc.unlocked":"Badge unlocked:","bc.done":"Done! ✅","bc.notYet":"Not yet","bc.of":"{c} of {g} {u}","bc.earned":"Earned on {d}","bc.notEarned":"Not earned yet. You can do it!",
-  "u.star":"star","u.stars":"stars","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"days","u.points":"points","u.win":"win","u.chapters":"chapters",
+  "u.star":"star","u.stars":"stars","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"days","u.points":"points","u.win":"win","u.chapters":"chapters","u.warmups":"warm-ups","u.sentences":"sentences",
   /* settings */
   "set.h":"⚙️ Settings","set.name":"Name","set.kb":"Keyboard","set.kbNote":"Each keyboard has its own chapter progress.",
   "set.lang":"Language","set.langNote":"Screens, Keebo and all typing texts.","set.help":"Keyboard help on screen",
@@ -1107,7 +1107,7 @@ I18N.nl = {
   "rain.hint":"Typ een woord om het te vernietigen. Hou je vingers op de thuisrij. <b>Esc</b> = laat het huidige woord los.","rain.again":"Nog eens","rain.over":"Game over",
   "rain.txt":"Score <b>{s}</b> · {k} meteoren gestopt · +{x} XP","rain.goal":"🎯 Dagdoel gehaald! 10 minuten vandaag.",
   "bc.unlocked":"Badge verdiend:","bc.done":"Gehaald! ✅","bc.notYet":"Nog niet","bc.of":"{c} van {g} {u}","bc.earned":"Verdiend op {d}","bc.notEarned":"Nog niet verdiend. Jij kunt het!",
-  "u.star":"ster","u.stars":"sterren","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"dagen","u.points":"punten","u.win":"overwinning","u.chapters":"hoofdstukken",
+  "u.star":"ster","u.stars":"sterren","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"dagen","u.points":"punten","u.win":"overwinning","u.chapters":"hoofdstukken","u.warmups":"opwarmingen","u.sentences":"zinnen",
   "set.h":"⚙️ Instellingen","set.name":"Naam","set.kb":"Toetsenbord","set.kbNote":"Elk toetsenbord heeft zijn eigen voortgang.",
   "set.lang":"Taal","set.langNote":"Schermen, Keebo en alle typteksten.","set.help":"Hulp van het toetsenbord op het scherm",
   "set.full":"Volledig","set.fullS":"letters + kleuren","set.blind":"Blind","set.blindS":"geen letters","set.proS":"geen toetsenbord",
@@ -1130,7 +1130,7 @@ I18N.nl = {
   "tour.go":"Typen maar! ▶","tour.goA":"Begin met typen","tour.backT":"Terug (←)","tour.nextT":"Volgende (→)",
   "lay.warn":"⌨️ Je toetsenbord lijkt <b>{g}</b>, maar de app staat op {a}.","lay.later":"Niet nu","lay.fix":"Wissel",
   "titles":["Toetsbeginner","Thuisrijverkenner","Vingerninja","Toetsenridder","Ritmerijder","Snelheidssurfer","Typtitaan","Toetsenbordlegende"],
-  "badgeText":{first:["Eerste stappen","Haal je eerste hoofdstuk"],home:["Thuisrijheld","Werk de thuisrij af"],top:["Bovenrijklimmer","Werk de bovenste rij af"],
+  "badgeText":{pilot:["Boosterpiloot","Verhoog 5 hoofdstukken met één ster met Booster"],early:["Vroege vogel","Doe 7 dagelijkse opwarmingen"],scroll:["Zinnenverzamelaar","Typ 10 zinnen van de dag"],s30:["IJzeren reeks","Reeks van 30 dagen"],first:["Eerste stappen","Haal je eerste hoofdstuk"],home:["Thuisrijheld","Werk de thuisrij af"],top:["Bovenrijklimmer","Werk de bovenste rij af"],
     bottom:["Onderrijduiker","Werk de onderste rij af"],caps:["Shiftmeester","Werk Hoofdletters & zinnen af"],nums:["Cijferkraker","Werk Cijfers af"],
     boss:["Eindbaasverslaander","Werk het Snelheidslab af"],perfect:["Foutloos","100% nauwkeurigheid in een volledige run"],blind:["Niet spieken","95%+ nauwkeurigheid in de blinde modus"],
     w20:["20 WPM","Typ 20 WPM (90%+ nauwkeurigheid)"],w30:["30 WPM","Typ 30 WPM"],w40:["40 WPM","Typ 40 WPM"],w60:["60 WPM","Typ 60 WPM"],
@@ -1247,7 +1247,7 @@ I18N.fr = {
   "rain.hint":"Tape un mot pour le détruire. Garde tes doigts sur la rangée de base. <b>Échap</b> = lâcher le mot en cours.","rain.again":"Rejouer","rain.over":"Partie terminée",
   "rain.txt":"Score <b>{s}</b> · {k} météores arrêtés · +{x} XP","rain.goal":"🎯 Objectif du jour atteint ! 10 minutes aujourd'hui.",
   "bc.unlocked":"Badge débloqué :","bc.done":"Réussi ! ✅","bc.notYet":"Pas encore","bc.of":"{c} sur {g} {u}","bc.earned":"Gagné le {d}","bc.notEarned":"Pas encore gagné. Tu peux le faire !",
-  "u.star":"étoile","u.stars":"étoiles","u.run":"partie","u.WPM":"WPM","u.race":"course","u.races":"courses","u.days":"jours","u.points":"points","u.win":"victoire","u.chapters":"chapitres",
+  "u.star":"étoile","u.stars":"étoiles","u.run":"partie","u.WPM":"WPM","u.race":"course","u.races":"courses","u.days":"jours","u.points":"points","u.win":"victoire","u.chapters":"chapitres","u.warmups":"échauffements","u.sentences":"phrases",
   "set.h":"⚙️ Réglages","set.name":"Prénom","set.kb":"Clavier","set.kbNote":"Chaque clavier a sa propre progression.",
   "set.lang":"Langue","set.langNote":"Écrans, Keebo et tous les textes à taper.","set.help":"Aide du clavier à l'écran",
   "set.full":"Complet","set.fullS":"lettres + couleurs","set.blind":"Aveugle","set.blindS":"sans lettres","set.proS":"sans clavier",
@@ -1270,7 +1270,7 @@ I18N.fr = {
   "tour.go":"On tape ! ▶","tour.goA":"Commencer à taper","tour.backT":"Retour (←)","tour.nextT":"Suivant (→)",
   "lay.warn":"⌨️ Ton clavier ressemble à un <b>{g}</b>, mais l'appli est réglée sur {a}.","lay.later":"Pas maintenant","lay.fix":"Changer",
   "titles":["Débutant des touches","Éclaireur de la rangée","Ninja des doigts","Chevalier du clavier","Cavalier du rythme","Surfeur de vitesse","Titan de la frappe","Légende du clavier"],
-  "badgeText":{first:["Premiers pas","Réussis ton premier chapitre"],home:["Héros de la rangée de base","Termine la rangée de base"],top:["Grimpeur du haut","Termine la rangée du haut"],
+  "badgeText":{pilot:["Pilote Booster","Gagne une étoile de plus sur 5 chapitres avec Booster"],early:["Lève-tôt","Fais 7 échauffements du jour"],scroll:["Collectionneur de phrases","Tape 10 phrases du jour"],s30:["Série de fer","Série de 30 jours"],first:["Premiers pas","Réussis ton premier chapitre"],home:["Héros de la rangée de base","Termine la rangée de base"],top:["Grimpeur du haut","Termine la rangée du haut"],
     bottom:["Plongeur du bas","Termine la rangée du bas"],caps:["Maître de Maj","Termine Majuscules et phrases"],nums:["Croqueur de chiffres","Termine Chiffres"],
     boss:["Tueur de boss","Termine le Labo de vitesse"],perfect:["Sans faute","100 % de précision sur une partie entière"],blind:["Sans tricher","95 %+ de précision en mode aveugle"],
     w20:["20 WPM","Tape à 20 WPM (90 %+ de précision)"],w30:["30 WPM","Tape à 30 WPM"],w40:["40 WPM","Tape à 40 WPM"],w60:["60 WPM","Tape à 60 WPM"],
@@ -1387,7 +1387,7 @@ I18N.it = {
   "rain.hint":"Scrivi una parola per distruggerla. Tieni le dita sulla fila di base. <b>Esc</b> = lascia la parola attuale.","rain.again":"Gioca ancora","rain.over":"Fine partita",
   "rain.txt":"Punti <b>{s}</b> · {k} meteoriti fermati · +{x} XP","rain.goal":"🎯 Obiettivo del giorno raggiunto! 10 minuti oggi.",
   "bc.unlocked":"Medaglia sbloccata:","bc.done":"Fatto! ✅","bc.notYet":"Non ancora","bc.of":"{c} su {g} {u}","bc.earned":"Vinta il {d}","bc.notEarned":"Non ancora vinta. Ce la puoi fare!",
-  "u.star":"stella","u.stars":"stelle","u.run":"partita","u.WPM":"WPM","u.race":"gara","u.races":"gare","u.days":"giorni","u.points":"punti","u.win":"vittoria","u.chapters":"capitoli",
+  "u.star":"stella","u.stars":"stelle","u.run":"partita","u.WPM":"WPM","u.race":"gara","u.races":"gare","u.days":"giorni","u.points":"punti","u.win":"vittoria","u.chapters":"capitoli","u.warmups":"riscaldamenti","u.sentences":"frasi",
   "set.h":"⚙️ Impostazioni","set.name":"Nome","set.kb":"Tastiera","set.kbNote":"Ogni tastiera ha i suoi progressi.",
   "set.lang":"Lingua","set.langNote":"Schermate, Keebo e tutti i testi da scrivere.","set.help":"Aiuto della tastiera sullo schermo",
   "set.full":"Completo","set.fullS":"lettere + colori","set.blind":"Cieco","set.blindS":"senza lettere","set.proS":"senza tastiera",
@@ -1410,7 +1410,7 @@ I18N.it = {
   "tour.go":"Scriviamo! ▶","tour.goA":"Inizia a scrivere","tour.backT":"Indietro (←)","tour.nextT":"Avanti (→)",
   "lay.warn":"⌨️ La tua tastiera sembra una <b>{g}</b>, ma l'app è impostata su {a}.","lay.later":"Non ora","lay.fix":"Cambia",
   "titles":["Principiante dei tasti","Esploratore della fila","Ninja delle dita","Cavaliere dei tasti","Cavalcatore del ritmo","Surfista della velocità","Titano della scrittura","Leggenda della tastiera"],
-  "badgeText":{first:["Primi passi","Supera il tuo primo capitolo"],home:["Eroe della fila di base","Finisci la fila di base"],top:["Scalatore della fila alta","Finisci la fila in alto"],
+  "badgeText":{pilot:["Pilota Booster","Guadagna una stella in più in 5 capitoli con Booster"],early:["Mattiniero","Fai 7 riscaldamenti del giorno"],scroll:["Collezionista di frasi","Scrivi 10 frasi del giorno"],s30:["Serie di ferro","Serie di 30 giorni"],first:["Primi passi","Supera il tuo primo capitolo"],home:["Eroe della fila di base","Finisci la fila di base"],top:["Scalatore della fila alta","Finisci la fila in alto"],
     bottom:["Sub della fila bassa","Finisci la fila in basso"],caps:["Maestro del Maiusc","Finisci Maiuscole e frasi"],nums:["Mangianumeri","Finisci Numeri"],
     boss:["Ammazza-boss","Finisci il Laboratorio di velocità"],perfect:["Senza errori","100% di precisione in una partita intera"],blind:["Niente sbirciate","95%+ di precisione in modalità cieca"],
     w20:["20 WPM","Scrivi a 20 WPM (90%+ di precisione)"],w30:["30 WPM","Scrivi a 30 WPM"],w40:["40 WPM","Scrivi a 40 WPM"],w60:["60 WPM","Scrivi a 60 WPM"],
@@ -2899,21 +2899,25 @@ const BADGES=[
   {id:"top",i:"⛰️",n:"Top Row Climber",d:"Finish the Top Row",t:()=>stageDone(1),p:()=>stageProg(1)},
   {id:"bottom",i:"🤿",n:"Bottom Row Diver",d:"Finish the Bottom Row",t:()=>stageDone(2),p:()=>stageProg(2)},
   {id:"caps",i:"🔠",n:"Shift Master",d:"Finish Capitals & Sentences",t:()=>stageDone(3),p:()=>stageProg(3)},
+  {id:"pilot",i:"⚡",n:"Booster Pilot",d:"Raise 5 chapters by one star with Booster",t:()=>(state.boost?.ups||0)>=5,p:()=>[state.boost?.ups||0,5,"chapters"]},
   {id:"nums",i:"🔢",n:"Number Cruncher",d:"Finish Numbers",t:()=>stageDone(4),p:()=>stageProg(4)},
   {id:"boss",i:"👑",n:"Boss Slayer",d:"Finish the Speed Lab",t:()=>stageDone(5),p:()=>stageProg(5)},
   {id:"perfect",i:"💎",n:"Flawless",d:"100% accuracy in a full run",t:()=>state.flags.perfect,p:()=>[state.flags.perfect?1:0,1,"run"]},
   {id:"blind",i:"🙈",n:"No Peeking",d:"95%+ accuracy in Blind mode",t:()=>state.flags.blind,p:()=>[state.flags.blind?1:0,1,"run"]},
   {id:"w20",i:"🚲",n:"20 WPM",d:"Type 20 WPM (90%+ accuracy)",t:()=>state.bestWpm>=20,p:()=>[state.bestWpm,20,"WPM"]},
+  {id:"early",i:"☀️",n:"Early Bird",d:"Do 7 daily warm-ups",t:()=>(state.warmup?.count||0)>=7,p:()=>[state.warmup?.count||0,7,"warmups"]},
   {id:"w30",i:"🛵",n:"30 WPM",d:"Type 30 WPM",t:()=>state.bestWpm>=30,p:()=>[state.bestWpm,30,"WPM"]},
   {id:"w40",i:"🏎️",n:"40 WPM",d:"Type 40 WPM",t:()=>state.bestWpm>=40,p:()=>[state.bestWpm,40,"WPM"]},
   {id:"w60",i:"🚀",n:"60 WPM",d:"Type 60 WPM",t:()=>state.bestWpm>=60,p:()=>[state.bestWpm,60,"WPM"]},
   {id:"bot1",i:"🤖",n:"Bot Beater",d:"Win a race against Keebo",t:()=>state.races.won>=1,p:()=>[state.races.won,1,"race"]},
   {id:"bot10",i:"🦾",n:"Bot Boss",d:"Win 10 races",t:()=>state.races.won>=10,p:()=>[state.races.won,10,"races"]},
+  {id:"scroll",i:"📜",n:"Sentence Collector",d:"Type 10 daily sentences",t:()=>(state.daily?.count||0)>=10,p:()=>[state.daily?.count||0,10,"sentences"]},
   {id:"s3",i:"🔥",n:"On Fire",d:"3-day streak",t:()=>streakNow()>=3,p:()=>[streakNow(),3,"days"]},
   {id:"s7",i:"🌋",n:"Unstoppable",d:"7-day streak",t:()=>streakNow()>=7,p:()=>[streakNow(),7,"days"]},
   {id:"rain",i:"☄️",n:"Meteor Shield",d:"Score 500 in Word Rain",t:()=>state.rainBest>=500,p:()=>[state.rainBest,500,"points"]},
   {id:"ladder",i:"🪜",n:"Word Legend",d:"Win Longest Word or Word Marathon",t:()=>ladderWins()>=1,p:()=>[ladderWins(),1,"win"]},
-  {id:"stars30",i:"⭐",n:"Star Collector",d:"Collect 30 stars",t:()=>totalStars()>=30,p:()=>[totalStars(),30,"stars"]}
+  {id:"stars30",i:"⭐",n:"Star Collector",d:"Collect 30 stars",t:()=>totalStars()>=30,p:()=>[totalStars(),30,"stars"]},
+  {id:"s30",i:"🧊",n:"Iron Streak",d:"30-day streak",t:()=>streakNow()>=30,p:()=>[streakNow(),30,"days"]}
 ];
 /* Wins in Longest Word and Word Marathon, all levels together. */
 function ladderWins(){ return ["ladder","marathon"].reduce((a,k)=>{ const L=state[k]; return a+(L?(L.boss||0)+Object.values(L.lv||{}).reduce((b,x)=>b+(x.boss||0),0):0); },0); }
