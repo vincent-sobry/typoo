@@ -12,9 +12,11 @@ function player(extra = {}) {
 }
 
 /** Open the app with a saved state (or none, for onboarding).
- *  The result-screen lock is off by default, so tests can go on at once. Pass { resultLock: true } to keep it. */
+ *  The result-screen lock is off by default, so tests can go on at once. Pass { resultLock: true } to keep it.
+ *  The day welcome pop-up is off by default. Pass { welcome: true } to show it. */
 async function openApp(page, state, opts = {}) {
   if (!opts.resultLock) await page.addInitScript(() => { window.TYPOO_RESULT_LOCK = { keys: 0, clicks: 0 }; });
+  if (!opts.welcome) await page.addInitScript(() => { window.TYPOO_WELCOME_OFF = true; });   // the day welcome (UX-31) has its own tests
   await page.addInitScript(([k, v]) => {
     if (!sessionStorage.getItem("seeded")) {
       sessionStorage.setItem("seeded", "1");

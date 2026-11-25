@@ -21,7 +21,9 @@ test("Enter on the map starts the next chapter", async ({ page }) => {
 
 test("number keys open the tiles in screen order", async ({ page }) => {
   await openApp(page, player({ lessons: done(3) }));
-  const tiles = page.locator("#home .modes .mode:not([hidden])");
+  const tiles = page.locator("#home .modes .mode:not([hidden]):not(#mWarm)");   // the warm-up has no number (UX-31)
+  await expect(page.locator("#mWarm .hk")).toBeHidden();
+  await expect(page.locator("#mContinue .hk")).toHaveText("1");
   await expect(tiles.nth(0).locator(".hk")).toHaveText("1");
   const ids = await tiles.evaluateAll((b) => b.map((x) => x.id));
   const race = ids.indexOf("mRace") + 1;
@@ -35,7 +37,7 @@ test("number keys open the tiles in screen order", async ({ page }) => {
 
 test("number keys work by key position (AZERTY: no Shift)", async ({ page }) => {
   await openApp(page, player({ lessons: done(3) }));
-  const ids = await page.locator("#home .modes .mode:not([hidden])").evaluateAll((b) => b.map((x) => x.id));
+  const ids = await page.locator("#home .modes .mode:not([hidden]):not(#mWarm)").evaluateAll((b) => b.map((x) => x.id));
   const n = ids.indexOf("mContinue") + 1;
   await page.evaluate((n) => document.dispatchEvent(new KeyboardEvent("keydown", { key: "&é\"'(§è!ç"[n - 1], code: "Digit" + n, bubbles: true })), n);
   await expect(page.locator("#type")).toBeVisible();
