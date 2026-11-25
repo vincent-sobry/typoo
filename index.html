@@ -400,6 +400,26 @@ body.fframe #fframe{display:block}
 @keyframes boom{to{transform:var(--t) scale(1.8);opacity:0}}
 .hud{display:flex;gap:10px;margin-bottom:10px;align-items:center}
 .hearts{font-size:22px;letter-spacing:4px}
+/* Lingo: 5 x 5 grid. Green square = right place, yellow circle = in the word, grey = not in the word. */
+#lingo .hud h2{margin:0}
+.lgwrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px}
+.lgrid{display:grid;gap:8px}
+.lrow{display:grid;grid-template-columns:repeat(5,clamp(44px,10.5vh,76px));gap:8px}
+.lc{aspect-ratio:1;border-radius:12px;background:var(--bg2);border:2px solid var(--line);display:grid;place-items:center;
+  font:700 clamp(22px,5.4vh,38px) var(--mono);text-transform:uppercase;font-style:normal;color:var(--text)}
+.lrow.cur .lc{border-color:#4a54a0}
+.lc.given{color:var(--accent2)}
+.lc.hint{color:#9aa3d655}
+.lc.at{border-color:var(--accent2);box-shadow:0 0 12px #22d3ee55}
+.lc.ok{background:#1fb86b;border-color:#1fb86b;color:#fff}
+.lc.near{background:#e0a420;border-color:#e0a420;color:#1b1400;border-radius:50%}
+.lc.no{background:#2a2f55;border-color:#2a2f55;color:var(--muted)}
+.lc.flip{animation:lgflip .36s both;animation-delay:var(--d)}
+@keyframes lgflip{0%{transform:rotateX(90deg)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.lc.flip{animation:none}}
+.lgmsg{min-height:26px;font-size:18px;font-weight:700;text-align:center}
+.lgmsg.good{color:var(--good)}.lgmsg.bad{color:var(--bad)}
+#lingo .muted{text-align:center;font-size:13px;margin:0}
 
 /* ---------- Onboarding & settings ---------- */
 .onboard{max-width:620px;margin:30px auto}
@@ -532,6 +552,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
             <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b data-t="m.smart">Smart Practice</b><small data-t="m.smartS">Train your weakest keys</small></span></button>
             <button class="mode" id="mCustom"><span class="ic">🔤</span><span><b data-t="m.custom">Custom Letters</b><small id="mCustomText">Pick the keys you want to practise</small></span></button>
             <button class="mode" id="mBoost"><span class="ic">⚡</span><span><b data-t="m.boost">Booster</b><small id="mBoostText">Get more stars on a chapter</small></span></button>
+            <button class="mode" id="mLingo"><span class="ic">🟩</span><span><b data-t="m.lingo">Lingo</b><small id="mLingoText">Guess the 5-letter word in 5 tries</small></span></button>
           </div>
         </div>
         <div class="card" style="margin-top:16px">
@@ -623,6 +644,23 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div class="sky" id="sky"><div class="ground"></div></div>
     <p class="muted" style="text-align:center" data-t="rain.hint">Type a word to destroy it. Keep your fingers on the home row. <b>Esc</b> = let go of the current word.</p>
   </section>
+
+  <!-- ============ LINGO ============ -->
+  <section id="lingo" class="screen">
+    <div class="hud">
+      <button class="btn ghost" id="lgBack" data-t="backMap">← Map</button>
+      <h2>🟩 <span data-t="m.lingo">Lingo</span></h2>
+      <div class="spacer"></div>
+      <div class="hearts" id="lgLives">❤️❤️❤️</div>
+      <div class="pill" title="Words found" data-ta="title=lg.wordsT">✅ <span id="lgScore">0</span></div>
+      <div class="pill" title="Record" data-ta="title=lg.recT">🏆 <span id="lgBest">0</span></div>
+    </div>
+    <div class="lgwrap">
+      <div class="lgrid" id="lgGrid" aria-label="Lingo grid" data-ta="aria-label=lg.gridA"></div>
+      <div class="lgmsg" id="lgMsg" aria-live="polite"></div>
+      <p class="muted" data-t="lg.hint">Green = right place · Yellow circle = in the word, other place · Grey = not in the word. <b>Backspace</b> = erase · <b>Esc</b> = stop</p>
+    </div>
+  </section>
 </div>
 
 <!-- overlays -->
@@ -664,6 +702,12 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="bigstars" style="font-size:44px">☄️</div>
   <p id="rainTxt" class="muted"></p>
   <div class="rbtns"><button class="btn ghost" id="rainMap" data-t="map">Map</button><button class="btn" id="rainAgain" data-t="rain.again">Play again</button></div>
+</div></div>
+<div class="overlay" id="lingoOver"><div class="panel">
+  <h2 id="lingoTitle">Game over</h2>
+  <div class="bigstars" style="font-size:44px">🟩</div>
+  <p id="lingoTxt" class="muted"></p>
+  <div class="rbtns"><button class="btn ghost" id="lingoMap" data-t="map">Map</button><button class="btn" id="lingoAgain" data-t="rain.again">Play again</button></div>
 </div></div>
 <div class="overlay" id="settings"><div class="panel setpanel" style="text-align:left">
   <h2 data-t="set.h">⚙️ Settings</h2>
@@ -1018,6 +1062,12 @@ I18N.en = {
   "lw.firstLost":"I was faster on the first word. Try again!","lw.need":"Sublevels: {c} of {n} · Record: {b} · Last word: {w}",
   "lw.sayPassed":"Beep! I passed you!","lw.sayLost":"Beep! I finished that word first.",
   /* word rain */
+  "m.lingo":"Lingo","m.lingoS":"Guess the 5-letter word in 5 tries","m.lingoRec":"Record: {n} words","m.lingoRec1":"Record: {n} word",
+  "lg.lock":"Locked: pass chapter {c} first","lg.opens":"Lingo opens after chapter {c}: then you know enough letters for 5-letter words.",
+  "lg.go":"Type a word with 5 letters. <b>Enter</b> = check.","lg.short":"Type 5 letters, then press <b>Enter</b>.","lg.next":"Tries left: {n}",
+  "lg.win":"Yes! {w} in {n} tries 🎉","lg.wow":"First try! {w} 🤩","lg.miss":"The word was {w}. You lose 1 life.",
+  "lg.txt":"<b>{n}</b> words found · +{x} XP","lg.txt1":"<b>{n}</b> word found · +{x} XP","lg.best":"Your record: {b} words.","lg.best1":"Your record: {b} word.","lg.wordsT":"Words found","lg.recT":"Record","lg.gridA":"Lingo grid",
+  "lg.hint":"Green = right place · Yellow circle = in the word, other place · Grey = not in the word. <b>Backspace</b> = erase · <b>Esc</b> = stop",
   "rain.hint":"Type a word to destroy it. Keep your fingers on the home row. <b>Esc</b> = let go of the current word.","rain.again":"Play again","rain.over":"Game over",
   "rain.txt":"Score <b>{s}</b> · {k} meteors stopped · +{x} XP","rain.goal":"🎯 Daily goal reached! 10 minutes today.",
   /* badges */
@@ -1129,6 +1179,12 @@ I18N.nl = {
   "lw.wonMsg":"WAT?! Zelfs het eindbaaswoord! Jij bent een woordladderlegende! 🤖💜","lw.climbed1":"Je klom {n} sport.","lw.climbed":"Je klom {n} sporten.",
   "lw.firstLost":"Ik was sneller op het eerste woord. Probeer opnieuw!","lw.need":"Subniveaus: {c} van {n} · Record: {b} · Laatste woord: {w}",
   "lw.sayPassed":"Biep! Ik haalde je in!","lw.sayLost":"Biep! Ik had dat woord eerst.",
+  "m.lingo":"Lingo","m.lingoS":"Raad het woord van 5 letters in 5 beurten","m.lingoRec":"Record: {n} woorden","m.lingoRec1":"Record: {n} woord",
+  "lg.lock":"Op slot: haal eerst hoofdstuk {c}","lg.opens":"Lingo gaat open na hoofdstuk {c}: dan ken je genoeg letters voor woorden van 5 letters.",
+  "lg.go":"Typ een woord van 5 letters. <b>Enter</b> = controleren.","lg.short":"Typ 5 letters en druk dan op <b>Enter</b>.","lg.next":"Nog {n} beurten",
+  "lg.win":"Ja! {w} in {n} beurten 🎉","lg.wow":"In één keer! {w} 🤩","lg.miss":"Het woord was {w}. Je verliest 1 leven.",
+  "lg.txt":"<b>{n}</b> woorden geraden · +{x} XP","lg.txt1":"<b>{n}</b> woord geraden · +{x} XP","lg.best":"Je record: {b} woorden.","lg.best1":"Je record: {b} woord.","lg.wordsT":"Woorden geraden","lg.recT":"Record","lg.gridA":"Lingo-rooster",
+  "lg.hint":"Groen = juiste plaats · Gele cirkel = in het woord, andere plaats · Grijs = niet in het woord. <b>Backspace</b> = wissen · <b>Esc</b> = stoppen",
   "rain.hint":"Typ een woord om het te vernietigen. Hou je vingers op de thuisrij. <b>Esc</b> = laat het huidige woord los.","rain.again":"Nog eens","rain.over":"Game over",
   "rain.txt":"Score <b>{s}</b> · {k} meteoren gestopt · +{x} XP","rain.goal":"🎯 Dagdoel gehaald! 10 minuten vandaag.",
   "bc.unlocked":"Badge verdiend:","bc.done":"Gehaald! ✅","bc.notYet":"Nog niet","bc.of":"{c} van {g} {u}","bc.earned":"Verdiend op {d}","bc.notEarned":"Nog niet verdiend. Jij kunt het!",
@@ -1270,6 +1326,12 @@ I18N.fr = {
   "lw.wonMsg":"QUOI ?! Même le mot boss ! Tu es une légende de l'échelle de mots ! 🤖💜","lw.climbed1":"Tu as grimpé {n} barreau.","lw.climbed":"Tu as grimpé {n} barreaux.",
   "lw.firstLost":"J'étais plus rapide sur le premier mot. Réessaie !","lw.need":"Sous-niveaux : {c} sur {n} · Record : {b} · Dernier mot : {w}",
   "lw.sayPassed":"Bip ! Je t'ai dépassé !","lw.sayLost":"Bip ! J'ai fini ce mot le premier.",
+  "m.lingo":"Lingo","m.lingoS":"Devine le mot de 5 lettres en 5 essais","m.lingoRec":"Record : {n} mots","m.lingoRec1":"Record : {n} mot",
+  "lg.lock":"Verrouillé : réussis d'abord le chapitre {c}","lg.opens":"Lingo s'ouvre après le chapitre {c} : tu connaîtras alors assez de lettres pour des mots de 5 lettres.",
+  "lg.go":"Tape un mot de 5 lettres. <b>Entrée</b> = vérifier.","lg.short":"Tape 5 lettres, puis appuie sur <b>Entrée</b>.","lg.next":"Essais restants : {n}",
+  "lg.win":"Oui ! {w} en {n} essais 🎉","lg.wow":"Du premier coup ! {w} 🤩","lg.miss":"Le mot était {w}. Tu perds 1 vie.",
+  "lg.txt":"<b>{n}</b> mots trouvés · +{x} XP","lg.txt1":"<b>{n}</b> mot trouvé · +{x} XP","lg.best":"Ton record : {b} mots.","lg.best1":"Ton record : {b} mot.","lg.wordsT":"Mots trouvés","lg.recT":"Record","lg.gridA":"Grille Lingo",
+  "lg.hint":"Vert = bonne place · Cercle jaune = dans le mot, autre place · Gris = pas dans le mot. <b>Retour arrière</b> = effacer · <b>Échap</b> = arrêter",
   "rain.hint":"Tape un mot pour le détruire. Garde tes doigts sur la rangée de base. <b>Échap</b> = lâcher le mot en cours.","rain.again":"Rejouer","rain.over":"Partie terminée",
   "rain.txt":"Score <b>{s}</b> · {k} météores arrêtés · +{x} XP","rain.goal":"🎯 Objectif du jour atteint ! 10 minutes aujourd'hui.",
   "bc.unlocked":"Badge débloqué :","bc.done":"Réussi ! ✅","bc.notYet":"Pas encore","bc.of":"{c} sur {g} {u}","bc.earned":"Gagné le {d}","bc.notEarned":"Pas encore gagné. Tu peux le faire !",
@@ -1411,6 +1473,12 @@ I18N.it = {
   "lw.wonMsg":"COSA?! Anche la parola boss! Sei una leggenda della scala di parole! 🤖💜","lw.climbed1":"Hai salito {n} gradino.","lw.climbed":"Hai salito {n} gradini.",
   "lw.firstLost":"Sono stato più veloce sulla prima parola. Riprova!","lw.need":"Sottolivelli: {c} su {n} · Record: {b} · Ultima parola: {w}",
   "lw.sayPassed":"Bip! Ti ho superato!","lw.sayLost":"Bip! Ho finito quella parola prima io.",
+  "m.lingo":"Lingo","m.lingoS":"Indovina la parola di 5 lettere in 5 tentativi","m.lingoRec":"Record: {n} parole","m.lingoRec1":"Record: {n} parola",
+  "lg.lock":"Bloccato: supera prima il capitolo {c}","lg.opens":"Lingo si apre dopo il capitolo {c}: allora conosci abbastanza lettere per parole di 5 lettere.",
+  "lg.go":"Scrivi una parola di 5 lettere. <b>Invio</b> = controlla.","lg.short":"Scrivi 5 lettere, poi premi <b>Invio</b>.","lg.next":"Tentativi rimasti: {n}",
+  "lg.win":"Sì! {w} in {n} tentativi 🎉","lg.wow":"Al primo colpo! {w} 🤩","lg.miss":"La parola era {w}. Perdi 1 vita.",
+  "lg.txt":"<b>{n}</b> parole trovate · +{x} XP","lg.txt1":"<b>{n}</b> parola trovata · +{x} XP","lg.best":"Il tuo record: {b} parole.","lg.best1":"Il tuo record: {b} parola.","lg.wordsT":"Parole trovate","lg.recT":"Record","lg.gridA":"Griglia Lingo",
+  "lg.hint":"Verde = posto giusto · Cerchio giallo = nella parola, altro posto · Grigio = non nella parola. <b>Backspace</b> = cancella · <b>Esc</b> = stop",
   "rain.hint":"Scrivi una parola per distruggerla. Tieni le dita sulla fila di base. <b>Esc</b> = lascia la parola attuale.","rain.again":"Gioca ancora","rain.over":"Fine partita",
   "rain.txt":"Punti <b>{s}</b> · {k} meteoriti fermati · +{x} XP","rain.goal":"🎯 Obiettivo del giorno raggiunto! 10 minuti oggi.",
   "bc.unlocked":"Medaglia sbloccata:","bc.done":"Fatto! ✅","bc.notYet":"Non ancora","bc.of":"{c} su {g} {u}","bc.earned":"Vinta il {d}","bc.notEarned":"Non ancora vinta. Ce la puoi fare!",
@@ -1512,7 +1580,7 @@ const storage = {
 };
 function freshState(){
   return {name:"", layout:"", lang:"nl", blind:0, sound:1, clicks:1, hands:1, xp:0, lessons:{qwerty:{},azerty:{}}, keys:{}, badges:{},
-    streak:{count:0,last:""}, days:[], today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, flags:{}};
+    streak:{count:0,last:""}, days:[], today:{date:"",secs:0}, bestWpm:0, history:[], races:{won:0,played:0}, rainBest:0, ladder:{best:0,played:0,boss:0}, warmup:{last:"",count:0}, daily:{last:"",count:0,best:0}, lingo:{best:0,played:0,words:0}, flags:{}};
 }
 let state = freshState();
 try{ const raw = storage.get(); if(raw) state = Object.assign(freshState(), JSON.parse(raw)); }catch(e){}
@@ -2915,6 +2983,160 @@ $("#rainAgain").onclick=()=>{ $("#rainOver").classList.remove("on"); startRain(M
 $("#rainMap").onclick=()=>{ $("#rainOver").classList.remove("on"); goHome(); };
 $("#mBack").onclick=()=>{ if(M) M.running=false; goHome(); };
 
+const LINGO_WORDS = {
+en:`apple bread chair table house mouse horse plant water light night river ocean beach storm cloud snake tiger zebra eagle shark whale sheep goose
+camel robot pizza candy sugar honey lemon melon grape peach juice toast salad pasta onion cream music piano drums dance party smile happy funny
+laugh sleep dream ghost magic witch giant queen crown sword spoon plate glass clock watch phone video radio movie paint brush paper chalk board
+class teach learn study write words story train truck plane wheel track green black white brown score games sport skate climb throw catch field
+coach medal prize start ready quick quiet sound voice heart smart brain teeth mouth hands shirt shoes dress jeans socks scarf glove frost snowy
+sunny windy rainy grass trees stone sandy earth world space comet orbit alien stars metal steel lunch snack fries juicy sweet sauce spice nacho
+chips cakes donut bagel mango olive sushi tacos jelly flute banjo cello disco album songs tunes beats rhyme poems novel diary books pages lucky
+brave proud angry sorry thank hello today never later early first after under above along round small large short tight loose fresh clean dirty
+empty fully heavy sharp shiny fancy crazy silly jolly merry zippy fuzzy dizzy puppy kitty bunny llama panda koala otter lions hippo rhino moose
+bison squid crabs fishy birds robin raven finch stork crane heron`,
+nl:`appel tafel stoel kamer deken bloem water regen zomer lente avond nacht zwart groen blauw paars grijs licht zacht sterk traag groot klein breed
+fiets trein schip motor markt lezen piano fluit feest taart snoep brood pizza pasta friet druif fruit vlees paard leeuw zebra vogel slang draak
+robot prins kroon schat kaart steen hemel storm nieuw sport lopen beker prijs score match ploeg coach maand hallo graag samen alles niets nooit
+lucht aarde raket vloer plant lepel broek sjaal kleur kwast krijt spons hoofd brein nagel radio video beeld toets typen tempo vraag extra negen
+thuis stuur ijsje truck klant broer vader tante nicht hotel kaars humor clown dwerg spook geest toren molen haven sloot peper boter wafel chips
+drank ijsco lolly gebak vlaai`,
+fr:`table porte livre arbre fleur pomme poire fruit sucre lampe verre tasse plume carte image photo radio piano danse chant fille homme femme amour
+coeur jambe nuage pluie neige orage matin hiver heure temps monde terre plage sable herbe champ ferme vache poule chien lapin tigre singe crabe
+robot magie jaune rouge blanc grand petit court chaud froid jeune vieux bonne belle riche calme ville route train avion stylo gomme cours jouer
+jouet score match sport balle coach soupe pizza sauce sirop glace cette faire avoir aller venir trois douze seize vingt mille quand alors aussi
+toute poste doigt bague reine lutin piste phare voile ancre harpe orgue clown merci salut bravo super chose place force texte lundi mardi jeudi
+avril`,
+it:`siamo molto anche stare avere dalla torta tutti ruota porta piede tetto vento buono zucca zebra gioco punti palla paese bosco fiume notte lungo
+corto caldo bello lento forte scuro rosso verde viola treno aereo sedia libro penna carta amico gatto letto tazza forno frigo pasta pizza latte
+burro carne pesce pesca dolce acqua succo salsa fiore prato campo monte valle isola cielo terra mondo razzo robot drago spada scudo mappa barca
+porto ponte banco zaino gomma gesso esame festa piano canto ballo danza video radio sport nuoto corsa salto coppa vinto perso mucca capra volpe
+leone tigre corvo ragno verme basso largo pieno vuoto nuovo amaro acido primo prima sopra sotto fuori prego scusa bravo super tempo marzo padre
+madre nonno nonna bimbo donna amica amore cuore gamba testa bocca dente collo pelle magia fiaba frase testo tasto gonna calze borsa scala bagno
+cesto tonno polpo pollo panna verso pausa sasso sacco tasca tappo linea punto lampo tuono clima`,
+};
+
+/* =========================================================================
+   LINGO (GAME-4): guess the 5-letter word. The first letter is given.
+   5 tries per word, colour per letter. Endless words, 3 lives: a missed word costs 1 life.
+   Hidden words use only the learned keys. Guesses can be any letters (no word check).
+   ========================================================================= */
+const LINGO_LEN = 5, LINGO_TRIES = 5, LINGO_LIVES = 3;
+const LINGO_MIN = 10;                                   // words that must fit the learned keys before the game opens
+let LG=null;
+function lingoPool(lang=state.lang, idx=currentLessonIdx()){
+  const allowed=allowedUpTo(idx);
+  return [...new Set((LINGO_WORDS[lang]||LINGO_WORDS.en).split(/\s+/).filter(w=>w.length===LINGO_LEN && fits(w,allowed)))];
+}
+/* Chapter number after which Lingo opens. It differs per language and keyboard. */
+function lingoOpensAfter(lang=state.lang){
+  const n=lessonsFlat().length;
+  for(let i=0;i<n;i++) if(lingoPool(lang,i).length>=LINGO_MIN) return i;
+  return n;
+}
+function lingoLock(){ return lingoPool().length<LINGO_MIN ? t("lg.lock",{c:lingoOpensAfter()}) : ""; }
+const lingoBest = () => state.lingo?.best||0;
+/* Colour per letter: "ok" = right place, "near" = in the word at another place, "no" = not in the word.
+   A letter counts only as many times as it is in the word. */
+function lingoMark(guess, word){
+  const res=Array(LINGO_LEN).fill("no"), left={};
+  for(let i=0;i<LINGO_LEN;i++){ if(guess[i]===word[i]) res[i]="ok"; else left[word[i]]=(left[word[i]]||0)+1; }
+  for(let i=0;i<LINGO_LEN;i++) if(res[i]!=="ok" && left[guess[i]]>0){ res[i]="near"; left[guess[i]]--; }
+  return res;
+}
+function startLingo(){
+  const pool=lingoPool(); if(pool.length<LINGO_MIN) return;
+  show("lingo"); $("#layoutWarn").classList.remove("on");
+  LG={pool, bag:[], lives:LINGO_LIVES, words:0, score:0, t0:performance.now(), running:true};
+  $("#lgBest").textContent=lingoBest();
+  lingoNext();
+}
+function lingoNext(){
+  clearTimeout(LG.timer);
+  if(!LG.bag.length) LG.bag=shuffle(LG.pool.filter(w=>w!==LG.word));   // no word comes back before all others had their turn
+  LG.word=LG.bag.pop(); LG.rows=[]; LG.cur=LG.word[0]; LG.wait=false;
+  lingoRender(); lingoMsg(t("lg.go"));
+}
+function lingoKnown(){            // letters found at the right place, as a hint in the current row
+  const k=[LG.word[0],"","","",""];
+  LG.rows.forEach(r=>r.m.forEach((m,i)=>{ if(m==="ok") k[i]=LG.word[i]; }));
+  return k;
+}
+function lingoRender(reveal=-1){
+  const known=lingoKnown(); let html="";
+  for(let r=0;r<LINGO_TRIES;r++){
+    const row=LG.rows[r], cur=!row && r===LG.rows.length && !LG.wait;
+    html+=`<div class="lrow${cur?" cur":""}">`;
+    for(let i=0;i<LINGO_LEN;i++){
+      if(row) html+=`<i class="lc ${row.m[i]}${r===reveal?" flip":""}" style="--d:${i*90}ms">${esc(row.g[i])}</i>`;
+      else if(cur){ const c=LG.cur[i];
+        html+= c ? `<i class="lc in${i===0?" given":""}">${esc(c)}</i>` : `<i class="lc hint${i===LG.cur.length?" at":""}">${esc(known[i])}</i>`; }
+      else html+=`<i class="lc"></i>`;
+    }
+    html+=`</div>`;
+  }
+  $("#lgGrid").innerHTML=html;
+  $("#lgLives").textContent="❤️".repeat(LG.lives)+"🖤".repeat(LINGO_LIVES-LG.lives);
+  $("#lgScore").textContent=LG.words;
+}
+function lingoMsg(html, cls=""){ const m=$("#lgMsg"); m.innerHTML=html; m.className="lgmsg "+cls; }
+function onLingoKey(e){
+  if(!LG||!LG.running) return;
+  if(e.key==="Escape"){ e.preventDefault(); return $("#lgBack").click(); }
+  if(LG.wait){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); LG.after(); } return; }
+  if(e.key==="Backspace"){ e.preventDefault(); if(LG.cur.length>1){ LG.cur=LG.cur.slice(0,-1); lingoRender(); } return; }
+  if(e.key==="Enter"){ e.preventDefault();
+    if(LG.cur.length<LINGO_LEN){ beep(140,0.06); lingoMsg(t("lg.short")); return; }
+    return lingoGuess(); }
+  if(e.metaKey || (e.ctrlKey && !e.altKey) || e.key.length!==1) return;
+  e.preventDefault();
+  const c=fold(e.key.toLowerCase());
+  if(!/^[a-z]$/.test(c) || LG.cur.length>=LINGO_LEN){ beep(140,0.06); return; }
+  LG.cur+=c; lingoRender();
+}
+function lingoGuess(){
+  const g=LG.cur, m=lingoMark(g,LG.word);
+  LG.rows.push({g,m}); LG.cur=LG.word[0];
+  const win=g===LG.word, tries=LG.rows.length;
+  if(win || tries>=LINGO_TRIES){
+    LG.wait=true; lingoRender(tries-1);
+    if(win){
+      LG.words++; LG.score+=(LINGO_TRIES+1-tries)*10;
+      beep(660,0.06,"sine",0.05); setTimeout(chime,350);
+      lingoMsg(t(tries===1?"lg.wow":"lg.win",{w:LG.word.toUpperCase(),n:tries}),"good");
+    } else {
+      LG.lives--; beep(90,0.25,"sawtooth",0.06);
+      lingoMsg(t("lg.miss",{w:LG.word.toUpperCase()}),"bad");
+    }
+    $("#lgScore").textContent=LG.words; $("#lgLives").textContent="❤️".repeat(LG.lives)+"🖤".repeat(LINGO_LIVES-LG.lives);
+    LG.after = LG.lives>0 ? lingoNext : lingoOver;
+    LG.timer=setTimeout(()=>LG&&LG.running&&LG.wait&&LG.after(), win?1600:2600);
+  } else {
+    lingoRender(tries-1); lingoMsg(t("lg.next",{n:LINGO_TRIES-tries}));
+  }
+}
+function lingoOver(){
+  if(!LG||!LG.running) return;
+  LG.running=false; clearTimeout(LG.timer);
+  const secs=(performance.now()-LG.t0)/1000;
+  const s=state.lingo||(state.lingo={best:0,played:0,words:0});
+  const rec=LG.words>s.best;
+  s.best=Math.max(s.best,LG.words); s.played++; s.words+=LG.words;
+  const xp=Math.round(LG.score/5); state.xp+=xp;
+  const goal=addToday(secs); goalPending=false;
+  save(); checkBadges();
+  $("#lingoTitle").textContent= rec ? t("rec.new") : t("rain.over");
+  $("#lingoTxt").innerHTML=tn("lg.txt",LG.words,{x:xp})+"<br>"+tn("lg.best",s.best,{b:s.best});
+  $("#lingoOver").classList.add("on");
+  const lv=levelInfo(state.xp), lb=levelInfo(state.xp-xp);
+  if(lv.lvl>lb.lvl){ $("#lingoTxt").innerHTML+=`<br><b>🎉 ${t("lvl.up")} ${t("level")} ${lv.lvl} · ${esc(lv.title)}</b>`; confetti(160); chime(); }
+  if(goal){ $("#lingoTxt").innerHTML+=`<br><b class="goalok">${t("rain.goal")}</b>`; if(lv.lvl===lb.lvl){ confetti(160); chime(); } }
+}
+function lingoStop(){ if(LG){ LG.running=false; clearTimeout(LG.timer); } }
+$("#lingoAgain").onclick=()=>{ $("#lingoOver").classList.remove("on"); startLingo(); };
+$("#lingoMap").onclick=()=>{ $("#lingoOver").classList.remove("on"); goHome(); };
+$("#lgBack").onclick=()=>{ if(LG&&LG.running&&(LG.words||LG.rows.length)) lingoOver(); else { lingoStop(); goHome(); } };
+$("#mLingo").onclick=()=>{ if(!lingoLock()) return startLingo(); toast("🟩", t("lg.opens",{c:lingoOpensAfter()})); };
+
 /* =========================================================================
    XP, LEVELS, BADGES
    ========================================================================= */
@@ -3004,7 +3226,7 @@ function confStep(){
 /* =========================================================================
    HOME
    ========================================================================= */
-function goHome(){ clearTimeout(lvlTimer); clearTimeout(goalTimer); goalPending=false; if(M) M.running=false; clearInterval(liveTimer); S=null; nextRuleVisit(); renderHome(); show("home"); offerLayout(); }
+function goHome(){ lingoStop(); clearTimeout(lvlTimer); clearTimeout(goalTimer); goalPending=false; if(M) M.running=false; clearInterval(liveTimer); S=null; nextRuleVisit(); renderHome(); show("home"); offerLayout(); }
 /* =========================================================================
    KEEBO'S GOLDEN RULES: a card above the map, as a reminder.
    Sizes: "all" (every rule), "tip" (one rule + why), "mini" (one line).
@@ -3143,6 +3365,9 @@ function renderHome(){
   const wl=warmupLock();
   $("#mWarm").classList.toggle("locked", !!wl);
   $("#mWarmText").textContent = wl || t("m.warmS");
+  const gl=lingoLock(), grec=lingoBest();
+  $("#mLingo").classList.toggle("locked", !!gl);
+  $("#mLingoText").textContent = gl || (grec ? tn("m.lingoRec",grec) : t("m.lingoS"));
   const dl=dailyLock();
   $("#mDaily").classList.toggle("locked", !!dl);
   $("#mDailyText").textContent = dl || t("m.dailyS");
@@ -3392,7 +3617,7 @@ function clickTick(){
 }
 function pressFx(btn, x, y){
   if(!btn || btn.disabled || btn.classList.contains("locked") || btn.hasAttribute("data-nofx")) return;
-  if(screen==="type" || screen==="meteor") return; // never during typing runs
+  if(screen==="type" || screen==="meteor" || screen==="lingo") return; // never during typing runs
   clickTick();
   btn.classList.remove("fx-press"); void btn.offsetWidth; btn.classList.add("fx-press");
   clearTimeout(btn._fxT); btn._fxT=setTimeout(()=>btn.classList.remove("fx-press"), 300);
@@ -3443,6 +3668,8 @@ document.addEventListener("keydown", e=>{
   if($("#settings").classList.contains("on") || $("#raceLobby").classList.contains("on")) { if(e.key==="Escape"){ $("#settings").classList.remove("on"); $("#raceLobby").classList.remove("on"); renderHome(); } return; }
   if(screen==="type") return onTypeKey(e);
   if(screen==="meteor") return onRainKey(e);
+  if($("#lingoOver").classList.contains("on")){ if(e.key==="Enter"){ e.preventDefault(); $("#lingoAgain").click(); } else if(e.key==="Escape"){ e.preventDefault(); $("#lingoMap").click(); } return; }
+  if(screen==="lingo") return onLingoKey(e);
   if(screen==="result" && e.key==="Enter"){ e.preventDefault(); (resultActions.next||resultActions.retry)(); return; }
   if(screen==="result" && e.key==="Escape"){ goHome(); return; }
   if(e.ctrlKey || e.metaKey || e.altKey || $$(".overlay.on").length) return;
@@ -3482,7 +3709,7 @@ function pickChoice(sel, e){
    Back from a top screen goes to the map. In a run it works like Esc: the run stops, nothing is saved.
    Back on the map leaves the app. Forward opens Settings or a lobby again. A stopped game cannot come back.
    ========================================================================= */
-const NAV_TOP=["badgeCard","ladderLock","levelLobby","boostLobby","customLobby","raceLobby","rainOver","settings"];   // pop-ups first
+const NAV_TOP=["badgeCard","ladderLock","levelLobby","boostLobby","customLobby","raceLobby","rainOver","lingoOver","settings"];   // pop-ups first
 const NAV_REOPEN={settings:openSettings, levelLobby:()=>openLevelLobby(LVG), raceLobby:openRaceLobby, boostLobby:openBoost, customLobby:openCustom};
 let navIdx=0, navBusy=false;
 const navView=()=>NAV_TOP.find(id=>$("#"+id).classList.contains("on")) || screen;
@@ -3502,8 +3729,9 @@ function navToMap(){
   ["ladderLock","levelLobby","boostLobby","customLobby","raceLobby"].forEach(id=>$("#"+id).classList.remove("on"));
   if($("#settings").classList.contains("on")){ $("#settings").classList.remove("on"); renderHome(); }
   if($("#rainOver").classList.contains("on")){ $("#rainOver").classList.remove("on"); goHome(); }
+  if($("#lingoOver").classList.contains("on")){ $("#lingoOver").classList.remove("on"); goHome(); }
   if(screen==="type") endSessionEarly();
-  else if(screen==="meteor" || screen==="result") goHome();
+  else if(screen==="meteor" || screen==="lingo" || screen==="result") goHome();
 }
 addEventListener("popstate", e=>{
   const st=e.state && e.state.typoo ? e.state : null;
