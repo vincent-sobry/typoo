@@ -38,8 +38,10 @@ h1,h2,h3{margin:0}
 .logo span{color:var(--accent2)}
 .spacer{flex:1}
 .pill{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;white-space:nowrap}
-.pill.risk{border-color:var(--warn);color:var(--warn)}
-.pill.risk small{font-size:12px;font-weight:700}
+.skrow{margin-top:10px}
+.sk{font-weight:700;font-size:14px;white-space:nowrap}
+.sk.risk{color:var(--warn)}
+.sk.risk small{font-size:12px;font-weight:700}
 /* Streak week strip (UX-26) */
 .week{display:flex;align-items:center;gap:10px;margin-top:8px}
 .week .days{display:flex;gap:3px}
@@ -482,8 +484,6 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
     <div class="top">
       <div class="logo">Typ<span>oo</span> ⌨️</div>
       <div class="spacer"></div>
-      <div class="pill" id="hStreak" title="Streak: days in a row with today's goal reached" data-ta="title=h.streakT">🔥 0</div>
-      <div class="pill" id="hLevel">Lv 1</div>
       <button class="btn ghost" id="hHelp" title="Tour (?)" aria-label="Start the tour" data-ta="title=h.tourT,aria-label=h.tourA">❓</button>
       <button class="btn ghost" id="hSettings" title="Settings" data-ta="title=settings,aria-label=settings">⚙️</button>
     </div>
@@ -502,6 +502,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
           <div style="margin-top:12px" id="gBox">
             <div class="row"><b style="font-size:14px" data-t="goal">Today's goal</b><div class="spacer"></div><span class="muted" id="gTxt" style="font-size:13px">0 / 10 min</span></div>
             <div class="bar green"><i id="gBar" style="width:0"></i></div>
+            <div class="row skrow"><b style="font-size:14px" data-t="sk.h">Streak</b><div class="spacer"></div><span class="sk" id="hStreak" title="Streak: days in a row with today's goal reached" data-ta="title=h.streakT">🔥 0</span></div>
             <div class="week" id="week" aria-label="Streak: last 7 days" data-ta="aria-label=h.week"><div class="days" id="wDays"></div><span class="frz" id="wFreeze"></span></div>
             <div class="wsave" id="wSave" data-t="h.wsave" hidden>Reach today's goal to save your streak</div>
           </div>
@@ -901,7 +902,7 @@ const I18N = {};
 I18N.en = {
   "lang":"Language","chapter":"Chapter","and":"and","space":"space","you":"You","player":"Player","level":"Level","lv":"Lv","key":"Key",
   "map":"Map","backMap":"← Map","cancel":"Cancel","close":"Close","done":"Done","skip":"Skip","back":"Back","next":"Next","retry":"Retry",
-  "on":"On","off":"Off","settings":"Settings","tour":"Tour","badges":"Badges","goal":"Today's goal","go":"GO!","go.btn":"Go","letsGo":"Let's go!","rematch":"Rematch?",
+  "on":"On","off":"Off","settings":"Settings","tour":"Tour","badges":"Badges","goal":"Today's goal","sk.h":"Streak","go":"GO!","go.btn":"Go","letsGo":"Let's go!","rematch":"Rematch?",
   "days1":"{n} day","days":"{n} days",
   "fingers":["left pinky","left ring finger","left middle finger","left index finger","right index finger","right middle finger","right ring finger","right pinky","thumb"],
   "f.space":"Space: thumb","f.shiftL":" + Shift with your left pinky","f.shiftR":" + Shift with your right pinky",
@@ -1025,7 +1026,7 @@ I18N.en = {
 I18N.nl = {
   "lang":"Taal","chapter":"Hoofdstuk","and":"en","space":"spatie","you":"Jij","player":"Speler","level":"Level","lv":"Lv","key":"Toets",
   "map":"Kaart","backMap":"← Kaart","cancel":"Annuleren","close":"Sluiten","done":"Klaar","skip":"Overslaan","back":"Terug","next":"Volgende","retry":"Opnieuw",
-  "on":"Aan","off":"Uit","settings":"Instellingen","tour":"Rondleiding","badges":"Badges","goal":"Doel van vandaag","go":"START!","go.btn":"Ga","letsGo":"Daar gaan we!","rematch":"Revanche?",
+  "on":"Aan","off":"Uit","settings":"Instellingen","tour":"Rondleiding","badges":"Badges","goal":"Doel van vandaag","sk.h":"Reeks","go":"START!","go.btn":"Ga","letsGo":"Daar gaan we!","rematch":"Revanche?",
   "days1":"{n} dag","days":"{n} dagen",
   "fingers":["linkerpink","linkerringvinger","linkermiddelvinger","linkerwijsvinger","rechterwijsvinger","rechtermiddelvinger","rechterringvinger","rechterpink","duim"],
   "f.space":"Spatie: duim","f.shiftL":" + Shift met je linkerpink","f.shiftR":" + Shift met je rechterpink",
@@ -1165,7 +1166,7 @@ I18N.nl = {
 I18N.fr = {
   "lang":"Langue","chapter":"Chapitre","and":"et","space":"espace","you":"Toi","player":"Joueur","level":"Niveau","lv":"Niv.","key":"Touche",
   "map":"Carte","backMap":"← Carte","cancel":"Annuler","close":"Fermer","done":"OK","skip":"Passer","back":"Retour","next":"Suivant","retry":"Recommencer",
-  "on":"Oui","off":"Non","settings":"Réglages","tour":"Visite","badges":"Badges","goal":"Objectif du jour","go":"PARTEZ !","go.btn":"Aller","letsGo":"C'est parti !","rematch":"Revanche ?",
+  "on":"Oui","off":"Non","settings":"Réglages","tour":"Visite","badges":"Badges","goal":"Objectif du jour","sk.h":"Série","go":"PARTEZ !","go.btn":"Aller","letsGo":"C'est parti !","rematch":"Revanche ?",
   "days1":"{n} jour","days":"{n} jours",
   "fingers":["auriculaire gauche","annulaire gauche","majeur gauche","index gauche","index droit","majeur droit","annulaire droit","auriculaire droit","pouce"],
   "f.space":"Espace : pouce","f.shiftL":" + Maj avec ton auriculaire gauche","f.shiftR":" + Maj avec ton auriculaire droit",
@@ -1305,7 +1306,7 @@ I18N.fr = {
 I18N.it = {
   "lang":"Lingua","chapter":"Capitolo","and":"e","space":"spazio","you":"Tu","player":"Giocatore","level":"Livello","lv":"Liv.","key":"Tasto",
   "map":"Mappa","backMap":"← Mappa","cancel":"Annulla","close":"Chiudi","done":"Fatto","skip":"Salta","back":"Indietro","next":"Avanti","retry":"Riprova",
-  "on":"Sì","off":"No","settings":"Impostazioni","tour":"Tour","badges":"Medaglie","goal":"Obiettivo di oggi","go":"VIA!","go.btn":"Vai","letsGo":"Andiamo!","rematch":"Rivincita?",
+  "on":"Sì","off":"No","settings":"Impostazioni","tour":"Tour","badges":"Medaglie","goal":"Obiettivo di oggi","sk.h":"Serie","go":"VIA!","go.btn":"Vai","letsGo":"Andiamo!","rematch":"Rivincita?",
   "days1":"{n} giorno","days":"{n} giorni",
   "fingers":["mignolo sinistro","anulare sinistro","medio sinistro","indice sinistro","indice destro","medio destro","anulare destro","mignolo destro","pollice"],
   "f.space":"Spazio: pollice","f.shiftL":" + Maiusc con il mignolo sinistro","f.shiftR":" + Maiusc con il mignolo destro",
@@ -3038,7 +3039,7 @@ function nextRuleVisit(){ state.ruleI=ruleIdx()+1; ruleFade=true; }
 function modesEnd(){ const m=$("#home .modes"); if(m) m.classList.toggle("end", m.scrollTop+m.clientHeight>=m.scrollHeight-4); }
 $("#home .modes").addEventListener("scroll", modesEnd, {passive:true});
 addEventListener("resize", modesEnd);
-/* Streak pill and week strip (last 7 days) on home. */
+/* Streak count and week strip (last 7 days) on home, in the left column under today's goal. */
 function renderStreak(sk=streakInfo()){
   const p=$("#hStreak");
   p.textContent="🔥 "+tn("days",sk.count);
@@ -3062,7 +3063,6 @@ function renderHome(){
   $("#pXp").textContent=state.xp+" XP";
   $("#pTitle").textContent=`${t("level")} ${li.lvl} · ${li.title} · ${t("h.toNext",{x:li.need-li.into})}`;
   $("#pBar").style.width=(li.into/li.need*100)+"%";
-  $("#hLevel").textContent=t("lv")+" "+li.lvl;
   const td=todayStr(); const secs= state.today.date===td ? state.today.secs : 0;
   const sk=streakInfo(td);
   renderStreak(sk);
