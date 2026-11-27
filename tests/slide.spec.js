@@ -89,3 +89,22 @@ test("the box stays fixed during the slide; only the text moves", async ({ page 
   expect(new Set(lefts)).toEqual(new Set([before]));
   expect(await box.evaluate((b) => getComputedStyle(b.querySelector(".cur")).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
 });
+
+test("compare A/B (test): two rows, same keys move both", async ({ page }) => {
+  await openApp(page, player({ slide: 2 }));
+  await page.click("#mContinue");
+  const a = page.locator("#textA"), b = page.locator("#text");
+  await expect(a).toBeVisible();
+  await expect(a).toHaveClass(/slidemode/);
+  await expect(b).toHaveClass(/slidemode/);
+  await page.keyboard.type(await page.evaluate("S.text.slice(0,10)"), { delay: 20 });
+  await page.waitForTimeout(600);
+  const shift = (loc) => loc.evaluate((el) => new DOMMatrix(getComputedStyle(el.querySelector(".slidetrack")).transform).m41);
+  const sa = await shift(a), sb = await shift(b);
+  expect(sb).toBeLessThan(-50);
+  expect(Math.abs(sa - sb)).toBeLessThanOrEqual(1);   // both rows end at the same letter
+  expect(await a.locator(".cur").count()).toBe(1);
+  expect(await a.locator(".ok, .fx").count()).toBe(10);
+  await page.keyboard.type(await page.evaluate("S.text.slice(S.pos)"), { delay: 2 });
+  await expect(page.locator("#result")).toBeVisible();
+});
