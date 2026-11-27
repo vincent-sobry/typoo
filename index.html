@@ -293,6 +293,16 @@ body.fframe #fframe{display:block}
 .rbtns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .need{font-size:14px;color:var(--muted);margin-top:6px}
 .weak{margin-top:10px;font-size:14px}
+.typed{display:none;margin-top:12px;text-align:left}
+.typed.on{display:block}
+.typed .tyhead{font-size:14px;margin-bottom:4px;text-align:center}
+.typed .tyhead small{display:block;color:var(--muted);font-size:12px}
+.typed .tybox{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-family:var(--mono);font-size:17px;line-height:2.2;
+  color:#c9cdf0;max-height:clamp(84px,18vh,152px);overflow-y:auto;text-wrap:balance;overscroll-behavior:contain}
+.typed .w{white-space:nowrap}
+.typed .er{position:relative;color:var(--warn);background:#ff5d7322;border-bottom:2px solid var(--bad);border-radius:3px}
+.typed .er::before{content:attr(data-w);position:absolute;left:50%;top:-1.05em;transform:translateX(-50%);font-size:.65em;line-height:1;color:var(--bad);font-weight:700;white-space:nowrap}
+.typed .er.sp{color:var(--muted)}
 .weak kbd{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-family:var(--mono);margin:0 2px}
 
 /* ---------- Race ---------- */
@@ -645,6 +655,10 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <div class="lvlup" id="rLvlUp"></div>
       <div class="lvlup goal" id="rGoal" role="status"></div>
       <div class="weak" id="rWeak"></div>
+      <div class="typed" id="rTyped">
+        <div class="tyhead"><b data-t="r.typed">Your text</b><small data-t="r.typedHint">Red letter on top = the key you typed.</small></div>
+        <div class="tybox" id="rTypedBox" role="region" data-ta="aria-label=r.typed" aria-label="Your text"></div>
+      </div>
       <div class="rbtns">
         <button class="btn ghost" id="rMap" data-t="map">Map</button>
         <button class="btn ghost" id="rRetry" data-t="r.retry">↻ Retry</button>
@@ -1063,7 +1077,7 @@ I18N.en = {
   "intro*speed":"Speed sprint! The most common words. Stay relaxed.","intro*boss":"BOSS LEVEL. A long text. Accuracy first, then speed. Good luck!",
   /* result */
   "r.acc":"Accuracy","r.time":"Time","r.retry":"↻ Retry","r.next":"Next →","r.enter":"Press <b>Enter</b> for the main button",
-  "r.tricky":"Tricky keys:","r.noMiss":"No mistakes. Wow! 💎",
+  "r.tricky":"Tricky keys:","r.typed":"Your text","r.typedHint":"Red letter on top = the key you typed.","r.noMiss":"No mistakes. Wow! 💎",
   "les.s3":"PERFECT! Three stars! You're a typing machine! 🤖💜","les.s2":"Great job! Two stars. Want to go for three?",
   "les.s1":"Chapter passed! Next time, try a bit faster.","les.s0":"Almost! Get 90% accuracy to pass. Go slower, and be precise.",
   "les.need1":"Need: 90% accuracy to pass.","les.need2":"For ★★: 94% accuracy and {w} WPM.","les.need3":"For ★★★: 97% accuracy and {w} WPM.",
@@ -1189,7 +1203,7 @@ I18N.nl = {
   "intro*sentences":"Volledige zinnen. Hou een rustig, vast ritme.","intro*numbers":"Cijfers en woorden. Strek naar boven en kom terug naar de thuisrij.",
   "intro*speed":"Snelheidssprint! De meest gebruikte woorden. Blijf ontspannen.","intro*boss":"EINDBAAS. Een lange tekst. Eerst juist, dan snel. Succes!",
   "r.acc":"Nauwkeurigheid","r.time":"Tijd","r.retry":"↻ Opnieuw","r.next":"Volgende →","r.enter":"Druk op <b>Enter</b> voor de hoofdknop",
-  "r.tricky":"Lastige toetsen:","r.noMiss":"Geen fouten. Wauw! 💎",
+  "r.tricky":"Lastige toetsen:","r.typed":"Jouw tekst","r.typedHint":"Rode letter erboven = de toets die je typte.","r.noMiss":"Geen fouten. Wauw! 💎",
   "les.s3":"PERFECT! Drie sterren! Je bent een typmachine! 🤖💜","les.s2":"Goed gedaan! Twee sterren. Ga je voor drie?",
   "les.s1":"Hoofdstuk gehaald! Probeer volgende keer iets sneller.","les.s0":"Bijna! Haal 90% nauwkeurigheid om door te gaan. Ga trager en typ precies.",
   "les.need1":"Nodig: 90% nauwkeurigheid om door te gaan.","les.need2":"Voor ★★: 94% nauwkeurigheid en {w} WPM.","les.need3":"Voor ★★★: 97% nauwkeurigheid en {w} WPM.",
@@ -1336,7 +1350,7 @@ I18N.fr = {
   "intro*sentences":"Des phrases entières. Garde un rythme calme et régulier.","intro*numbers":"Chiffres et mots. Monte, puis reviens sur la rangée de base.",
   "intro*speed":"Sprint de vitesse ! Les mots les plus courants. Reste détendu.","intro*boss":"NIVEAU BOSS. Un long texte. D'abord juste, puis rapide. Bonne chance !",
   "r.acc":"Précision","r.time":"Temps","r.retry":"↻ Recommencer","r.next":"Suivant →","r.enter":"Appuie sur <b>Entrée</b> pour le bouton principal",
-  "r.tricky":"Touches difficiles :","r.noMiss":"Aucune faute. Waouh ! 💎",
+  "r.tricky":"Touches difficiles :","r.typed":"Ton texte","r.typedHint":"Lettre rouge au-dessus = la touche que tu as tapée.","r.noMiss":"Aucune faute. Waouh ! 💎",
   "les.s3":"PARFAIT ! Trois étoiles ! Tu es une machine à écrire ! 🤖💜","les.s2":"Bravo ! Deux étoiles. Tu tentes les trois ?",
   "les.s1":"Chapitre réussi ! La prochaine fois, essaie un peu plus vite.","les.s0":"Presque ! Il faut 90 % de précision pour réussir. Va plus lentement et sois précis.",
   "les.need1":"Il faut : 90 % de précision pour réussir.","les.need2":"Pour ★★ : 94 % de précision et {w} WPM.","les.need3":"Pour ★★★ : 97 % de précision et {w} WPM.",
@@ -1483,7 +1497,7 @@ I18N.it = {
   "intro*sentences":"Frasi intere. Tieni un ritmo calmo e regolare.","intro*numbers":"Numeri e parole. Sali, poi torna sulla fila di base.",
   "intro*speed":"Sprint di velocità! Le parole più comuni. Resta rilassato.","intro*boss":"LIVELLO BOSS. Un testo lungo. Prima la precisione, poi la velocità. In bocca al lupo!",
   "r.acc":"Precisione","r.time":"Tempo","r.retry":"↻ Riprova","r.next":"Avanti →","r.enter":"Premi <b>Invio</b> per il pulsante principale",
-  "r.tricky":"Tasti difficili:","r.noMiss":"Nessun errore. Wow! 💎",
+  "r.tricky":"Tasti difficili:","r.typed":"Il tuo testo","r.typedHint":"Lettera rossa sopra = il tasto che hai premuto.","r.noMiss":"Nessun errore. Wow! 💎",
   "les.s3":"PERFETTO! Tre stelle! Sei una macchina da scrivere! 🤖💜","les.s2":"Bravo! Due stelle. Provi a prenderne tre?",
   "les.s1":"Capitolo superato! La prossima volta prova un po' più veloce.","les.s0":"Quasi! Serve il 90% di precisione per passare. Vai più piano e sii preciso.",
   "les.need1":"Serve: 90% di precisione per passare.","les.need2":"Per ★★: 94% di precisione e {w} WPM.","les.need3":"Per ★★★: 97% di precisione e {w} WPM.",
@@ -1953,7 +1967,7 @@ function startSession(opts){
   runStart();
   $("#layoutWarn").classList.remove("on");
   const again=nextAgain; nextAgain=null;
-  S = Object.assign({again, pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
+  S = Object.assign({again, pos:0, keystrokes:0, errors:0, start:0, errAt:new Set(), wrong:{}, streak:0, wrongRow:0, miss:{}, done:false, locked:false}, opts);
   show("type");
   $("#tTitle").textContent = opts.title;
   $("#raceTracks").style.display = opts.mode==="race"||opts.mode==="ladder" ? "block" : "none";
@@ -2070,6 +2084,7 @@ function onTypeKey(e){
   } else {
     st.m++; S.errors++; S.errAt.add(S.pos); S.streak=0; S.wrongRow++;
     S.miss[fk]=(S.miss[fk]||0)+1;
+    (S.wrong[S.pos]||(S.wrong[S.pos]=[])).push(k);   // for the typed text on the result screen (this run only, not saved)
     const el=document.getElementById("c"+S.pos); el.classList.remove("bad"); void el.offsetWidth; el.classList.add("bad");
     flashKey(k,"wrong"); beep(140,0.07);
     if(S.wrongRow===3) say("#type", pick("oops"), "oops");
@@ -2188,7 +2203,7 @@ function finishSession(){
   }
   if(acc===100 && S.pos>=40) state.flags.perfect=true;
   if(state.blind>=1 && acc>=95 && S.pos>=40) state.flags.blind=true;
-  const res={wpm,acc,secs,miss:S.miss};
+  const res={wpm,acc,secs,miss:S.miss, typed: S.mode==="ladder" ? null : {text:S.text, wrong:S.wrong}};
   const sess=S;
   S.onFinish(res);
   save(); checkBadges();
@@ -2258,6 +2273,7 @@ function showResult(o){
   $("#rNeed").textContent=o.need||"";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd>${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
+  showTyped(o.res.typed);
   say("#result", runQuiet ? t("qh.say",{name: state.name ? ", "+esc(state.name) : ""}) : o.msg, runQuiet ? "think" : o.mood);
   $("#rNext").style.display = o.next ? "" : "none";
   $("#rNext").textContent = o.nextLabel||t("r.next");
@@ -2267,6 +2283,26 @@ function showResult(o){
   main.style.setProperty("--lock", RESULT_KEY_LOCK+"ms"); main.classList.add("filling");
   main.onanimationend = e => { if(e.animationName==="btnfill") main.classList.remove("filling"); };   // ready: normal colour again
   offerLayout();
+}
+/* The text of the run, with the errors: a red mark under each letter that had an error, and the first wrong key on top.
+   Shown only when the run had errors. Words do not break over two rows. */
+function showTyped(ty){
+  const box=$("#rTypedBox"), on=!!(ty && Object.keys(ty.wrong).length);
+  $("#rTyped").classList.toggle("on", on);
+  if(!on){ box.innerHTML=""; return; }
+  const ch=(c,i)=>{
+    const w=ty.wrong[i];
+    if(!w) return esc(c);
+    const key=k=>k===" "?"␣":k;                    // on top: the first wrong key. All wrong keys: in the tooltip.
+    return `<span class="er${c===" "?" sp":""}" data-w="${esc(key(w[0]))}" title="${esc(w.map(key).join(" "))}">${c===" "?"␣":esc(c)}</span>`;
+  };
+  let out="", word="";
+  [...ty.text].forEach((c,i)=>{
+    if(c===" "){ if(word) out+=`<span class="w">${word}</span>`; word=""; out+= ty.wrong[i] ? ch(c,i)+"<wbr>" : " "; }
+    else word+=ch(c,i);
+  });
+  if(word) out+=`<span class="w">${word}</span>`;
+  box.innerHTML=out; box.scrollTop=0;
 }
 let resultActions=null, lvlTimer=null, goalTimer=null;
 /* Daily goal moment on the result screen: one time per day, after the stars and the level. Never during a run. */
