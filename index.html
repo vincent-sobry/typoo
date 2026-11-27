@@ -295,6 +295,11 @@ body.fframe #fframe{display:block}
 .rbtns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .need{font-size:14px;color:var(--muted);margin-top:6px}
 .weak{margin-top:10px;font-size:14px}
+.rtext{display:none;text-align:left;font-size:20px;height:auto;max-height:clamp(96px,22vh,170px);overflow-y:auto;white-space:pre-wrap;text-wrap:balance;margin:0 0 12px;padding:10px 18px;overscroll-behavior:contain}
+.rtext.on{display:block}
+.rtext .w{white-space:nowrap}
+.rtext .ms{color:var(--bad);font-weight:700;background:#ff5d7322}
+.rtext .ms.sp{background:#ff5d7355}
 .typed{display:none;margin-top:12px;text-align:left}
 .typed.on{display:block}
 .typed .tyhead{font-size:14px;margin-bottom:4px;text-align:center}
@@ -639,6 +644,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <!-- ============ RESULT ============ -->
   <section id="result" class="screen">
     <div class="result card">
+      <div class="textbox rtext" id="rText" role="region" data-ta="aria-label=r.typed" aria-label="Your text"></div>
       <div class="botbox" style="justify-content:center">
         <svg class="bot" viewBox="0 0 120 120"></svg>
         <div class="bubble" id="rBubble">…</div>
@@ -2290,7 +2296,7 @@ function showResult(o){
   $("#rNeed").textContent=o.need||"";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd>${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
-  showTyped(o.res.typed);
+  showTyped(o.res.typed); showRunText(o.res.typed);
   say("#result", runQuiet ? t("qh.say",{name: state.name ? ", "+esc(state.name) : ""}) : o.msg, runQuiet ? "think" : o.mood);
   $("#rNext").style.display = o.next ? "" : "none";
   $("#rNext").textContent = o.nextLabel||t("r.next");
@@ -2316,6 +2322,20 @@ function showTyped(ty){
   let out="", word="";
   [...ty.text].forEach((c,i)=>{
     if(c===" "){ if(word) out+=`<span class="w">${word}</span>`; word=""; out+= ty.wrong[i] ? ch(c,i)+"<wbr>" : " "; }
+    else word+=ch(c,i);
+  });
+  if(word) out+=`<span class="w">${word}</span>`;
+  box.innerHTML=out; box.scrollTop=0;
+}
+/* Version B, to compare with showTyped: the text box of the run, same style as during the run, at the top of the result.
+   The letters with an error are red. The keys that were pressed do not show. */
+function showRunText(ty){
+  const box=$("#rText"); box.classList.toggle("on", !!ty);
+  if(!ty){ box.innerHTML=""; return; }
+  let out="", word="";
+  const ch=(c,i)=> ty.wrong[i] ? `<span class="ms${c===" "?" sp":""}">${esc(c)}</span>` : `<span class="ok">${esc(c)}</span>`;
+  [...ty.text].forEach((c,i)=>{
+    if(c===" "){ if(word) out+=`<span class="w">${word}</span>`; word=""; out+=ch(c,i); }
     else word+=ch(c,i);
   });
   if(word) out+=`<span class="w">${word}</span>`;
