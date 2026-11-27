@@ -57,3 +57,16 @@ test("the head of the block follows the language", async ({ page }) => {
   await typeWithErrors(page, [1]);
   await expect(page.locator("#rTyped .tyhead b")).toHaveText("Jouw tekst");
 });
+
+test("version B: the text box of the run is at the top, letters with an error are red, no pressed keys", async ({ page }) => {
+  await openApp(page, player());
+  await page.click("#mContinue");
+  const text = await typeWithErrors(page, [0, 5]);
+  const box = page.locator("#rText");
+  await expect(box).toBeVisible();
+  await expect(box).toHaveClass(/textbox/);
+  await expect(box.locator(".ms")).toHaveCount(2);
+  expect((await box.innerText()).replace(/\s+/g, " ").trim()).toBe(text.replace(/\s+/g, " ").trim());
+  const boxY = (await box.boundingBox()).y, titleY = (await page.locator("#rTitle").boundingBox()).y;
+  expect(boxY).toBeLessThan(titleY);                                         // top of the summary
+});
