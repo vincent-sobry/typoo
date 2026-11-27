@@ -415,7 +415,8 @@ body.fframe #fframe{display:block}
 #lingo .hud h2{margin:0}
 .lgwrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px}
 .lgrid{display:grid;gap:8px}
-.lrow{display:grid;grid-template-columns:repeat(var(--n,5),min(clamp(44px,10.5vh,76px),calc((100vw - 120px) / var(--n,5) - 8px)));gap:8px}
+/* --n = letters, --r = rows. More rows make the cells smaller, so the grid keeps the height of 5 rows. */
+.lrow{display:grid;grid-template-columns:repeat(var(--n,5),min(clamp(36px,calc((52.5vh + 32px) / var(--r,5) - 8px),76px),calc((100vw - 120px) / var(--n,5) - 8px)));gap:8px}
 .lc{aspect-ratio:1;border-radius:12px;background:var(--bg2);border:2px solid var(--line);display:grid;place-items:center;
   font:700 clamp(22px,5.4vh,38px) var(--mono);text-transform:uppercase;font-style:normal;color:var(--text)}
 .lrow.cur .lc{border-color:#4a54a0}
@@ -563,7 +564,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
             <button class="mode" id="mSmart"><span class="ic">🧠</span><span><b data-t="m.smart">Smart Practice</b><small data-t="m.smartS">Train your weakest keys</small></span></button>
             <button class="mode" id="mCustom"><span class="ic">🔤</span><span><b data-t="m.custom">Custom Letters</b><small id="mCustomText">Pick the keys you want to practise</small></span></button>
             <button class="mode" id="mBoost"><span class="ic">⚡</span><span><b data-t="m.boost">Booster</b><small id="mBoostText">Get more stars on a chapter</small></span></button>
-            <button class="mode" id="mLingo"><span class="ic">🟩</span><span><b data-t="m.lingo">Lingo</b><small id="mLingoText">Guess the 5-letter word in 5 tries</small></span></button>
+            <button class="mode" id="mLingo"><span class="ic">🟩</span><span><b data-t="m.lingo">Lingo</b><small id="mLingoText">Guess the word, first letter given</small></span></button>
           </div>
         </div>
         <div class="card" style="margin-top:16px">
@@ -1104,7 +1105,7 @@ I18N.en = {
   "lw.firstLost":"I was faster on the first word. Try again!","lw.need":"Sublevels: {c} of {n} · Record: {b} · Last word: {w}",
   "lw.sayPassed":"Beep! I passed you!","lw.sayLost":"Beep! I finished that word first.",
   /* word rain */
-  "m.lingo":"Lingo","lg.sz5":"Words of 5 letters","lg.sz56":"Words of 5 or 6 letters","lg.sz68":"Words of 6 to 8 letters","m.lingoS":"Guess the word in 5 tries","m.lingoRec":"Record: {n} words","m.lingoRec1":"Record: {n} word",
+  "m.lingo":"Lingo","lg.sz5":"Words of 5 letters","lg.sz56":"Words of 5 or 6 letters","lg.sz68":"Words of 6 to 8 letters","m.lingoS":"Guess the word, first letter given","m.lingoRec":"Record: {n} words","m.lingoRec1":"Record: {n} word",
   "lg.lock":"Locked: pass chapter {c} first","lg.opens":"Lingo opens after chapter {c}: then you know enough letters for 5-letter words.",
   "lg.go":"Type a word with {n} letters. <b>Enter</b> = check.","lg.short":"Type {n} letters, then press <b>Enter</b>.","lg.next":"Tries left: {n}",
   "lg.win":"Yes! {w} in {n} tries 🎉","lg.wow":"First try! {w} 🤩","lg.miss":"The word was {w}. You lose 1 life.",
@@ -1221,7 +1222,7 @@ I18N.nl = {
   "lw.wonMsg":"WAT?! Zelfs het eindbaaswoord! Jij bent een woordladderlegende! 🤖💜","lw.climbed1":"Je klom {n} sport.","lw.climbed":"Je klom {n} sporten.",
   "lw.firstLost":"Ik was sneller op het eerste woord. Probeer opnieuw!","lw.need":"Subniveaus: {c} van {n} · Record: {b} · Laatste woord: {w}",
   "lw.sayPassed":"Biep! Ik haalde je in!","lw.sayLost":"Biep! Ik had dat woord eerst.",
-  "m.lingo":"Lingo","lg.sz5":"Woorden van 5 letters","lg.sz56":"Woorden van 5 of 6 letters","lg.sz68":"Woorden van 6 tot 8 letters","m.lingoS":"Raad het woord in 5 beurten","m.lingoRec":"Record: {n} woorden","m.lingoRec1":"Record: {n} woord",
+  "m.lingo":"Lingo","lg.sz5":"Woorden van 5 letters","lg.sz56":"Woorden van 5 of 6 letters","lg.sz68":"Woorden van 6 tot 8 letters","m.lingoS":"Raad het woord, de eerste letter krijg je","m.lingoRec":"Record: {n} woorden","m.lingoRec1":"Record: {n} woord",
   "lg.lock":"Op slot: haal eerst hoofdstuk {c}","lg.opens":"Lingo gaat open na hoofdstuk {c}: dan ken je genoeg letters voor woorden van 5 letters.",
   "lg.go":"Typ een woord van {n} letters. <b>Enter</b> = controleren.","lg.short":"Typ {n} letters en druk dan op <b>Enter</b>.","lg.next":"Nog {n} beurten",
   "lg.win":"Ja! {w} in {n} beurten 🎉","lg.wow":"In één keer! {w} 🤩","lg.miss":"Het woord was {w}. Je verliest 1 leven.",
@@ -1368,7 +1369,7 @@ I18N.fr = {
   "lw.wonMsg":"QUOI ?! Même le mot boss ! Tu es une légende de l'échelle de mots ! 🤖💜","lw.climbed1":"Tu as grimpé {n} barreau.","lw.climbed":"Tu as grimpé {n} barreaux.",
   "lw.firstLost":"J'étais plus rapide sur le premier mot. Réessaie !","lw.need":"Sous-niveaux : {c} sur {n} · Record : {b} · Dernier mot : {w}",
   "lw.sayPassed":"Bip ! Je t'ai dépassé !","lw.sayLost":"Bip ! J'ai fini ce mot le premier.",
-  "m.lingo":"Lingo","lg.sz5":"Mots de 5 lettres","lg.sz56":"Mots de 5 ou 6 lettres","lg.sz68":"Mots de 6 à 8 lettres","m.lingoS":"Devine le mot en 5 essais","m.lingoRec":"Record : {n} mots","m.lingoRec1":"Record : {n} mot",
+  "m.lingo":"Lingo","lg.sz5":"Mots de 5 lettres","lg.sz56":"Mots de 5 ou 6 lettres","lg.sz68":"Mots de 6 à 8 lettres","m.lingoS":"Devine le mot, la première lettre est donnée","m.lingoRec":"Record : {n} mots","m.lingoRec1":"Record : {n} mot",
   "lg.lock":"Verrouillé : réussis d'abord le chapitre {c}","lg.opens":"Lingo s'ouvre après le chapitre {c} : tu connaîtras alors assez de lettres pour des mots de 5 lettres.",
   "lg.go":"Tape un mot de {n} lettres. <b>Entrée</b> = vérifier.","lg.short":"Tape {n} lettres, puis appuie sur <b>Entrée</b>.","lg.next":"Essais restants : {n}",
   "lg.win":"Oui ! {w} en {n} essais 🎉","lg.wow":"Du premier coup ! {w} 🤩","lg.miss":"Le mot était {w}. Tu perds 1 vie.",
@@ -1515,7 +1516,7 @@ I18N.it = {
   "lw.wonMsg":"COSA?! Anche la parola boss! Sei una leggenda della scala di parole! 🤖💜","lw.climbed1":"Hai salito {n} gradino.","lw.climbed":"Hai salito {n} gradini.",
   "lw.firstLost":"Sono stato più veloce sulla prima parola. Riprova!","lw.need":"Sottolivelli: {c} su {n} · Record: {b} · Ultima parola: {w}",
   "lw.sayPassed":"Bip! Ti ho superato!","lw.sayLost":"Bip! Ho finito quella parola prima io.",
-  "m.lingo":"Lingo","lg.sz5":"Parole di 5 lettere","lg.sz56":"Parole di 5 o 6 lettere","lg.sz68":"Parole da 6 a 8 lettere","m.lingoS":"Indovina la parola in 5 tentativi","m.lingoRec":"Record: {n} parole","m.lingoRec1":"Record: {n} parola",
+  "m.lingo":"Lingo","lg.sz5":"Parole di 5 lettere","lg.sz56":"Parole di 5 o 6 lettere","lg.sz68":"Parole da 6 a 8 lettere","m.lingoS":"Indovina la parola, la prima lettera è data","m.lingoRec":"Record: {n} parole","m.lingoRec1":"Record: {n} parola",
   "lg.lock":"Bloccato: supera prima il capitolo {c}","lg.opens":"Lingo si apre dopo il capitolo {c}: allora conosci abbastanza lettere per parole di 5 lettere.",
   "lg.go":"Scrivi una parola di {n} lettere. <b>Invio</b> = controlla.","lg.short":"Scrivi {n} lettere, poi premi <b>Invio</b>.","lg.next":"Tentativi rimasti: {n}",
   "lg.win":"Sì! {w} in {n} tentativi 🎉","lg.wow":"Al primo colpo! {w} 🤩","lg.miss":"La parola era {w}. Perdi 1 vita.",
@@ -3182,11 +3183,13 @@ stazione montagna spiaggia cappello occhiali vittoria campione`,
 
 /* =========================================================================
    LINGO (GAME-4): guess the word. The first letter is given.
-   5 tries per word, colour per letter. Endless words, 3 lives: a missed word costs 1 life.
+   5 tries per word (more for 7 or 8 letters: letters - 1), colour per letter. Endless words, 3 lives: a missed word costs 1 life.
    Hidden words use only the learned keys. Guesses can be any letters (no word check).
    Levels set the word length: Fun = 5 letters, Normal = 5 or 6, Super Challenge = 6 to 8.
    ========================================================================= */
 const LINGO_TRIES = 5, LINGO_LIVES = 3;
+/* Rows (tries) for a word: letters - 1, at least 5. 5-6 letters = 5, 7 = 6, 8 = 7. */
+const lingoRows = (w=LG.word) => Math.max(LINGO_TRIES, w.length-1);
 const LINGO_MIN = 10;                                   // words that must fit the learned keys before a level opens
 const LINGO_SIZES = {fun:[5,5], normal:[5,6], challenge:[6,8]};
 const LINGO_SZ = {fun:"lg.sz5", normal:"lg.sz56", challenge:"lg.sz68"};
@@ -3235,7 +3238,7 @@ function lingoNext(){
   if(!LG.bag.length) LG.bag=shuffle(LG.pool.filter(w=>w!==LG.word));   // no word comes back before all others had their turn
   const lens=[...new Set(LG.bag.map(w=>w.length))], len=lens[Math.floor(Math.random()*lens.length)];   // each length equally often
   LG.word=LG.bag.splice(LG.bag.findLastIndex(w=>w.length===len),1)[0]; LG.rows=[]; LG.cur=LG.word[0]; LG.wait=false;
-  $("#lgGrid").style.setProperty("--n", LG.word.length);
+  $("#lgGrid").style.setProperty("--n", LG.word.length); $("#lgGrid").style.setProperty("--r", lingoRows());
   lingoRender(); lingoMsg(t("lg.go",{n:LG.word.length}));
 }
 function lingoKnown(){            // letters found at the right place, as a hint in the current row
@@ -3245,7 +3248,7 @@ function lingoKnown(){            // letters found at the right place, as a hint
 }
 function lingoRender(reveal=-1){
   const known=lingoKnown(), n=LG.word.length; let html="";
-  for(let r=0;r<LINGO_TRIES;r++){
+  for(let r=0;r<lingoRows();r++){
     const row=LG.rows[r], cur=!row && r===LG.rows.length && !LG.wait;
     html+=`<div class="lrow${cur?" cur":""}">`;
     for(let i=0;i<n;i++){
@@ -3279,10 +3282,10 @@ function lingoGuess(){
   const g=LG.cur, m=lingoMark(g,LG.word);
   LG.rows.push({g,m}); LG.cur=LG.word[0];
   const win=g===LG.word, tries=LG.rows.length;
-  if(win || tries>=LINGO_TRIES){
+  if(win || tries>=lingoRows()){
     LG.wait=true; lingoRender(tries-1);
     if(win){
-      LG.words++; LG.score+=(LINGO_TRIES+1-tries)*2*LG.word.length;   // 10 points per try left for 5 letters, more for longer words
+      LG.words++; LG.score+=Math.max(1,LINGO_TRIES+1-tries)*2*LG.word.length;   // 10 points per try left (of 5) for 5 letters, more for longer words
       beep(660,0.06,"sine",0.05); setTimeout(chime,350);
       lingoMsg(t(tries===1?"lg.wow":"lg.win",{w:LG.word.toUpperCase(),n:tries}),"good");
     } else {
@@ -3293,7 +3296,7 @@ function lingoGuess(){
     LG.after = LG.lives>0 ? lingoNext : lingoOver;
     LG.timer=setTimeout(()=>LG&&LG.running&&LG.wait&&LG.after(), win?1600:2600);
   } else {
-    lingoRender(tries-1); lingoMsg(t("lg.next",{n:LINGO_TRIES-tries}));
+    lingoRender(tries-1); lingoMsg(t("lg.next",{n:lingoRows()-tries}));
   }
 }
 function lingoOver(){

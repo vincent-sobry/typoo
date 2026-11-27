@@ -1,4 +1,4 @@
-// Lingo (GAME-4): guess the word, first letter given, 5 tries, colour per letter, 3 lives.
+// Lingo (GAME-4): guess the word, first letter given, 5 tries (letters - 1 for 7-8 letters), colour per letter, 3 lives.
 // Levels: Fun = 5 letters, Normal = 5 or 6, Super Challenge = 6 to 8.
 const { test, expect } = require("@playwright/test");
 const { player, openApp, saved } = require("./helpers");
@@ -80,7 +80,8 @@ test("a full run: solve a word, miss words until the lives are gone, record and 
   for (let w = 0; w < 3; w++) {
     const cur = await page.evaluate(() => LG.word);
     const z = "z".repeat(cur.length - 1), wrong = cur[0] + (cur.slice(1) === z ? "q".repeat(cur.length - 1) : z);
-    for (let i = 0; i < 5; i++) { await page.keyboard.type(wrong.slice(1)); await page.keyboard.press("Enter"); }
+    const rows = Math.max(5, cur.length - 1);
+    for (let i = 0; i < rows; i++) { await page.keyboard.type(wrong.slice(1)); await page.keyboard.press("Enter"); }
     await expect(page.locator("#lgMsg")).toContainText(cur.toUpperCase());
     await page.keyboard.press("Enter");
   }
@@ -114,6 +115,7 @@ test("fits at 1366x657: the whole grid and the hint are on screen", async ({ pag
   await page.keyboard.press("3");
   await page.evaluate(() => { LG.bag = ["elephant"]; lingoNext(); });   // the longest words: 8 letters
   await expect(page.locator("#lgGrid .lrow").first().locator(".lc")).toHaveCount(8);
+  await expect(page.locator("#lgGrid .lrow")).toHaveCount(7);                   // 8 letters: 7 rows
   await expect(page.locator("#lgGrid .lrow").last().locator(".lc").last()).toBeInViewport({ ratio: 1 });
   await expect(page.locator("#lingo p.muted")).toBeInViewport({ ratio: 1 });
 });
@@ -175,4 +177,20 @@ test("lobby: Super Challenge is locked until enough long words fit; the choice a
   await page.click("#mLingo");
   await expect(page.locator('#lvChoices [data-lv="fun"]')).toHaveClass(/on/);
   await expect(page.locator('#lvChoices [data-lv="fun"]')).toContainText("Record: 2 words");
+});
+
+test("rows: letters - 1, at least 5; the last row is the last try", async ({ page }) => {
+  await openApp(page, withChapters(38));
+  const r = await page.evaluate(() => {
+    startLingo("challenge"); const out = {};
+    for (const w of ["apple", "rocket", "dolphin", "elephant"]) { LG.bag = [w]; lingoNext(); out[w] = document.querySelectorAll("#lgGrid .lrow").length; }
+    return out;
+  });
+  expect(r).toEqual({ apple: 5, rocket: 5, dolphin: 6, elephant: 7 });
+  // 7 wrong tries on an 8-letter word cost 1 life, not 5 tries
+  for (let i = 0; i < 6; i++) { await page.keyboard.type("zzzzzzz"); await page.keyboard.press("Enter"); }
+  await expect(page.locator("#lgMsg")).toContainText("Tries left: 1");
+  await page.keyboard.type("zzzzzzz"); await page.keyboard.press("Enter");
+  await expect(page.locator("#lgMsg")).toContainText("ELEPHANT");
+  expect(await page.evaluate(() => LG.lives)).toBe(2);
 });
