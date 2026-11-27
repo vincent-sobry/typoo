@@ -79,7 +79,10 @@ test("a run: no live score, no stars, no change to top WPM or history; then it h
   await page.click("#mWarm");
   await expect(page.locator("#type")).toBeVisible();
   await expect(page.locator("#tTitle")).toContainText("warm-up");
-  await expect(page.locator("#type .live")).toBeHidden();
+  await expect(page.locator("#lWpm"), "no live score").toBeHidden();
+  await expect(page.locator("#lAcc")).toBeHidden();
+  await expect(page.locator("#wuClock"), "a calm clock shows the time left").toBeVisible();
+  await expect(page.locator("#wuLeft")).toHaveText("1:00 left");
   await typeAll(page);
   await expect(page.locator("#result")).toBeVisible();
   await expect(page.locator("#rTitle")).toContainText("Warm-up done");
@@ -102,7 +105,8 @@ test("Next on the result opens the current chapter; live score is back", async (
   await typeAll(page);
   await page.click("#rNext");
   await expect(page.locator("#tTitle")).toHaveText(await page.evaluate("`5. ${lessonsFlat()[4].title}`"));   // after old chapter 3 (new 4) comes a review
-  await expect(page.locator("#type .live")).toBeVisible();
+  await expect(page.locator("#lWpm")).toBeVisible();
+  await expect(page.locator("#wuClock"), "the clock is only for the warm-up").toBeHidden();
 });
 
 test("Escape stops the warm-up; it stays on the home screen", async ({ page }) => {
@@ -124,6 +128,29 @@ test("the run stops after 1 minute, also with words left", async ({ page }) => {
   const st = await saved(page);
   expect(st.warmup.count).toBe(1);
   expect(st.flags.perfect, "a few letters do not give the Flawless badge").toBeFalsy();
+});
+
+test("the clock counts down; the ring fills; text in the player's language", async ({ page }) => {
+  await openApp(page, withChapters(3));
+  await page.click("#mWarm");
+  await page.keyboard.type((await page.evaluate("S.text")).slice(0, 2), { delay: 5 });
+  await page.evaluate("S.start = performance.now() - 15500");
+  await expect(page.locator("#wuLeft")).toHaveText("0:45 left");
+  const p = await page.evaluate(() => parseFloat($("#wuRing").style.getPropertyValue("--p")));
+  expect(p).toBeGreaterThan(0.25);
+  expect(p).toBeLessThan(0.27);
+  await page.evaluate(() => { state.lang = "nl"; });
+  await expect(page.locator("#wuLeft")).toHaveText("nog 0:45");
+});
+
+test("reduced motion: the ring moves in steps of 5 seconds", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openApp(page, withChapters(3));
+  await page.click("#mWarm");
+  await page.keyboard.type((await page.evaluate("S.text")).slice(0, 2), { delay: 5 });
+  await page.evaluate("S.start = performance.now() - 14000");
+  await expect(page.locator("#wuLeft")).toHaveText("0:46 left");
+  expect(await page.evaluate(() => $("#wuRing").style.getPropertyValue("--p"))).toBe("0.167");
 });
 
 test("test tool 'new day': dates move back 1 day, the warm-up shows again, the streak goes on", async ({ page }) => {
