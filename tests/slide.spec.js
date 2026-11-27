@@ -37,7 +37,11 @@ test("on: one row, the cursor stays in place while the text slides", async ({ pa
   await page.keyboard.type(await page.evaluate("S.text.slice(0,12)"), { delay: 5 });
   const x1 = await cursorX(page);
   expect(Math.abs(x1 - x0)).toBeLessThanOrEqual(2);
-  expect(await box.evaluate((b) => b.scrollLeft)).toBeGreaterThan(50);
+  const shift = await box.evaluate((b) => new DOMMatrix(getComputedStyle(b.querySelector(".slidetrack")).transform).m41);
+  expect(shift).toBeLessThan(-50);                // the text moved to the left
+  // the purple box does not move: it is a fixed layer, and the current letter sits on it
+  const boxX = await box.evaluate((b) => b.getBoundingClientRect().left + parseFloat(getComputedStyle(b, "::before").left));
+  expect(Math.abs(boxX - x1)).toBeLessThanOrEqual(2);
   await page.keyboard.type(await page.evaluate("S.text.slice(S.pos)"), { delay: 2 });
   await expect(page.locator("#result")).toBeVisible();
 });
@@ -67,4 +71,21 @@ test("short screen (1366x657): the cursor is still at about 1/3 of the box", asy
   const bx = await page.locator("#text").boundingBox();
   const x0 = await cursorX(page);
   expect(Math.abs(x0 - (bx.x + bx.width * 0.35))).toBeLessThan(40);
+});
+
+test("the box stays fixed during the slide; only the text moves", async ({ page }) => {
+  await openApp(page, player({ slide: 1 }));
+  await page.click("#mContinue");
+  const box = page.locator("#text");
+  await page.waitForTimeout(300);
+  const before = await box.evaluate((b) => getComputedStyle(b, "::before").left);
+  const text = await page.evaluate("S.text.slice(0,3)");
+  await page.keyboard.type(text);
+  // sample the box place during the slide (every frame for 200 ms)
+  const lefts = await box.evaluate((b) => new Promise((res) => {
+    const out = []; const t0 = performance.now();
+    (function f() { out.push(getComputedStyle(b, "::before").left); if (performance.now() - t0 < 200) requestAnimationFrame(f); else res(out); })();
+  }));
+  expect(new Set(lefts)).toEqual(new Set([before]));
+  expect(await box.evaluate((b) => getComputedStyle(b.querySelector(".cur")).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
 });

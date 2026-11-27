@@ -106,6 +106,18 @@ test.describe("low-end CPU", () => {
     check("chapter", await stopMeasure(page));
   });
 
+  test("sliding text stays smooth", async ({ page }) => {
+    test.setTimeout(60000);
+    const p = withChapters(4); p.slide = 1;
+    await openApp(page, p);
+    await page.click("#map .lesson >> nth=4");
+    await expect(page.locator("#text")).toHaveClass(/slidemode/);
+    await slowCpu(page);
+    await startMeasure(page);
+    await typeSome(page, 80);
+    check("sliding text", await stopMeasure(page));
+  });
+
   for (const [name, btn] of [["Longest Word", "#mLadder"], ["Word Marathon", "#mMarathon"]]) {
     test(`${name} stays smooth`, async ({ page }) => {
       test.setTimeout(60000);
