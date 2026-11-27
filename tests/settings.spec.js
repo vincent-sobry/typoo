@@ -8,7 +8,9 @@ test("settings: groups in order, Done stays visible at Chromebook size", async (
   await page.click("#hSettings");
   const groups = await page.locator("#settings .setgrp h3 span").evaluateAll((e) => e.map((x) => x.dataset.t));
   expect(groups).toEqual(["set.gPlayer", "set.gHelp", "set.gSound", "set.gGuide", "set.gData", "set.gTest"]);
-  await expect(page.locator("#setTestGrp #setSlide")).toHaveCount(1);
+  await expect(page.locator("#setSlide")).toHaveCount(1);
+  await expect(page.locator("#setTestGrp #setSlide")).toHaveCount(0);   // Sliding text is a normal setting (Typing help)
+  expect(await page.locator("#setSlide button").count()).toBe(2);       // On / Off
   await expect(page.locator("#setTestGrp #setChapters")).toHaveCount(1);
   await expect(page.locator("#setTestGrp #setNewDay")).toHaveCount(1);
   await expect(page.locator("#setClose")).toBeInViewport();

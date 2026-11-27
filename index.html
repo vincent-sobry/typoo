@@ -222,11 +222,9 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
   background:var(--accent);border-radius:4px;box-shadow:0 0 0 2px var(--accent);pointer-events:none}
 .textbox.slidemode .slidetrack{display:inline-block;position:relative;will-change:transform}
 /* Compare A/B (test): A = one soft CSS slide per key, B = spring. Same keys drive both rows. */
-.textbox.slidemode .slidetrack.soft{transform:translateX(var(--sx,0));transition:transform .25s cubic-bezier(.25,.1,.25,1)}
-.textbox[data-ab]::after{content:attr(data-ab);position:absolute;left:10px;top:6px;font:800 12px/1 system-ui,sans-serif;color:var(--muted);letter-spacing:.05em}
 .textbox.slidemode .slidetrack span{transition:color var(--slide) ease-out,background .1s}
 #type .textbox.slidemode .cur{background:none;box-shadow:none}
-@media (prefers-reduced-motion:reduce){.textbox.slidemode .slidetrack span,.textbox.slidemode .slidetrack.soft{transition:none}}
+@media (prefers-reduced-motion:reduce){.textbox.slidemode .slidetrack span{transition:none}}
 .textbox .ok{color:#56607f}
 .textbox .fx{color:#c08a3a}
 .textbox .cur{background:var(--accent);color:#fff;box-shadow:0 0 0 2px var(--accent)}
@@ -628,7 +626,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <div class="bubble" id="tBubble">…</div>
     </div>
     <div class="capswarn" id="capsWarn" data-t="t.caps">⚠️ Caps Lock is ON. Turn it off.</div>
-    <div class="tbwrap"><div class="textbox" id="textA" style="display:none" aria-hidden="true"></div><div class="textbox" id="text"></div><div class="textbox" id="textC" style="display:none" aria-hidden="true"></div>
+    <div class="tbwrap"><div class="textbox" id="text"></div>
       <div class="lights" id="lights" aria-label="Start lights" data-ta="aria-label=t.lightsA"><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="prog"><i id="tProg"></i></div>
     <div class="kbwrap" id="kbwrap">
@@ -776,6 +774,9 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="field"><label data-t="set.frame">Finger colour frame</label><div class="seg" id="setFrame">
     <button data-v="1"><span data-t="on">On</span><small data-t="set.frameOn">screen border in the finger colour</small></button>
     <button data-v="0"><span data-t="off">Off</span><small data-t="set.frameOff">no frame</small></button></div></div>
+  <div class="field"><label><span data-t="set.slide">Sliding text</span></label><div class="seg" id="setSlide">
+    <button data-v="1"><span data-t="on">On</span><small data-t="set.slideOn">one row, the text slides</small></button>
+    <button data-v="0"><span data-t="off">Off</span><small data-t="set.slideOff">rows of text</small></button></div></div>
   </section>
   <section class="setgrp"><h3>🔊 <span data-t="set.gSound">Sounds</span></h3>
   <div class="field"><label data-t="set.sound">Sound</label><div class="seg" id="setSound">
@@ -820,10 +821,6 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   </div>
   </section>
   <section class="setgrp" id="setTestGrp"><h3>🧪 <span data-t="set.gTest">Test</span></h3>
-  <div class="field"><label><span data-t="set.slide">Sliding text</span></label><div class="seg" id="setSlide">
-    <button data-v="1"><span data-t="on">On</span><small data-t="set.slideOn">one row, the text slides</small></button>
-    <button data-v="0"><span data-t="off">Off</span><small data-t="set.slideOff">rows of text</small></button>
-    <button data-v="2"><span data-t="set.slideAB">A / B / C</span><small data-t="set.slideABs">compare 3 slides</small></button></div></div>
   <div class="field" id="setChapters" style="display:none"><label><span data-t="set.codes">Chapter codes</span></label>
     <div class="muted" style="font-size:12px;margin-bottom:6px" data-t="set.codesTxt">A code opens all chapters before it. Chapters from that chapter on are reset. Paste a code in "Restore from code", or click Go.</div>
     <div id="setChList" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px"></div>
@@ -1152,7 +1149,7 @@ I18N.en = {
   "set.lang":"Language","set.langNote":"Screens, Keebo and all typing texts.","set.help":"Keyboard help on screen",
   "set.full":"Full","set.fullS":"labels + colors","set.blind":"Blind","set.blindS":"no letters","set.proS":"no keyboard",
   "set.hands":"Hands below the keyboard","set.handsOn":"show which finger","set.handsOff":"no finger hint",
-  "set.slide":"Sliding text","set.slideOn":"one row, the text slides","set.slideOff":"rows of text","set.slideAB":"A / B / C","set.slideABs":"compare 3 slides",
+  "set.slide":"Sliding text","set.slideOn":"one row, the text slides","set.slideOff":"rows of text",
   "set.frame":"Finger colour frame","set.frameOn":"screen border in the finger colour","set.frameOff":"no frame",
   "set.sound":"Sound","set.clicks":"Click sound","set.clicksOn":"soft tick on buttons","set.keys":"Keyboard shortcuts",
   "k.cont":"Continue: next chapter","k.game":"Open a game. The number is on the tile.","k.tour":"Tour of the screen","k.nextBack":"Next / back",
@@ -1267,7 +1264,7 @@ I18N.nl = {
   "set.lang":"Taal","set.langNote":"Schermen, Keebo en alle typteksten.","set.help":"Hulp van het toetsenbord op het scherm",
   "set.full":"Volledig","set.fullS":"letters + kleuren","set.blind":"Blind","set.blindS":"geen letters","set.proS":"geen toetsenbord",
   "set.hands":"Handen onder het toetsenbord","set.handsOn":"toon welke vinger","set.handsOff":"geen vingerhulp",
-  "set.slide":"Schuivende tekst","set.slideOn":"één rij, de tekst schuift","set.slideOff":"rijen tekst","set.slideAB":"A / B / C","set.slideABs":"vergelijk 3 manieren",
+  "set.slide":"Schuivende tekst","set.slideOn":"één rij, de tekst schuift","set.slideOff":"rijen tekst",
   "set.frame":"Vingerkleur-rand","set.frameOn":"schermrand in de vingerkleur","set.frameOff":"geen rand",
   "set.sound":"Geluid","set.clicks":"Klikgeluid","set.clicksOn":"zachte tik op knoppen","set.keys":"Sneltoetsen",
   "k.cont":"Verder: volgend hoofdstuk","k.game":"Open een spel. Het nummer staat op de tegel.","k.tour":"Rondleiding door het scherm","k.nextBack":"Volgende / terug",
@@ -1414,7 +1411,7 @@ I18N.fr = {
   "set.lang":"Langue","set.langNote":"Écrans, Keebo et tous les textes à taper.","set.help":"Aide du clavier à l'écran",
   "set.full":"Complet","set.fullS":"lettres + couleurs","set.blind":"Aveugle","set.blindS":"sans lettres","set.proS":"sans clavier",
   "set.hands":"Mains sous le clavier","set.handsOn":"montre quel doigt","set.handsOff":"pas d'aide pour les doigts",
-  "set.slide":"Texte qui glisse","set.slideOn":"une ligne, le texte glisse","set.slideOff":"lignes de texte","set.slideAB":"A / B / C","set.slideABs":"comparer 3 façons",
+  "set.slide":"Texte qui glisse","set.slideOn":"une ligne, le texte glisse","set.slideOff":"lignes de texte",
   "set.frame":"Cadre couleur du doigt","set.frameOn":"bord de l'écran à la couleur du doigt","set.frameOff":"pas de cadre",
   "set.sound":"Son","set.clicks":"Son des clics","set.clicksOn":"petit tic sur les boutons","set.keys":"Raccourcis clavier",
   "k.cont":"Continuer : chapitre suivant","k.game":"Ouvrir un jeu. Le numéro est sur la tuile.","k.tour":"Visite de l'écran","k.nextBack":"Suivant / retour",
@@ -1561,7 +1558,7 @@ I18N.it = {
   "set.lang":"Lingua","set.langNote":"Schermate, Keebo e tutti i testi da scrivere.","set.help":"Aiuto della tastiera sullo schermo",
   "set.full":"Completo","set.fullS":"lettere + colori","set.blind":"Cieco","set.blindS":"senza lettere","set.proS":"senza tastiera",
   "set.hands":"Mani sotto la tastiera","set.handsOn":"mostra quale dito","set.handsOff":"nessun aiuto per le dita",
-  "set.slide":"Testo che scorre","set.slideOn":"una riga, il testo scorre","set.slideOff":"righe di testo","set.slideAB":"A / B / C","set.slideABs":"confronta 3 modi",
+  "set.slide":"Testo che scorre","set.slideOn":"una riga, il testo scorre","set.slideOff":"righe di testo",
   "set.frame":"Cornice colore del dito","set.frameOn":"bordo dello schermo nel colore del dito","set.frameOff":"nessuna cornice",
   "set.sound":"Suono","set.clicks":"Suono dei clic","set.clicksOn":"piccolo tic sui pulsanti","set.keys":"Scorciatoie da tastiera",
   "k.cont":"Continua: capitolo successivo","k.game":"Apri un gioco. Il numero è sulla tessera.","k.tour":"Tour dello schermo","k.nextBack":"Avanti / indietro",
@@ -1987,9 +1984,6 @@ function startSession(opts){
   $("#lTimeP").style.display = "";
   $("#capsWarn").classList.remove("on");
   $("#text").classList.toggle("slidemode", state.slide>=1 && opts.mode!=="ladder");   // Longest Word has its own one-word view
-  const ab = state.slide===2 && opts.mode!=="ladder";   // Compare A/B (test): A above, B (the real box) below
-  ["#textA","#textC"].forEach(q=>{ $(q).style.display = ab ? "" : "none"; $(q).classList.toggle("slidemode", ab); });
-  if(ab){ $("#textA").dataset.ab="A · soft slide"; $("#text").dataset.ab="B · spring"; $("#textC").dataset.ab="C · flow"; } else delete $("#text").dataset.ab;
   renderText();
   updateCursor();
   updateLive();
@@ -2002,7 +1996,6 @@ function renderText(){
   if(box.classList.contains("slidemode")){ const tr=document.createElement("span"); tr.className="slidetrack"; tr.id="slideTrack"; tr.appendChild(frag); box.appendChild(tr); }
   else box.appendChild(frag);
   slideReset(); box.dataset.cbox="";
-  abBuild();
   balanceLines(); box.scrollTo({top:0, left:0, behavior:"instant"});
 }
 /* Break the text into rows of near-equal length (no short last row).
@@ -2049,60 +2042,9 @@ function slideTo(box, el){
   if(box.dataset.cbox!==cb){ const [x,y,w,h]=cb.split(",");
     box.dataset.cbox=cb; box.style.setProperty("--cx",x+"px"); box.style.setProperty("--cy",y+"px");
     box.style.setProperty("--cw",w+"px"); box.style.setProperty("--ch",h+"px"); }
-  SL.tr=tr; SL.to=-(el.offsetLeft-first.offsetLeft); abSlide(el);
+  SL.tr=tr; SL.to=-(el.offsetLeft-first.offsetLeft);
   if(matchMedia("(prefers-reduced-motion: reduce)").matches){ SL.x=SL.to; SL.v=0; slidePaint(); return; }
   if(!SL.raf){ SL.t=performance.now(); SL.raf=requestAnimationFrame(slideStep); }
-}
-/* Compare A/B/C (test): rows A and C copy the letters and their classes from row B (#text).
-   A: one CSS slide per key. C: continuous flow at the typing speed (abFlow). */
-const AB_ROWS=[{id:"textA",p:"a",soft:true},{id:"textC",p:"q"}];
-let abObs=null;
-const FL={x:0,v:0,to:0,cw:16,rate:0,last:0,t:0,raf:0,tr:null};
-function abBuild(){
-  if(abObs){ abObs.disconnect(); abObs=null; }
-  cancelAnimationFrame(FL.raf); Object.assign(FL,{x:0,v:0,to:0,rate:0,last:0,raf:0,tr:null});
-  const src=$("#slideTrack");
-  AB_ROWS.forEach(r=>{ const a=$("#"+r.id); a.innerHTML=""; a.dataset.cbox=""; a.style.removeProperty("--sx");
-    if(!a.classList.contains("slidemode") || !src) return;
-    const tr=src.cloneNode(true); tr.removeAttribute("id"); if(r.soft) tr.classList.add("soft"); else FL.tr=tr;
-    tr.querySelectorAll("span").forEach(sp=>{ sp.id=r.p+sp.id; });
-    a.appendChild(tr); });
-  if(!src || !$("#textA").classList.contains("slidemode")) return;
-  abObs=new MutationObserver(ms=>ms.forEach(m=>AB_ROWS.forEach(r=>{ const t=document.getElementById(r.p+m.target.id); if(t) t.className=m.target.className; })));
-  abObs.observe(src,{subtree:true,attributes:true,attributeFilter:["class"]});
-}
-function abSlide(el){
-  if(!abObs) return;
-  AB_ROWS.forEach(r=>{ const a=$("#"+r.id), ae=document.getElementById(r.p+el.id); if(!ae) return;
-    const tr=ae.parentNode, first=tr.firstChild;
-    const cb=[tr.offsetLeft+first.offsetLeft, tr.offsetTop+first.offsetTop, ae.offsetWidth, first.offsetHeight].join(",");
-    if(a.dataset.cbox!==cb){ const [x,y,w,h]=cb.split(",");
-      a.dataset.cbox=cb; a.style.setProperty("--cx",x+"px"); a.style.setProperty("--cy",y+"px");
-      a.style.setProperty("--cw",w+"px"); a.style.setProperty("--ch",h+"px"); }
-    const to=-(ae.offsetLeft-first.offsetLeft);
-    if(r.soft){ a.style.setProperty("--sx", to+"px"); return; }
-    // C: measure the typing speed (letters per second, smoothed) and let the flow loop follow it
-    const now=performance.now(), gap=now-FL.last;
-    if(FL.last && gap<1500){ const r1=1000/Math.max(gap,40); FL.rate = FL.rate ? FL.rate*.7+r1*.3 : r1; } else FL.rate=0;
-    FL.last=now; FL.to=to; FL.cw=ae.offsetWidth||FL.cw;
-    if(matchMedia("(prefers-reduced-motion: reduce)").matches){ FL.x=to; FL.v=0; abFlowPaint(); return; }
-    if(!FL.raf){ FL.t=now; FL.raf=requestAnimationFrame(abFlow); } });
-}
-function abFlowPaint(){ if(FL.tr) FL.tr.style.transform=`translate3d(${FL.x.toFixed(2)}px,0,0)`; }
-function abFlow(now){
-  const dt=Math.min(.05,(now-FL.t)/1000); FL.t=now;
-  // the expected speed fades out when the next key is late, so the text slows down softly when you stop
-  const iv=FL.rate ? 1000/FL.rate : 0, late=Math.max(0,(now-FL.last)-1.2*iv);
-  const rate=FL.rate ? FL.rate*Math.exp(-late/180) : 0;
-  const lead=FL.rate ? .5*FL.cw*rate/FL.rate : 0;          // aim half a letter ahead while typing: the letter swings around the box
-  let vt = -.8*rate*FL.cw + 4*((FL.to-lead)-FL.x);
-  if(vt>2*FL.cw) vt=2*FL.cw;                                // back to the letter only slowly (after you stop)
-  FL.v += (vt-FL.v)*(1-Math.exp(-dt*7));                    // no jumps in speed
-  const room=(FL.x-(FL.to-.5*FL.cw))/(.25*FL.cw);           // soft brake near half a letter ahead, no hard stop
-  if(FL.v<0 && room<1) FL.v*=Math.max(0,room);
-  FL.x += FL.v*dt;
-  if(rate<.05 && Math.abs(FL.x-FL.to)<.15 && Math.abs(FL.v)<2){ FL.x=FL.to; FL.v=0; FL.raf=0; abFlowPaint(); return; }
-  abFlowPaint(); FL.raf=requestAnimationFrame(abFlow);
 }
 /* Critically damped spring: no overshoot, the speed never jumps, so new keys blend into one smooth flow. */
 const SL={x:0,v:0,to:0,t:0,raf:0,tr:null,W:20};   // W: stiffness (1/s), 90% of the way in about 0.2 s
@@ -3780,7 +3722,7 @@ function openSettings(){
   segInit("#setLang", state.lang, v=>{ state.lang=v; save(); applyLang(); buildKeyboard(); renderChapterCodes(); renderHome(); });
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });
-  segInit("#setSlide", [0,1,2].includes(state.slide)?state.slide:0, v=>{ state.slide=+v; save(); });
+  segInit("#setSlide", state.slide>=1?1:0, v=>{ state.slide=+v; save(); });
   segInit("#setFrame", state.frame===0?0:1, v=>{ state.frame=+v; save(); applyFrame(); });
   segInit("#setSound", state.sound, v=>{ state.sound=+v; save(); });
   segInit("#setQuietSeg", state.quietTest===1?1:0, v=>{ state.quietTest=+v; save(); });
