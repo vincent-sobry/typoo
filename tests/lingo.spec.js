@@ -179,7 +179,7 @@ test("lobby: Super Challenge is locked until enough long words fit; the choice a
   await expect(page.locator('#lvChoices [data-lv="fun"]')).toContainText("Record: 2 words");
 });
 
-test("rows: letters - 1, at least 5; the last row is the last try", async ({ page }) => {
+test("rows: letters - 1, at least 5; the last row gets a hint and is the last try", async ({ page }) => {
   await openApp(page, withChapters(38));
   const r = await page.evaluate(() => {
     startLingo("challenge"); const out = {};
@@ -188,8 +188,14 @@ test("rows: letters - 1, at least 5; the last row is the last try", async ({ pag
   });
   expect(r).toEqual({ apple: 5, rocket: 5, dolphin: 6, elephant: 7 });
   // 7 wrong tries on an 8-letter word cost 1 life, not 5 tries
-  for (let i = 0; i < 6; i++) { await page.keyboard.type("zzzzzzz"); await page.keyboard.press("Enter"); }
+  for (let i = 0; i < 5; i++) { await page.keyboard.type("zzzzzzz"); await page.keyboard.press("Enter"); }
+  await expect(page.locator("#lgMsg")).not.toContainText("Hint");               // no hint before the last row
+  await page.keyboard.type("zzzzzzz"); await page.keyboard.press("Enter");
   await expect(page.locator("#lgMsg")).toContainText("Tries left: 1");
+  // last row: a hint with 1 letter that is not found yet (from the left), in the text and in the row
+  await expect(page.locator("#lgMsg")).toContainText("Hint: letter 2 is L");
+  await expect(page.locator("#lgGrid .lrow.cur .lc").nth(1)).toHaveText("l");
+  await expect(page.locator("#lgGrid .lrow.cur .lc").nth(2)).toHaveText("");
   await page.keyboard.type("zzzzzzz"); await page.keyboard.press("Enter");
   await expect(page.locator("#lgMsg")).toContainText("ELEPHANT");
   expect(await page.evaluate(() => LG.lives)).toBe(2);
