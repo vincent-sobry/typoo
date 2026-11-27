@@ -186,6 +186,7 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .rules .rall button:hover{border-color:#ffd77a99}
 .rules .rall button.on{border-color:#ffd77a;box-shadow:0 0 0 1px #ffd77a55}
 .rules .rall .ri{font-size:24px}
+.rules .rall .rt{display:block}
 .rules .rall .rw{display:none}
 .rules .rall button.on .rw{display:block}
 .rules.mini{padding:6px 8px 6px 12px}
@@ -348,7 +349,9 @@ body.fframe #fframe{display:block}
 .overlay{position:fixed;inset:0;background:#070918cc;display:none;place-items:center;z-index:50;backdrop-filter:blur(3px)}
 .overlay.on{display:grid}
 /* Pop-up text: when a text needs more than one row, the rows get about the same length and no word stands alone on the last row. */
-.overlay,#tour,.toast,.layoutwarn,#result{text-wrap:pretty}
+body{text-wrap:pretty}
+#text{text-wrap:wrap}
+.bubble,#pTitle,.frz,.lesson .t,.rules :is(.rt,.rw),.mode>span:not(.ic){text-wrap:balance}
 .panel :is(h2,h3,p,.rule,.bprog,.bdate,#clInfo,.choice small),#tourCard :is(h3,p),#toastT,#result :is(h2,.bubble,.need,.lvlup,.weak),#layoutWarnTxt{text-wrap:balance}
 .dwel{text-align:center;max-width:440px}.dwel .bic{font-size:48px}.dwel p{font-size:17px}.dwel .rbtns{justify-content:center}.dwel kbd{font-size:11px;opacity:.7;margin-left:4px}
 .lesson.rest::after{content:"🌙"}
@@ -1031,7 +1034,7 @@ I18N.en = {
   "h.streakT":"Streak: days in a row with today's goal reached","h.tourT":"Tour (?)","h.tourA":"Start the tour","h.week":"Streak: last 7 days",
   "h.wsave":"Reach today's goal to save your streak","h.toNext":"{x} XP to next level",
   "st.best":"Best WPM","st.avg":"Avg WPM","st.stars":"Stars",
-  "m.warm":"Daily warm-up","m.warmS":"1 minute · easy words · no score","m.daily":"Daily sentence","m.dailyS":"One new sentence each day",
+  "m.warm":"Daily warm-up","m.warmS":"1\u00a0minute · easy\u00a0words · no\u00a0score","m.daily":"Daily sentence","m.dailyS":"One new sentence each day",
   "m.cont":"Continue","m.race":"Race Keebo","m.raceS":"Beat the bot in a typing race","m.rain":"Word Rain","m.rainS":"Stop the meteors before they land",
   "m.ladder":"Longest Word","m.ladderS":"Climb the word ladder against Keebo","m.ladderRec":"climb against Keebo",
   "m.mar":"Word Marathon","m.marS":"Type the ladder at your own pace. Stay ahead of Keebo","m.marRec":"stay ahead of Keebo",
@@ -1160,7 +1163,7 @@ I18N.nl = {
   "h.streakT":"Reeks: dagen na elkaar met je doel gehaald","h.tourT":"Rondleiding (?)","h.tourA":"Start de rondleiding","h.week":"Reeks: laatste 7 dagen",
   "h.wsave":"Haal het doel van vandaag om je reeks te redden","h.toNext":"nog {x} XP tot het volgende level",
   "st.best":"Beste WPM","st.avg":"Gem. WPM","st.stars":"Sterren",
-  "m.warm":"Dagelijkse opwarming","m.warmS":"1 minuut · makkelijke woorden · geen score","m.daily":"Zin van de dag","m.dailyS":"Elke dag een nieuwe zin",
+  "m.warm":"Dagelijkse opwarming","m.warmS":"1\u00a0minuut · makkelijke\u00a0woorden · geen\u00a0score","m.daily":"Zin van de dag","m.dailyS":"Elke dag een nieuwe zin",
   "m.cont":"Verder","m.race":"Race tegen Keebo","m.raceS":"Versla de robot in een typrace","m.rain":"Woordenregen","m.rainS":"Stop de meteoren voor ze landen",
   "m.ladder":"Langste woord","m.ladderS":"Klim de woordladder op tegen Keebo","m.ladderRec":"klim tegen Keebo",
   "m.mar":"Woordmarathon","m.marS":"Typ de ladder in je eigen tempo. Blijf Keebo voor","m.marRec":"blijf Keebo voor",
@@ -1307,7 +1310,7 @@ I18N.fr = {
   "h.streakT":"Série : jours d'affilée avec l'objectif atteint","h.tourT":"Visite (?)","h.tourA":"Lancer la visite","h.week":"Série : 7 derniers jours",
   "h.wsave":"Atteins l'objectif du jour pour sauver ta série","h.toNext":"encore {x} XP jusqu'au niveau suivant",
   "st.best":"Meilleur WPM","st.avg":"WPM moyen","st.stars":"Étoiles",
-  "m.warm":"Échauffement du jour","m.warmS":"1 minute · mots faciles · sans score","m.daily":"Phrase du jour","m.dailyS":"Une nouvelle phrase chaque jour",
+  "m.warm":"Échauffement du jour","m.warmS":"1\u00a0minute · mots\u00a0faciles · sans\u00a0score","m.daily":"Phrase du jour","m.dailyS":"Une nouvelle phrase chaque jour",
   "m.cont":"Continuer","m.race":"Course contre Keebo","m.raceS":"Bats le robot dans une course de frappe","m.rain":"Pluie de mots","m.rainS":"Arrête les météores avant qu'ils tombent",
   "m.ladder":"Mot le plus long","m.ladderS":"Grimpe l'échelle de mots contre Keebo","m.ladderRec":"grimpe contre Keebo",
   "m.mar":"Marathon de mots","m.marS":"Tape l'échelle à ton rythme. Garde ton avance sur Keebo","m.marRec":"garde ton avance sur Keebo",
@@ -1454,7 +1457,7 @@ I18N.it = {
   "h.streakT":"Serie: giorni di fila con l'obiettivo raggiunto","h.tourT":"Tour (?)","h.tourA":"Avvia il tour","h.week":"Serie: ultimi 7 giorni",
   "h.wsave":"Raggiungi l'obiettivo di oggi per salvare la serie","h.toNext":"ancora {x} XP al prossimo livello",
   "st.best":"WPM migliore","st.avg":"WPM medio","st.stars":"Stelle",
-  "m.warm":"Riscaldamento del giorno","m.warmS":"1 minuto · parole facili · senza punteggio","m.daily":"Frase del giorno","m.dailyS":"Una frase nuova ogni giorno",
+  "m.warm":"Riscaldamento del giorno","m.warmS":"1\u00a0minuto · parole\u00a0facili · senza\u00a0punteggio","m.daily":"Frase del giorno","m.dailyS":"Una frase nuova ogni giorno",
   "m.cont":"Continua","m.race":"Gara con Keebo","m.raceS":"Batti il robot in una gara di scrittura","m.rain":"Pioggia di parole","m.rainS":"Ferma i meteoriti prima che cadano",
   "m.ladder":"Parola più lunga","m.ladderS":"Sali la scala di parole contro Keebo","m.ladderRec":"sali contro Keebo",
   "m.mar":"Maratona di parole","m.marS":"Scrivi la scala al tuo ritmo. Resta davanti a Keebo","m.marRec":"resta davanti a Keebo",
