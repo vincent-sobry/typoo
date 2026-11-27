@@ -3297,8 +3297,9 @@ function lingoGuess(){
     LG.after = LG.lives>0 ? lingoNext : lingoOver;
     LG.timer=setTimeout(()=>LG&&LG.running&&LG.wait&&LG.after(), win?1600:2600);
   } else {
-    /* Last row: give 1 letter that is not found yet, from the left. It shows in the row and as text. */
-    if(tries===lingoRows()-1) LG.tip=lingoKnown().findIndex(c=>!c);
+    /* Last row: give 1 letter that is not found yet, from the left. It shows in the row and as text.
+       No hint when only 1 letter is still unknown: that would give the word away. */
+    if(tries===lingoRows()-1){ const k=lingoKnown(); if(k.filter(c=>!c).length>=2) LG.tip=k.findIndex(c=>!c); }
     lingoRender(tries-1);
     lingoMsg(t("lg.next",{n:lingoRows()-tries}) + (LG.tip>0 ? " · "+t("lg.tip",{i:LG.tip+1, c:LG.word[LG.tip].toUpperCase()}) : ""));
   }

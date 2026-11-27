@@ -200,3 +200,12 @@ test("rows: letters - 1, at least 5; the last row gets a hint and is the last tr
   await expect(page.locator("#lgMsg")).toContainText("ELEPHANT");
   expect(await page.evaluate(() => LG.lives)).toBe(2);
 });
+
+test("no hint on the last row when only 1 letter is still unknown", async ({ page }) => {
+  await openApp(page, withChapters(38));
+  await page.evaluate(() => { startLingo("fun"); LG.bag = ["apple"]; lingoNext(); });
+  for (let i = 0; i < 4; i++) { await page.keyboard.type("ppla"); await page.keyboard.press("Enter"); }   // a-p-p-l found, e unknown
+  await expect(page.locator("#lgMsg")).toContainText("Tries left: 1");
+  await expect(page.locator("#lgMsg")).not.toContainText("Hint");
+  await expect(page.locator("#lgGrid .lrow.cur .lc").nth(4)).toHaveText("");
+});
