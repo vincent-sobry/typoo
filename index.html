@@ -213,9 +213,16 @@ button.badge:hover,button.badge:focus-visible{transform:translateY(-2px);outline
 .textbox{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:14px 22px;font-family:var(--mono);font-size:26px;line-height:1.55;
   height:calc(4.65em + 28px);overflow:hidden;white-space:pre-wrap;word-break:normal;margin:10px 0}
 .textbox span{border-radius:4px;transition:background .1s}
-/* Sliding text (test, Settings switch): one row. The cursor stays at the same place, the text slides to the left. */
-#type #text.slidemode{white-space:pre;height:calc(1.55em + 28px);padding-left:35%;padding-right:65%;scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){#type #text.slidemode{scroll-behavior:auto}}
+/* Sliding text (test, Settings switch): one row. The cursor stays at the same place, the text slides to the left.
+   The purple box is fixed (::before). Only the text track moves under it, with one transform transition.
+   The letter colour changes with the same timing, so box and text move as one. */
+#type #text.slidemode{white-space:pre;height:calc(1.55em + 28px);padding-left:35%;padding-right:0;--slide:.12s}
+#text.slidemode::before{content:"";position:absolute;left:var(--cx,35%);top:var(--cy,14px);width:var(--cw,1ch);height:var(--ch,1.2em);
+  background:var(--accent);border-radius:4px;box-shadow:0 0 0 2px var(--accent);pointer-events:none}
+#text.slidemode .slidetrack{display:inline-block;position:relative;transform:translateX(var(--sx,0));transition:transform var(--slide) ease-out;will-change:transform}
+#text.slidemode .slidetrack span{transition:color var(--slide) ease-out,background .1s}
+#type #text.slidemode .cur{background:none;box-shadow:none}
+@media (prefers-reduced-motion:reduce){#text.slidemode .slidetrack,#text.slidemode .slidetrack span{transition:none}}
 .textbox .ok{color:#56607f}
 .textbox .fx{color:#c08a3a}
 .textbox .cur{background:var(--accent);color:#fff;box-shadow:0 0 0 2px var(--accent)}
@@ -1968,7 +1975,10 @@ function renderText(){
   const box=$("#text"); box.innerHTML="";
   const frag=document.createDocumentFragment();
   [...S.text].forEach((c,i)=>{ const sp=document.createElement("span"); sp.textContent=c; if(c===" ") sp.className="sp"; sp.id="c"+i; frag.appendChild(sp); });
-  box.appendChild(frag); balanceLines(); box.scrollTo({top:0, left:0, behavior:"instant"});
+  if(box.classList.contains("slidemode")){ const tr=document.createElement("span"); tr.className="slidetrack"; tr.id="slideTrack"; tr.appendChild(frag); box.appendChild(tr); }
+  else box.appendChild(frag);
+  box.style.removeProperty("--sx"); box.dataset.cbox="";
+  balanceLines(); box.scrollTo({top:0, left:0, behavior:"instant"});
 }
 /* Break the text into rows of near-equal length (no short last row).
    Find the narrowest row width that still gives the same number of rows as normal wrapping. */
@@ -1996,7 +2006,7 @@ function updateCursor(){
   if(S.pos<S.text.length){
     const el=document.getElementById("c"+S.pos); el.classList.add("cur");
     const box=$("#text");
-    if(box.classList.contains("slidemode")) box.scrollLeft = el.offsetLeft - box.firstChild.offsetLeft;   // cursor stays put, text slides
+    if(box.classList.contains("slidemode")) slideTo(box, el);   // box stays put, text slides under it
     else {
       const lh=parseFloat(getComputedStyle(box).lineHeight)||40;
       const top=el.offsetTop - 14; // relative to the padded box
@@ -2005,6 +2015,16 @@ function updateCursor(){
     highlightChar(S.text[S.pos]);
   } else clearHighlights();
   $("#tProg").style.width = (S.pos/S.text.length*100)+"%";
+}
+/* Sliding text: move the track so that letter el is under the fixed box.
+   offsetLeft/offsetTop ignore the transform, so the box place comes from the first letter. */
+function slideTo(box, el){
+  const tr=el.parentNode, first=tr.firstChild;
+  const cb=[tr.offsetLeft+first.offsetLeft, tr.offsetTop+first.offsetTop, el.offsetWidth, first.offsetHeight].join(",");
+  if(box.dataset.cbox!==cb){ const [x,y,w,h]=cb.split(",");
+    box.dataset.cbox=cb; box.style.setProperty("--cx",x+"px"); box.style.setProperty("--cy",y+"px");
+    box.style.setProperty("--cw",w+"px"); box.style.setProperty("--ch",h+"px"); }
+  box.style.setProperty("--sx", -(el.offsetLeft-first.offsetLeft)+"px");
 }
 function elapsed(){ return S && S.start ? ((S.end||performance.now())-S.start)/1000 : 0; }
 function curWpm(){ const t=elapsed(); return t>1 ? (S.pos/5)/(t/60) : 0; }
