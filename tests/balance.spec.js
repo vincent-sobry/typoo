@@ -52,10 +52,11 @@ for (const lang of ["nl", "en", "fr", "it"]) {
     await page.setViewportSize({ width: 1366, height: 657 });
     await openApp(page, player({ lang, xp: 300, rules: "all", flags: { tour: 1, rev: 1 } }));
     await page.waitForTimeout(300);
-    // Keebo, profile, golden rules and map. Not #wFreeze: 2 or 3 short words in a narrow column, no good split exists.
+    // Keebo, profile, golden rules and map. Texts of 1 or 2 words are free (one word per row is the only split).
+    // Not #wFreeze: 2 or 3 short words in a narrow column, no good split exists.
     const short = [];
     for (const root of ["#home aside .profile", "#rules", "#map"])
-      short.push(...(await page.evaluate(rows, root)).filter(([text, , ratio]) => ratio < 0.5 && !/❄/.test(text)));
+      short.push(...(await page.evaluate(rows, root)).filter(([text, , ratio]) => ratio < 0.5 && text.split(/\s+/).length > 2 && !/❄/.test(text)));
     expect(short, "texts with a short last row").toEqual([]);
   });
 }
