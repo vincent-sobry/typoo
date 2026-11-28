@@ -136,6 +136,42 @@ test("dev menu: finish works at once after start", async ({ page }) => {
   await expect(page.locator("#result")).toBeVisible();
 });
 
+test("dev menu: restart a run (new text, no score) and replay the result reveal", async ({ page }) => {
+  await openDev(page, vet());
+  await page.click("#dmGo");
+  const t1 = await page.evaluate("S.text");
+  await page.click("#dmRestart");
+  await expect(page.locator("#type")).toBeVisible();
+  expect(await page.evaluate("S.pos")).toBe(0);
+  expect(await page.evaluate("S.text")).not.toBe(t1);
+  await page.selectOption("#dmReveal", "slow");
+  await page.click('#dmFin [data-fin="1"]');
+  const xp = (await devSaved(page)).xp;
+  await page.click("#dmSkip");
+  await expect(page.locator("#result.reveal")).toHaveCount(0);
+  await page.click("#dmRestart");
+  await expect(page.locator("#result.reveal")).toHaveCount(1);   // the reveal plays again
+  expect((await devSaved(page)).xp).toBe(xp);                     // no new XP
+});
+
+test("dev menu: back goes 1 step back (run -> result -> run, run from home -> home)", async ({ page }) => {
+  await openDev(page, vet());
+  await page.click("#dmGo");
+  await page.click('#dmFin [data-fin="2"]');
+  await expect(page.locator("#result")).toBeVisible();
+  const title = await page.locator("#rTitle").textContent();
+  await page.click("#dmBack");                                  // result -> the same run again
+  await expect(page.locator("#type")).toBeVisible();
+  expect(await page.evaluate("S.pos")).toBe(0);
+  await page.click("#dmBack");                                  // run -> the result before it
+  await expect(page.locator("#result")).toBeVisible();
+  await expect(page.locator("#rTitle")).toHaveText(title);
+  await page.click("#dmHome");
+  await page.click("#dmGo");
+  await page.click("#dmBack");                                  // run from home -> home
+  await expect(page.locator("#home")).toBeVisible();
+});
+
 test("dev menu: typing in a run is not caught by the menu", async ({ page }) => {
   await openDev(page, vet());
   await page.click("#dmGo");

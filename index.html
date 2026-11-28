@@ -498,7 +498,7 @@ body{text-wrap:pretty}
 .setgrp h3{margin:0;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 .setgrp .field{margin:10px 0}
 /* Dev test menu (only on the dev preview). Floats top right, open by default, ▾ collapses it. */
-#devMenu{position:fixed;top:56px;right:10px;z-index:9997;width:216px;background:#2a0a0ef2;border:2px solid #e5484d;border-radius:10px;color:#fff;font:600 12px system-ui,sans-serif;box-shadow:0 6px 20px #0009;user-select:none}
+#devMenu{position:fixed;top:56px;right:10px;z-index:9997;width:240px;background:#2a0a0ef2;border:2px solid #e5484d;border-radius:10px;color:#fff;font:600 12px system-ui,sans-serif;box-shadow:0 6px 20px #0009;user-select:none}
 #devMenu[hidden]{display:none}
 #devMenu .dmHead{display:flex;align-items:center;gap:6px;padding:3px 4px 3px 8px;background:#e5484d;border-radius:7px 7px 0 0;cursor:pointer}
 #devMenu .dmHead b{flex:1;letter-spacing:.05em}
@@ -513,6 +513,7 @@ body{text-wrap:pretty}
 #devMenu button:hover:not(:disabled){background:#7a222b}
 #devMenu button:disabled{opacity:.35;cursor:default}
 #devMenu select option,#devMenu select optgroup{background:#2a0a0e;color:#fff}
+#devMenu .dmNav button{white-space:nowrap;font-size:11px;padding:3px 2px}
 #devMenu .dmLbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-top:2px}
 #devMenu .dmStat{font:500 10px var(--mono);opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .setfoot{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
@@ -893,7 +894,7 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <button data-fin="3" title="High: 99% + target WPM. ★★★">★★★</button>
       <button data-fin="rec" title="High + record (accuracy record chip, game best)">🏆</button>
     </div>
-    <div class="dmRow"><button id="dmSkip" title="Next step: close pop-up, end reveal, next run. In a run: leave it (no score). Home: Continue">⏭ Skip</button><button id="dmHome" title="Home">🏠 Home</button></div>
+    <div class="dmRow dmNav"><button id="dmBack" title="Back 1 step: close pop-up. Result: the run again. Run: the result before it (or home). No score is undone">⏮ Back</button><button id="dmRestart" title="Restart this phase: a run starts again (new text, no score). Result: the reveal plays again">↺ Restart</button><button id="dmSkip" title="Next step: close pop-up, end reveal, next run. In a run: leave it (no score). Home: Continue">⏭ Skip</button><button id="dmHome" title="Home" style="flex:0 0 28px">🏠</button></div>
     <div class="dmRow"><select id="dmReveal" aria-label="Result reveal"><option value="on">Reveal: normal</option><option value="slow">Reveal: slow ×3</option><option value="off">Reveal: off</option></select></div>
     <div class="dmLbl">Day</div>
     <div class="dmRow"><button id="setNewDayGo" title="Move saved dates back 1 day">🌅 New day</button><button id="setGoalGo" title="Set today to 10 minutes">🎯 Goal</button></div>
@@ -4079,6 +4080,26 @@ function devFinish(lvl){
 }
 /* Skip = the next step. Pop-up: close it. Result: end the reveal, then the next run (or home).
    In a run: leave it, no score. Home: Continue. */
+/* Back = 1 step back. Pop-up: close it. Result: the same run again. Run or game: the result before it, else home.
+   Saved progress stays as it is (no undo). */
+let devPrev="";
+function devBack(){
+  const ov=$$(".overlay.on"); if(ov.length || T){ if(T) endTour(); ov.forEach(o=>o.classList.remove("on")); return; }
+  if(screen==="result" && resultActions){ revealStop(); resultAt=-1e9; return resultActions.retry(); }
+  if(screen==="type" || screen==="meteor" || screen==="lingo"){
+    const back = devPrev==="result" && resultActions; devStop();
+    return back ? showResult(resultActions) : goHome();
+  }
+  toast("🧪","Already at the start");
+}
+/* Restart = this phase again. Run: same run, new text, no score. Game: new game. Result: the reveal plays again. */
+function devRestart(){
+  if(screen==="result" && resultActions){ revealStop(); return showResult(resultActions); }
+  if(screen==="type" && S && !S.done && S.again) return restartRun();
+  if(screen==="meteor" && M){ const lv=M.level; devStop(); return startRain(lv); }
+  if(screen==="lingo" && LG){ const lv=LG.lv; devStop(); return startLingo(lv); }
+  toast("🧪","Nothing to restart");
+}
 function devSkip(){
   if(T) return endTour();
   if($("#dayWelcome").classList.contains("on")) return welcomeSkip();
@@ -4111,6 +4132,9 @@ if(IS_DEV){
   $("#dmGo").onclick=()=>{ devStart($("#dmStart").value); devStatus(); };   // Finish buttons work at once, not after the next status tick
   $$("#dmFin button").forEach(b=>b.onclick=()=>devFinish(b.dataset.fin));
   $("#dmSkip").onclick=devSkip;
+  const showBase=show; show=id=>{ if(id!==screen) devPrev=screen; showBase(id); };   // remember the step before, for Back
+  $("#dmBack").onclick=()=>{ devBack(); devStatus(); };
+  $("#dmRestart").onclick=()=>{ devRestart(); devStatus(); };
   $("#dmHome").onclick=()=>{ devStop(); goHome(); };
   $("#dmReveal").value=devPrefs.reveal||"on"; devReveal($("#dmReveal").value);
   $("#dmQuiet").value=state.quietTest===1?"1":"0";
