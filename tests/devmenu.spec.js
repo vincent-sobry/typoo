@@ -130,6 +130,12 @@ test("dev menu: day tools, quiet hours and chapter codes", async ({ page }) => {
   await expect(page.locator("#toast")).toContainText("6");
 });
 
+test("dev menu: finish works at once after start", async ({ page }) => {
+  await openDev(page, vet());
+  await page.evaluate(() => { $("#dmGo").click(); $('#dmFin [data-fin="1"]').click(); });
+  await expect(page.locator("#result")).toBeVisible();
+});
+
 test("dev menu: typing in a run is not caught by the menu", async ({ page }) => {
   await openDev(page, vet());
   await page.click("#dmGo");

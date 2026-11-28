@@ -4108,7 +4108,7 @@ if(IS_DEV){
   $("#dmHead").onclick=toggle;
   $$("#devMenu button").forEach(b=>{ b.dataset.nofx=""; b.tabIndex=-1; b.addEventListener("mousedown", e=>e.preventDefault()); });   // no focus: keys stay with the run
   $("#dmToggle").onclick=e=>{ e.stopPropagation(); toggle(); };
-  $("#dmGo").onclick=()=>devStart($("#dmStart").value);
+  $("#dmGo").onclick=()=>{ devStart($("#dmStart").value); devStatus(); };   // Finish buttons work at once, not after the next status tick
   $$("#dmFin button").forEach(b=>b.onclick=()=>devFinish(b.dataset.fin));
   $("#dmSkip").onclick=devSkip;
   $("#dmHome").onclick=()=>{ devStop(); goHome(); };
