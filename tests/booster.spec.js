@@ -55,13 +55,13 @@ test("lobby: chapters with 1 or 2 stars only; one or two choices without a full 
 });
 
 test("lobby: 3 chapters in one row, easy / medium / hard by the gap to the next star", async ({ page }) => {
-  // Home Row targets: gap = missing WPM share + missing accuracy / 10. Chapter 0..4 records:
+  // Gap = missing accuracy / 10, plus the missing WPM share for ★★★ only (target 10 WPM). Chapter 0..4 records:
   const q = {
-    0: { stars: 1, wpm: 10, acc: 94 },   // rule met once: gap 0 -> easy
-    1: { stars: 1, wpm: 9, acc: 93 },    // gap 0.2
-    2: { stars: 1, wpm: 6, acc: 91 },    // gap 0.7
-    3: { stars: 2, wpm: 10, acc: 96 },   // needs 13 WPM, 97%: gap 0.33 = middle of 5 -> medium
-    4: { stars: 1, wpm: 2, acc: 90 },    // gap 1.2 -> hard
+    0: { stars: 1, wpm: 5, acc: 96 },    // ★★ rule (96%) met once: gap 0 -> easy
+    1: { stars: 1, wpm: 9, acc: 95 },    // gap 0.1
+    2: { stars: 1, wpm: 6, acc: 93 },    // gap 0.3
+    3: { stars: 2, wpm: 10, acc: 97 },   // needs 98% and 10 WPM: gap 0.1 = middle of 5 -> medium
+    4: { stars: 1, wpm: 2, acc: 90 },    // gap 0.6 -> hard
     5: { stars: 3, wpm: 30, acc: 99 },
   };
   await openApp(page, player({ lessons: { qwerty: q, azerty: {} } }));

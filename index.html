@@ -98,6 +98,13 @@ h1,h2,h3{margin:0}
 .stat{background:var(--bg2);border-radius:12px;padding:8px;text-align:center}
 .stat b{display:block;font-size:20px}
 .stat small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+/* Accuracy first: the accuracy number is big and green, WPM is small and muted. */
+.stat.main b{color:var(--good);font-size:24px}
+.stat.minor b{color:var(--muted);font-size:17px}
+.live .pill.minor{opacity:.6;font-size:12px}
+.accrec{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;background:#3ee0891f;border:1px solid #3ee08955;color:var(--good);font-weight:700;font-size:14px}
+.accrec[hidden]{display:none}
+.lesson .w .acc{color:var(--good)}
 .modes{display:grid;gap:10px;margin-top:14px}
 .mode{display:flex;gap:12px;align-items:center;text-align:left;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;transition:transform .1s,border-color .1s}
 .mode:hover{transform:translateY(-2px);border-color:var(--accent)}
@@ -292,6 +299,8 @@ body.fframe #fframe{display:block}
 .bigstars span.dim{transform:scale(1);opacity:1}
 .rstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
 .rstats .stat b{font-size:28px}
+.rstats .stat.main b{font-size:34px}
+.rstats .stat.minor b{font-size:22px}
 .rbtns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .need{font-size:14px;color:var(--muted);margin-top:6px}
 .weak{margin-top:10px;font-size:14px}
@@ -575,9 +584,9 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
             <div class="wsave" id="wSave" data-t="h.wsave" hidden>Reach today's goal to save your streak</div>
           </div>
           <div class="stats3">
-            <div class="stat"><b id="sBest">0</b><small data-t="st.best">Best WPM</small></div>
-            <div class="stat"><b id="sAvg">0</b><small data-t="st.avg">Avg WPM</small></div>
+            <div class="stat main" title="Average of your last 10 runs" data-ta="title=st.accT"><b id="sAcc">–</b><small data-t="st.acc">Accuracy</small></div>
             <div class="stat"><b id="sStars">0</b><small data-t="st.stars">Stars</small></div>
+            <div class="stat minor"><b id="sBest">0</b><small data-t="st.best">Best WPM</small></div>
           </div>
           <div class="modes">
             <button class="mode warm" id="mWarm"><span class="ic">☀️</span><span><b data-t="m.warm">Daily warm-up</b><small id="mWarmText">1 minute · easy words · no score</small></span></button>
@@ -609,8 +618,8 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       <h2 id="tTitle">Chapter</h2>
       <div class="spacer"></div>
       <div class="live">
-        <div class="pill">⚡ <span id="lWpm">0</span> WPM</div>
-        <div class="pill">🎯 <span id="lAcc">100</span>%</div>
+        <div class="pill main">🎯 <span id="lAcc">100</span>%</div>
+        <div class="pill minor">⚡ <span id="lWpm">0</span> WPM</div>
         <div class="pill" id="lTimeP">⏱ <span id="lTime">0:00</span></div>
         <div class="pill wuclock" id="wuClock" role="timer" aria-live="off"><i class="ring" id="wuRing"></i><span id="wuLeft">1:00 left</span></div>
       </div>
@@ -649,9 +658,10 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       </div>
       <h2 id="rTitle" style="margin-top:12px">Chapter complete</h2>
       <div class="bigstars" id="rStars"><span>★</span><span>★</span><span>★</span></div>
+      <div class="accrec" id="rRec" role="status" hidden></div>
       <div class="rstats">
-        <div class="stat"><b id="rWpm">0</b><small>WPM</small></div>
-        <div class="stat"><b id="rAcc">0%</b><small data-t="r.acc">Accuracy</small></div>
+        <div class="stat main"><b id="rAcc">0%</b><small data-t="r.acc">Accuracy</small></div>
+        <div class="stat minor"><b id="rWpm">0</b><small>WPM</small></div>
         <div class="stat"><b id="rTime">0s</b><small data-t="r.time">Time</small></div>
         <div class="stat"><b id="rXp">+0</b><small id="rXpL">XP</small></div>
       </div>
@@ -1098,14 +1108,14 @@ I18N.en = {
   /* home */
   "h.streakT":"Streak: days in a row with today's goal reached","h.tourT":"Tour (?)","h.tourA":"Start the tour","h.week":"Streak: last 7 days",
   "h.wsave":"Reach today's goal to save your streak","h.toNext":"{x} XP to next level",
-  "st.best":"Best WPM","st.avg":"Avg WPM","st.stars":"Stars",
+  "st.best":"Best WPM","st.acc":"Accuracy","st.accT":"Average of your last 10 runs","st.stars":"Stars",
   "m.warm":"Daily warm-up","m.warmS":"1\u00a0minute · easy\u00a0words · no\u00a0score","m.daily":"Daily sentence","m.dailyS":"One new sentence each day",
   "m.cont":"Continue","m.race":"Race Keebo","m.raceS":"Beat the bot in a typing race","m.rain":"Word Rain","m.rainS":"Stop the meteors before they land",
   "m.ladder":"Longest Word","m.ladderS":"Climb the word ladder against Keebo","m.ladderRec":"climb against Keebo",
   "m.mar":"Word Marathon","m.marS":"Type the ladder at your own pace. Stay ahead of Keebo","m.marRec":"stay ahead of Keebo",
   "m.smart":"Smart Practice","m.smartS":"Train your weakest keys","m.custom":"Custom Letters","m.customS":"Pick the keys you want to practise","m.customLast":"Last: {k} · pick your keys",
   "m.boost":"Booster","m.boostN1":"{n} chapter can get more stars","m.boostN":"{n} chapters can get more stars","m.boostAll":"All chapters have ★★★ 🎉","m.boostLock":"Locked: get 1 star on a chapter first",
-  "lock.ch1":"Locked: pass chapter 1 first","lock.bottom":"Locked: finish the Bottom Row first","map.target":"target {w}+ WPM",
+  "lock.ch1":"Locked: pass chapter 1 first","lock.bottom":"Locked: finish the Bottom Row first","map.target":"goal: {a}% accuracy",
   "hi.warm":"Hi {n}! Start the day with a 1-minute warm-up? ☀️","hi.daily":"Today's sentence is ready, {n}. One try counts! 📜",
   "hi.goal":"Goal reached, {n}! 🌙 See you tomorrow. The games stay open, new chapters wait until tomorrow.","dw.h":"Hi {n}!","dw.warm":"Ready to warm up? One minute of easy words gets your fingers loose. Then all games open.","dw.ch1":"Ready for chapter 1? Put your fingers on F and J, and let's go.","dw.go":"Warm up","dw.goCh1":"Start chapter 1","dw.skip":"Skip","soft.cont":"🌙 Opens tomorrow","soft.toast":"New chapters open tomorrow. Replay a chapter or play a game!","soft.xp":"XP · 25%","hi.quiet":"It's late, {n}! 🌙 Quiet hours until 5:00: no XP, no stars. Time to sleep?","qh.say":"It's late{name}. 🌙 Sleep makes your fingers faster. No XP or stars now. See you tomorrow!","qh.xp":"XP · 🌙 quiet","qh.toast":"Quiet hours (23:00 to 5:00): no XP, stars or goal time. Sleep well! 🌙","qh.lock":"Quiet hours: new chapters open again after 5:00. 🌙","qh.cont":"🌙 Opens after 5:00","set.quiet":"Quiet hours","set.quietTxt":"From 23:00 to 5:00 there is no XP, no stars, no badges and no goal time. A new day starts at 5:00. On = test quiet hours now.","set.quietAuto":"Auto","set.quietOn":"On (test)","set.goalGo":"Reach today's goal","set.goalToast":"Today's goal is reached. New chapters wait until tomorrow.","hi.frozen":"Welcome back, {n}! Reach today's goal to save your streak. ❄️",
   "hi.broken":"Welcome back, {n}! Let's start a new streak today. 🔥",
@@ -1124,10 +1134,10 @@ I18N.en = {
   "intro*speed":"Speed sprint! The most common words. Stay relaxed.","intro*boss":"BOSS LEVEL. A long text. Accuracy first, then speed. Good luck!",
   /* result */
   "r.acc":"Accuracy","r.time":"Time","r.retry":"↻ Retry","r.next":"Next →","r.enter":"Press <b>Enter</b> for the main button",
-  "r.tricky":"Tricky keys:","r.typed":"Your text","r.noMiss":"No mistakes. Wow! 💎",
+  "r.accRec":"🎯 New accuracy record for this chapter!","r.tricky":"Tricky keys:","r.typed":"Your text","r.noMiss":"No mistakes. Wow! 💎",
   "les.s3":"PERFECT! Three stars! You're a typing machine! 🤖💜","les.s2":"Great job! Two stars. Want to go for three?",
-  "les.s1":"Chapter passed! Next time, try a bit faster.","les.s0":"Almost! Get 90% accuracy to pass. Go slower, and be precise.",
-  "les.need1":"Need: 90% accuracy to pass.","les.need2":"For ★★: 94% accuracy and {w} WPM.","les.need3":"For ★★★: 97% accuracy and {w} WPM.",
+  "les.s1":"Chapter passed! Slow and clean wins. Aim for {a}%.","les.s0":"Almost! Get 90% accuracy to pass. Go slower, and be precise.",
+  "les.need1":"Need: 90% accuracy to pass.","les.need2":"For ★★: {a}% accuracy. Speed does not count yet.","les.need3":"For ★★★: {a}% accuracy and {w} WPM.",
   "les.next":"Next chapter →","les.blindTip":"Tip: try Blind mode in Settings!",
   "goal.done":"🎯 Goal reached, see you tomorrow!<small>10 minutes of practice today. Games stay open, with less XP. New chapters open tomorrow.</small>","goal.say":"Daily goal done{name}! 🎉 Same time tomorrow?",
   "lvl.up":"Level up!","lvl.newTitle":"New title: {t}","lvl.toNext":"{x} XP to level {l}","lvl.sayTitle":"Level {l}! You are now a <b>{t}</b>! 🤖💃","lvl.say":"Level {l}! Keep going! 🚀",
@@ -1136,7 +1146,7 @@ I18N.en = {
   "smart.good":"Your weak keys are getting stronger! 💪","smart.ok":"Good training. Repeat this a few times.","smart.say":"I picked your trickiest keys: {keys}. Slow and precise!",
   /* booster */
   "bl.txt":"Pick a chapter: easy, medium or hard. A very good run gives it one more star.",
-  "b.easy":"Easy","b.mid":"Medium","b.hard":"Hard","b.goal":"{a}% accuracy and {w} WPM","b.allDone":"All your chapters have ★★★. Wow! 🎉","b.first":"Get 1 star on a chapter first.",
+  "b.easy":"Easy","b.mid":"Medium","b.hard":"Hard","b.goal":"{a}% accuracy and {w} WPM","b.goalAcc":"{a}% accuracy","b.allDone":"All your chapters have ★★★. Wow! 🎉","b.first":"Get 1 star on a chapter first.",
   "b.nextStar":"Next star:","b.focus":"Focus keys: {keys}.","b.say":"Boost to {s}! You need {g}.","b.up":"BOOST! {c} now has {s}! 🚀","b.close":"So close! Try once more.",
   "b.complete":"{c} is complete: ★★★","b.for":"For","b.again":"Boost a chapter",
   /* custom letters */
@@ -1227,14 +1237,14 @@ I18N.nl = {
   "ob.detect":"Ik denk dat je {g} hebt. Pas het aan als ik me vergis.","ob.go":"Daar gaan we! →","kb.us":"VS","kb.usSub":"QWERTY, ook NL","kb.uk":"Brits","kb.it":"Italiaans","kb.be":"Belgisch","kb.fr":"Frans","kb.name":"{k} {f}",
   "h.streakT":"Reeks: dagen na elkaar met je doel gehaald","h.tourT":"Rondleiding (?)","h.tourA":"Start de rondleiding","h.week":"Reeks: laatste 7 dagen",
   "h.wsave":"Haal het doel van vandaag om je reeks te redden","h.toNext":"nog {x} XP tot het volgende level",
-  "st.best":"Beste WPM","st.avg":"Gem. WPM","st.stars":"Sterren",
+  "st.best":"Beste WPM","st.acc":"Precisie","st.accT":"Gemiddelde van je laatste 10 runs","st.stars":"Sterren",
   "m.warm":"Dagelijkse opwarming","m.warmS":"1\u00a0minuut · makkelijke\u00a0woorden · geen\u00a0score","m.daily":"Zin van de dag","m.dailyS":"Elke dag een nieuwe zin",
   "m.cont":"Verder","m.race":"Race tegen Keebo","m.raceS":"Versla de robot in een typrace","m.rain":"Woordenregen","m.rainS":"Stop de meteoren voor ze landen",
   "m.ladder":"Langste woord","m.ladderS":"Klim de woordladder op tegen Keebo","m.ladderRec":"klim tegen Keebo",
   "m.mar":"Woordmarathon","m.marS":"Typ de ladder in je eigen tempo. Blijf Keebo voor","m.marRec":"blijf Keebo voor",
   "m.smart":"Slim oefenen","m.smartS":"Train je zwakste toetsen","m.custom":"Eigen letters","m.customS":"Kies de toetsen die je wilt oefenen","m.customLast":"Laatst: {k} · kies je toetsen",
   "m.boost":"Booster","m.boostN1":"{n} hoofdstuk kan meer sterren krijgen","m.boostN":"{n} hoofdstukken kunnen meer sterren krijgen","m.boostAll":"Alle hoofdstukken hebben ★★★ 🎉","m.boostLock":"Op slot: haal eerst 1 ster op een hoofdstuk",
-  "lock.ch1":"Op slot: haal eerst hoofdstuk 1","lock.bottom":"Op slot: werk eerst de onderste rij af","map.target":"doel {w}+ WPM",
+  "lock.ch1":"Op slot: haal eerst hoofdstuk 1","lock.bottom":"Op slot: werk eerst de onderste rij af","map.target":"doel: {a}% nauwkeurig",
   "hi.warm":"Hoi {n}! Begin de dag met 1 minuut opwarmen? ☀️","hi.daily":"De zin van vandaag is klaar, {n}. Eén poging telt! 📜",
   "hi.goal":"Doel gehaald, {n}! 🌙 Tot morgen. De spellen blijven open, nieuwe hoofdstukken wachten tot morgen.","dw.h":"Hoi {n}!","dw.warm":"Klaar om op te warmen? Eén minuut makkelijke woorden maakt je vingers los. Daarna gaan alle spellen open.","dw.ch1":"Klaar voor hoofdstuk 1? Zet je vingers op F en J, en we gaan.","dw.go":"Opwarmen","dw.goCh1":"Start hoofdstuk 1","dw.skip":"Overslaan","soft.cont":"🌙 Morgen open","soft.toast":"Nieuwe hoofdstukken gaan morgen open. Speel een hoofdstuk opnieuw of speel een spel!","soft.xp":"XP · 25%","hi.quiet":"Het is laat, {n}! 🌙 Stille uren tot 5:00: geen XP, geen sterren. Tijd om te slapen?","qh.say":"Het is laat{name}. 🌙 Slaap maakt je vingers sneller. Nu geen XP of sterren. Tot morgen!","qh.xp":"XP · 🌙 stil","qh.toast":"Stille uren (23:00 tot 5:00): geen XP, sterren of doeltijd. Slaap lekker! 🌙","qh.lock":"Stille uren: nieuwe hoofdstukken gaan weer open na 5:00. 🌙","qh.cont":"🌙 Open na 5:00","set.quiet":"Stille uren","set.quietTxt":"Van 23:00 tot 5:00 is er geen XP, geen sterren, geen badges en geen doeltijd. Een nieuwe dag start om 5:00. Aan = test de stille uren nu.","set.quietAuto":"Auto","set.quietOn":"Aan (test)","set.goalGo":"Haal het doel van vandaag","set.goalToast":"Het doel van vandaag is gehaald. Nieuwe hoofdstukken wachten tot morgen.","hi.frozen":"Welkom terug, {n}! Haal het doel van vandaag om je reeks te redden. ❄️",
   "hi.broken":"Welkom terug, {n}! Start vandaag een nieuwe reeks. 🔥",
@@ -1250,17 +1260,17 @@ I18N.nl = {
   "intro*sentences":"Volledige zinnen. Hou een rustig, vast ritme.","intro*numbers":"Cijfers en woorden. Strek naar boven en kom terug naar de thuisrij.",
   "intro*speed":"Snelheidssprint! De meest gebruikte woorden. Blijf ontspannen.","intro*boss":"EINDBAAS. Een lange tekst. Eerst juist, dan snel. Succes!",
   "r.acc":"Nauwkeurigheid","r.time":"Tijd","r.retry":"↻ Opnieuw","r.next":"Volgende →","r.enter":"Druk op <b>Enter</b> voor de hoofdknop",
-  "r.tricky":"Lastige toetsen:","r.typed":"Jouw tekst","r.noMiss":"Geen fouten. Wauw! 💎",
+  "r.accRec":"🎯 Nieuw precisierecord voor dit hoofdstuk!","r.tricky":"Lastige toetsen:","r.typed":"Jouw tekst","r.noMiss":"Geen fouten. Wauw! 💎",
   "les.s3":"PERFECT! Drie sterren! Je bent een typmachine! 🤖💜","les.s2":"Goed gedaan! Twee sterren. Ga je voor drie?",
-  "les.s1":"Hoofdstuk gehaald! Probeer volgende keer iets sneller.","les.s0":"Bijna! Haal 90% nauwkeurigheid om door te gaan. Ga trager en typ precies.",
-  "les.need1":"Nodig: 90% nauwkeurigheid om door te gaan.","les.need2":"Voor ★★: 94% nauwkeurigheid en {w} WPM.","les.need3":"Voor ★★★: 97% nauwkeurigheid en {w} WPM.",
+  "les.s1":"Hoofdstuk gehaald! Rustig en juist wint. Mik op {a}%.","les.s0":"Bijna! Haal 90% nauwkeurigheid om door te gaan. Ga trager en typ precies.",
+  "les.need1":"Nodig: 90% nauwkeurigheid om door te gaan.","les.need2":"Voor ★★: {a}% nauwkeurigheid. Snelheid telt nog niet.","les.need3":"Voor ★★★: {a}% nauwkeurigheid en {w} WPM.",
   "les.next":"Volgend hoofdstuk →","les.blindTip":"Tip: probeer de blinde modus in Instellingen!",
   "goal.done":"🎯 Doel gehaald, tot morgen!<small>10 minuten geoefend vandaag. De spellen blijven open, met minder XP. Nieuwe hoofdstukken gaan morgen open.</small>","goal.say":"Dagdoel gehaald{name}! 🎉 Morgen weer?",
   "lvl.up":"Level omhoog!","lvl.newTitle":"Nieuwe titel: {t}","lvl.toNext":"nog {x} XP tot level {l}","lvl.sayTitle":"Level {l}! Je bent nu een <b>{t}</b>! 🤖💃","lvl.say":"Level {l}! Ga zo door! 🚀",
   "train.ok":"Goed getraind. Eerst juist, dan snel.",
   "smart.good":"Je zwakke toetsen worden sterker! 💪","smart.ok":"Goed getraind. Doe dit nog een paar keer.","smart.say":"Ik koos je lastigste toetsen: {keys}. Traag en precies!",
   "bl.txt":"Kies een hoofdstuk: makkelijk, gemiddeld of moeilijk. Een heel goede run geeft er één ster bij.",
-  "b.easy":"Makkelijk","b.mid":"Gemiddeld","b.hard":"Moeilijk","b.goal":"{a}% nauwkeurigheid en {w} WPM","b.allDone":"Al je hoofdstukken hebben ★★★. Wauw! 🎉","b.first":"Haal eerst 1 ster op een hoofdstuk.",
+  "b.easy":"Makkelijk","b.mid":"Gemiddeld","b.hard":"Moeilijk","b.goal":"{a}% nauwkeurigheid en {w} WPM","b.goalAcc":"{a}% nauwkeurigheid","b.allDone":"Al je hoofdstukken hebben ★★★. Wauw! 🎉","b.first":"Haal eerst 1 ster op een hoofdstuk.",
   "b.nextStar":"Volgende ster:","b.focus":"Focustoetsen: {keys}.","b.say":"Boost naar {s}! Je hebt {g} nodig.","b.up":"BOOST! {c} heeft nu {s}! 🚀","b.close":"Bijna! Probeer nog eens.",
   "b.complete":"{c} is klaar: ★★★","b.for":"Voor","b.again":"Boost een hoofdstuk",
   "cl.h":"🔤 Eigen letters","cl.txt":"Klik op de toetsen die je wilt oefenen, of druk ze in op je toetsenbord. Je krijgt echte woorden met alleen deze letters.",
@@ -1342,7 +1352,7 @@ I18N.nl = {
     ["Dit ben jij 🧑‍🚀","Je level, je dagdoel en je snelheid. We zoomen in."],
     ["XP = kracht ⚡","Elke goede toets geeft XP. Vul de balk en ga een level omhoog."],
     ["10 minuten per dag 🎯","Vul elke dag de groene balk. Kleine stapjes, grote snelheid."],
-    ["Wat is WPM? 🏎️","Words Per Minute: woorden per minuut, hoe snel je typt. 30 WPM? Je vliegt!"],
+    ["Eerst nauwkeurig 🎯","🎯 toont hoeveel toetsen je juist typt. Mik op 96%. Snelheid (WPM) komt vanzelf."],
     ["Spellen 🎮","Race tegen Keebo, stop meteoren, klim de woordladder op. 🔒 gaat later open."],
     ["Badges 🏅","Verzamel ze allemaal. Tik op een badge om te zien hoe je hem wint."],
     ["Instellingen ⚙️","Geluid, toetsenbord, taal, sneltoetsen. Maak Typoo van jou."],
@@ -1374,14 +1384,14 @@ I18N.fr = {
   "ob.detect":"Je pense que tu as un {g}. Change-le si je me trompe.","ob.go":"C'est parti ! →","kb.us":"américain","kb.usSub":"QWERTY, aussi NL","kb.uk":"britannique","kb.it":"italien","kb.be":"belge","kb.fr":"français","kb.name":"{f} {k}",
   "h.streakT":"Série : jours d'affilée avec l'objectif atteint","h.tourT":"Visite (?)","h.tourA":"Lancer la visite","h.week":"Série : 7 derniers jours",
   "h.wsave":"Atteins l'objectif du jour pour sauver ta série","h.toNext":"encore {x} XP jusqu'au niveau suivant",
-  "st.best":"Meilleur WPM","st.avg":"WPM moyen","st.stars":"Étoiles",
+  "st.best":"Meilleur WPM","st.acc":"Précision","st.accT":"Moyenne de tes 10 dernières parties","st.stars":"Étoiles",
   "m.warm":"Échauffement du jour","m.warmS":"1\u00a0minute · mots\u00a0faciles · sans\u00a0score","m.daily":"Phrase du jour","m.dailyS":"Une nouvelle phrase chaque jour",
   "m.cont":"Continuer","m.race":"Course contre Keebo","m.raceS":"Bats le robot dans une course de frappe","m.rain":"Pluie de mots","m.rainS":"Arrête les météores avant qu'ils tombent",
   "m.ladder":"Mot le plus long","m.ladderS":"Grimpe l'échelle de mots contre Keebo","m.ladderRec":"grimpe contre Keebo",
   "m.mar":"Marathon de mots","m.marS":"Tape l'échelle à ton rythme. Garde ton avance sur Keebo","m.marRec":"garde ton avance sur Keebo",
   "m.smart":"Entraînement malin","m.smartS":"Entraîne tes touches faibles","m.custom":"Lettres au choix","m.customS":"Choisis les touches à entraîner","m.customLast":"Dernier : {k} · choisis tes touches",
   "m.boost":"Booster","m.boostN1":"{n} chapitre peut gagner des étoiles","m.boostN":"{n} chapitres peuvent gagner des étoiles","m.boostAll":"Tous les chapitres ont ★★★ 🎉","m.boostLock":"Verrouillé : gagne d'abord 1 étoile sur un chapitre",
-  "lock.ch1":"Verrouillé : réussis d'abord le chapitre 1","lock.bottom":"Verrouillé : termine d'abord la rangée du bas","map.target":"objectif {w}+ WPM",
+  "lock.ch1":"Verrouillé : réussis d'abord le chapitre 1","lock.bottom":"Verrouillé : termine d'abord la rangée du bas","map.target":"objectif : {a} % de précision",
   "hi.warm":"Salut {n} ! On commence la journée par 1 minute d'échauffement ? ☀️","hi.daily":"La phrase du jour est prête, {n}. Un seul essai compte ! 📜",
   "hi.goal":"Objectif atteint, {n} ! 🌙 À demain. Les jeux restent ouverts, les nouveaux chapitres attendent demain.","dw.h":"Salut {n} !","dw.warm":"Prêt pour l'échauffement ? Une minute de mots faciles pour délier tes doigts. Ensuite, tous les jeux s'ouvrent.","dw.ch1":"Prêt pour le chapitre 1 ? Mets tes doigts sur F et J, et c'est parti.","dw.go":"S'échauffer","dw.goCh1":"Commencer le chapitre 1","dw.skip":"Passer","soft.cont":"🌙 Ouvre demain","soft.toast":"Les nouveaux chapitres s'ouvrent demain. Rejoue un chapitre ou joue à un jeu !","soft.xp":"XP · 25 %","hi.quiet":"Il est tard, {n} ! 🌙 Heures calmes jusqu'à 5:00 : pas d'XP, pas d'étoiles. C'est l'heure de dormir ?","qh.say":"Il est tard{name}. 🌙 Le sommeil rend tes doigts plus rapides. Pas d'XP ni d'étoiles maintenant. À demain !","qh.xp":"XP · 🌙 calme","qh.toast":"Heures calmes (23:00 à 5:00) : pas d'XP, d'étoiles ni de temps pour l'objectif. Dors bien ! 🌙","qh.lock":"Heures calmes : les nouveaux chapitres rouvrent après 5:00. 🌙","qh.cont":"🌙 Ouvre après 5:00","set.quiet":"Heures calmes","set.quietTxt":"De 23:00 à 5:00, pas d'XP, pas d'étoiles, pas de badges et pas de temps pour l'objectif. Un nouveau jour commence à 5:00. Activé = tester les heures calmes maintenant.","set.quietAuto":"Auto","set.quietOn":"Activé (test)","set.goalGo":"Atteindre l'objectif du jour","set.goalToast":"L'objectif du jour est atteint. Les nouveaux chapitres attendent demain.","hi.frozen":"Re-bonjour, {n} ! Atteins l'objectif du jour pour sauver ta série. ❄️",
   "hi.broken":"Re-bonjour, {n} ! On commence une nouvelle série aujourd'hui. 🔥",
@@ -1397,17 +1407,17 @@ I18N.fr = {
   "intro*sentences":"Des phrases entières. Garde un rythme calme et régulier.","intro*numbers":"Chiffres et mots. Monte, puis reviens sur la rangée de base.",
   "intro*speed":"Sprint de vitesse ! Les mots les plus courants. Reste détendu.","intro*boss":"NIVEAU BOSS. Un long texte. D'abord juste, puis rapide. Bonne chance !",
   "r.acc":"Précision","r.time":"Temps","r.retry":"↻ Recommencer","r.next":"Suivant →","r.enter":"Appuie sur <b>Entrée</b> pour le bouton principal",
-  "r.tricky":"Touches difficiles :","r.typed":"Ton texte","r.noMiss":"Aucune faute. Waouh ! 💎",
+  "r.accRec":"🎯 Nouveau record de précision pour ce chapitre !","r.tricky":"Touches difficiles :","r.typed":"Ton texte","r.noMiss":"Aucune faute. Waouh ! 💎",
   "les.s3":"PARFAIT ! Trois étoiles ! Tu es une machine à écrire ! 🤖💜","les.s2":"Bravo ! Deux étoiles. Tu tentes les trois ?",
-  "les.s1":"Chapitre réussi ! La prochaine fois, essaie un peu plus vite.","les.s0":"Presque ! Il faut 90 % de précision pour réussir. Va plus lentement et sois précis.",
-  "les.need1":"Il faut : 90 % de précision pour réussir.","les.need2":"Pour ★★ : 94 % de précision et {w} WPM.","les.need3":"Pour ★★★ : 97 % de précision et {w} WPM.",
+  "les.s1":"Chapitre réussi ! Lent et précis, c'est gagné. Vise {a} %.","les.s0":"Presque ! Il faut 90 % de précision pour réussir. Va plus lentement et sois précis.",
+  "les.need1":"Il faut : 90 % de précision pour réussir.","les.need2":"Pour ★★ : {a} % de précision. La vitesse ne compte pas encore.","les.need3":"Pour ★★★ : {a} % de précision et {w} WPM.",
   "les.next":"Chapitre suivant →","les.blindTip":"Astuce : essaie le mode aveugle dans les Réglages !",
   "goal.done":"🎯 Objectif atteint, à demain !<small>10 minutes d'entraînement aujourd'hui. Les jeux restent ouverts, avec moins d'XP. Les nouveaux chapitres s'ouvrent demain.</small>","goal.say":"Objectif du jour atteint{name} ! 🎉 À demain, même heure ?",
   "lvl.up":"Niveau supérieur !","lvl.newTitle":"Nouveau titre : {t}","lvl.toNext":"encore {x} XP jusqu'au niveau {l}","lvl.sayTitle":"Niveau {l} ! Tu es maintenant <b>{t}</b> ! 🤖💃","lvl.say":"Niveau {l} ! Continue ! 🚀",
   "train.ok":"Bon entraînement. D'abord juste, puis rapide.",
   "smart.good":"Tes touches faibles deviennent plus fortes ! 💪","smart.ok":"Bon entraînement. Refais-le quelques fois.","smart.say":"J'ai choisi tes touches les plus difficiles : {keys}. Lentement et avec précision !",
   "bl.txt":"Choisis un chapitre : facile, moyen ou difficile. Une très bonne partie lui donne une étoile de plus.",
-  "b.easy":"Facile","b.mid":"Moyen","b.hard":"Difficile","b.goal":"{a} % de précision et {w} WPM","b.allDone":"Tous tes chapitres ont ★★★. Waouh ! 🎉","b.first":"Gagne d'abord 1 étoile sur un chapitre.",
+  "b.easy":"Facile","b.mid":"Moyen","b.hard":"Difficile","b.goal":"{a} % de précision et {w} WPM","b.goalAcc":"{a} % de précision","b.allDone":"Tous tes chapitres ont ★★★. Waouh ! 🎉","b.first":"Gagne d'abord 1 étoile sur un chapitre.",
   "b.nextStar":"Étoile suivante :","b.focus":"Touches à travailler : {keys}.","b.say":"Boost vers {s} ! Il te faut {g}.","b.up":"BOOST ! {c} a maintenant {s} ! 🚀","b.close":"Presque ! Essaie encore une fois.",
   "b.complete":"{c} est complet : ★★★","b.for":"Pour","b.again":"Booster un chapitre",
   "cl.h":"🔤 Lettres au choix","cl.txt":"Clique sur les touches à entraîner, ou appuie dessus sur ton clavier. Tu reçois de vrais mots avec seulement ces lettres.",
@@ -1489,7 +1499,7 @@ I18N.fr = {
     ["Ça, c'est toi 🧑‍🚀","Ton niveau, ton objectif du jour et ta vitesse. On zoome."],
     ["XP = puissance ⚡","Chaque bonne touche donne des XP. Remplis la barre et monte de niveau."],
     ["10 minutes par jour 🎯","Remplis la barre verte chaque jour. Petits pas, grande vitesse."],
-    ["C'est quoi, WPM ? 🏎️","Words Per Minute : les mots par minute, ta vitesse de frappe. 30 WPM ? Tu voles !"],
+    ["D'abord la précision 🎯","🎯 montre combien de touches tu tapes juste. Vise 96 %. La vitesse (WPM) vient toute seule."],
     ["Jeux 🎮","Fais la course contre Keebo, arrête les météores, grimpe l'échelle de mots. 🔒 s'ouvre plus tard."],
     ["Badges 🏅","Collectionne-les tous. Touche un badge pour voir comment le gagner."],
     ["Réglages ⚙️","Son, clavier, langue, raccourcis. Fais de Typoo le tien."],
@@ -1521,14 +1531,14 @@ I18N.it = {
   "ob.detect":"Penso che tu abbia una {g}. Cambiala se sbaglio.","ob.go":"Andiamo! →","kb.us":"americana","kb.usSub":"QWERTY, anche NL","kb.uk":"britannica","kb.it":"italiana","kb.be":"belga","kb.fr":"francese","kb.name":"{f} {k}",
   "h.streakT":"Serie: giorni di fila con l'obiettivo raggiunto","h.tourT":"Tour (?)","h.tourA":"Avvia il tour","h.week":"Serie: ultimi 7 giorni",
   "h.wsave":"Raggiungi l'obiettivo di oggi per salvare la serie","h.toNext":"ancora {x} XP al prossimo livello",
-  "st.best":"WPM migliore","st.avg":"WPM medio","st.stars":"Stelle",
+  "st.best":"WPM migliore","st.acc":"Precisione","st.accT":"Media delle tue ultime 10 partite","st.stars":"Stelle",
   "m.warm":"Riscaldamento del giorno","m.warmS":"1\u00a0minuto · parole\u00a0facili · senza\u00a0punteggio","m.daily":"Frase del giorno","m.dailyS":"Una frase nuova ogni giorno",
   "m.cont":"Continua","m.race":"Gara con Keebo","m.raceS":"Batti il robot in una gara di scrittura","m.rain":"Pioggia di parole","m.rainS":"Ferma i meteoriti prima che cadano",
   "m.ladder":"Parola più lunga","m.ladderS":"Sali la scala di parole contro Keebo","m.ladderRec":"sali contro Keebo",
   "m.mar":"Maratona di parole","m.marS":"Scrivi la scala al tuo ritmo. Resta davanti a Keebo","m.marRec":"resta davanti a Keebo",
   "m.smart":"Allenamento smart","m.smartS":"Allena i tasti più deboli","m.custom":"Lettere a scelta","m.customS":"Scegli i tasti da allenare","m.customLast":"Ultimi: {k} · scegli i tuoi tasti",
   "m.boost":"Booster","m.boostN1":"{n} capitolo può avere più stelle","m.boostN":"{n} capitoli possono avere più stelle","m.boostAll":"Tutti i capitoli hanno ★★★ 🎉","m.boostLock":"Bloccato: prendi prima 1 stella in un capitolo",
-  "lock.ch1":"Bloccato: supera prima il capitolo 1","lock.bottom":"Bloccato: finisci prima la fila in basso","map.target":"obiettivo {w}+ WPM",
+  "lock.ch1":"Bloccato: supera prima il capitolo 1","lock.bottom":"Bloccato: finisci prima la fila in basso","map.target":"obiettivo: {a}% di precisione",
   "hi.warm":"Ciao {n}! Iniziamo la giornata con 1 minuto di riscaldamento? ☀️","hi.daily":"La frase di oggi è pronta, {n}. Conta un solo tentativo! 📜",
   "hi.goal":"Obiettivo raggiunto, {n}! 🌙 A domani. I giochi restano aperti, i nuovi capitoli aspettano domani.","dw.h":"Ciao {n}!","dw.warm":"Pronto per il riscaldamento? Un minuto di parole facili scioglie le dita. Poi si aprono tutti i giochi.","dw.ch1":"Pronto per il capitolo 1? Metti le dita su F e J, e via.","dw.go":"Riscaldamento","dw.goCh1":"Inizia il capitolo 1","dw.skip":"Salta","soft.cont":"🌙 Apre domani","soft.toast":"I nuovi capitoli si aprono domani. Rigioca un capitolo o fai un gioco!","soft.xp":"XP · 25%","hi.quiet":"È tardi, {n}! 🌙 Ore tranquille fino alle 5:00: niente XP, niente stelle. Ora di dormire?","qh.say":"È tardi{name}. 🌙 Il sonno rende le dita più veloci. Ora niente XP né stelle. A domani!","qh.xp":"XP · 🌙 tranquillo","qh.toast":"Ore tranquille (23:00-5:00): niente XP, stelle o tempo per l'obiettivo. Dormi bene! 🌙","qh.lock":"Ore tranquille: i nuovi capitoli si riaprono dopo le 5:00. 🌙","qh.cont":"🌙 Apre dopo le 5:00","set.quiet":"Ore tranquille","set.quietTxt":"Dalle 23:00 alle 5:00 niente XP, niente stelle, niente badge e niente tempo per l'obiettivo. Un nuovo giorno inizia alle 5:00. Attivo = prova ora le ore tranquille.","set.quietAuto":"Auto","set.quietOn":"Attivo (test)","set.goalGo":"Raggiungi l'obiettivo di oggi","set.goalToast":"L'obiettivo di oggi è raggiunto. I nuovi capitoli aspettano domani.","hi.frozen":"Bentornato, {n}! Raggiungi l'obiettivo di oggi per salvare la serie. ❄️",
   "hi.broken":"Bentornato, {n}! Oggi iniziamo una nuova serie. 🔥",
@@ -1544,17 +1554,17 @@ I18N.it = {
   "intro*sentences":"Frasi intere. Tieni un ritmo calmo e regolare.","intro*numbers":"Numeri e parole. Sali, poi torna sulla fila di base.",
   "intro*speed":"Sprint di velocità! Le parole più comuni. Resta rilassato.","intro*boss":"LIVELLO BOSS. Un testo lungo. Prima la precisione, poi la velocità. In bocca al lupo!",
   "r.acc":"Precisione","r.time":"Tempo","r.retry":"↻ Riprova","r.next":"Avanti →","r.enter":"Premi <b>Invio</b> per il pulsante principale",
-  "r.tricky":"Tasti difficili:","r.typed":"Il tuo testo","r.noMiss":"Nessun errore. Wow! 💎",
+  "r.accRec":"🎯 Nuovo record di precisione per questo capitolo!","r.tricky":"Tasti difficili:","r.typed":"Il tuo testo","r.noMiss":"Nessun errore. Wow! 💎",
   "les.s3":"PERFETTO! Tre stelle! Sei una macchina da scrivere! 🤖💜","les.s2":"Bravo! Due stelle. Provi a prenderne tre?",
-  "les.s1":"Capitolo superato! La prossima volta prova un po' più veloce.","les.s0":"Quasi! Serve il 90% di precisione per passare. Vai più piano e sii preciso.",
-  "les.need1":"Serve: 90% di precisione per passare.","les.need2":"Per ★★: 94% di precisione e {w} WPM.","les.need3":"Per ★★★: 97% di precisione e {w} WPM.",
+  "les.s1":"Capitolo superato! Piano e preciso vince. Punta al {a}%.","les.s0":"Quasi! Serve il 90% di precisione per passare. Vai più piano e sii preciso.",
+  "les.need1":"Serve: 90% di precisione per passare.","les.need2":"Per ★★: {a}% di precisione. La velocità non conta ancora.","les.need3":"Per ★★★: {a}% di precisione e {w} WPM.",
   "les.next":"Capitolo successivo →","les.blindTip":"Consiglio: prova la modalità cieca nelle Impostazioni!",
   "goal.done":"🎯 Obiettivo raggiunto, a domani!<small>10 minuti di pratica oggi. I giochi restano aperti, con meno XP. I nuovi capitoli si aprono domani.</small>","goal.say":"Obiettivo del giorno raggiunto{name}! 🎉 Domani alla stessa ora?",
   "lvl.up":"Livello su!","lvl.newTitle":"Nuovo titolo: {t}","lvl.toNext":"ancora {x} XP al livello {l}","lvl.sayTitle":"Livello {l}! Ora sei <b>{t}</b>! 🤖💃","lvl.say":"Livello {l}! Continua così! 🚀",
   "train.ok":"Buon allenamento. Prima la precisione, poi la velocità.",
   "smart.good":"I tuoi tasti deboli diventano più forti! 💪","smart.ok":"Buon allenamento. Ripetilo qualche volta.","smart.say":"Ho scelto i tuoi tasti più difficili: {keys}. Piano e preciso!",
   "bl.txt":"Scegli un capitolo: facile, medio o difficile. Una partita molto buona gli dà una stella in più.",
-  "b.easy":"Facile","b.mid":"Medio","b.hard":"Difficile","b.goal":"{a}% di precisione e {w} WPM","b.allDone":"Tutti i tuoi capitoli hanno ★★★. Wow! 🎉","b.first":"Prendi prima 1 stella in un capitolo.",
+  "b.easy":"Facile","b.mid":"Medio","b.hard":"Difficile","b.goal":"{a}% di precisione e {w} WPM","b.goalAcc":"{a}% di precisione","b.allDone":"Tutti i tuoi capitoli hanno ★★★. Wow! 🎉","b.first":"Prendi prima 1 stella in un capitolo.",
   "b.nextStar":"Prossima stella:","b.focus":"Tasti da allenare: {keys}.","b.say":"Boost a {s}! Ti serve {g}.","b.up":"BOOST! {c} ora ha {s}! 🚀","b.close":"Quasi! Prova ancora una volta.",
   "b.complete":"{c} è completo: ★★★","b.for":"Per","b.again":"Potenzia un capitolo",
   "cl.h":"🔤 Lettere a scelta","cl.txt":"Clicca i tasti da allenare, o premili sulla tastiera. Ricevi parole vere con solo queste lettere.",
@@ -1636,7 +1646,7 @@ I18N.it = {
     ["Questo sei tu 🧑‍🚀","Il tuo livello, il tuo obiettivo del giorno e la tua velocità. Ingrandiamo."],
     ["XP = potenza ⚡","Ogni tasto giusto dà XP. Riempi la barra e sali di livello."],
     ["10 minuti al giorno 🎯","Riempi la barra verde ogni giorno. Piccoli passi, grande velocità."],
-    ["Cos'è WPM? 🏎️","Words Per Minute: parole al minuto, quanto scrivi veloce. 30 WPM? Voli!"],
+    ["Prima la precisione 🎯","🎯 mostra quanti tasti scrivi giusti. Punta al 96%. La velocità (WPM) arriva da sola."],
     ["Giochi 🎮","Gareggia con Keebo, ferma i meteoriti, sali la scala di parole. 🔒 si apre più avanti."],
     ["Medaglie 🏅","Collezionale tutte. Tocca una medaglia per vedere come vincerla."],
     ["Impostazioni ⚙️","Suono, tastiera, lingua, scorciatoie. Rendi Typoo tuo."],
@@ -2280,7 +2290,9 @@ function finishSession(){
    LESSONS
    ========================================================================= */
 let lastLesson=null;
-function starsFor(wpm,acc,target){ let s=0; if(acc>=90) s=1; if(acc>=94 && wpm>=target) s=2; if(acc>=97 && wpm>=target*1.3) s=3; return s; }
+/* Accuracy first. ★ and ★★ need accuracy only. ★★★ needs top accuracy and the target speed of the stage. */
+const STAR_ACC = [90, 96, 98];
+function starsFor(wpm,acc,target){ let s=0; if(acc>=STAR_ACC[0]) s=1; if(acc>=STAR_ACC[1]) s=2; if(acc>=STAR_ACC[2] && wpm>=target) s=3; return s; }
 function lessonIntro(L){
   if(L.keys[0]!=="*"){
     const parts=[...L.keys].map(c=>{ const m=CHARMAP[c]; return m?`<b>${esc(c.toUpperCase())}</b> = ${t("fingers")[m.finger]}${m.shift?" + Shift":""}`:esc(c); });
@@ -2305,13 +2317,13 @@ function lessonDone(L,res){
   let gained = Math.round(S.text.length*Math.pow(res.acc/100,2)/3) + Math.max(0,stars-prev.stars)*15 + stars*3;
   recs[L.idx]={stars:Math.max(prev.stars,stars), wpm:Math.max(prev.wpm,Math.round(res.wpm)), acc:Math.max(prev.acc,Math.round(res.acc))};
   gained=earnXp(gained);
-  const msg = t(["les.s0","les.s1","les.s2","les.s3"][stars]);
+  const msg = t(["les.s0","les.s1","les.s2","les.s3"][stars],{a:STAR_ACC[1]});
   let need="";
   if(stars<1) need=t("les.need1");
-  else if(stars<2) need=t("les.need2",{w:L.target});
-  else if(stars<3) need=t("les.need3",{w:Math.ceil(L.target*1.3)});
+  else if(stars<2) need=t("les.need2",{a:STAR_ACC[1]});
+  else if(stars<3) need=t("les.need3",{a:STAR_ACC[2],w:L.target});
   const L2=lessonsFlat(); const hasNext = L.idx+1<L2.length && isUnlocked(L.idx+1) && !softLocked(L.idx+1);
-  showResult({title:L.title, stars, res, xp:gained, msg, mood:stars>=2?"wow":stars===1?"happy":"oops", need,
+  showResult({title:L.title, stars, res, xp:gained, msg, accRec: prev.stars>0 && Math.round(res.acc)>prev.acc, mood:stars>=2?"wow":stars===1?"happy":"oops", need,
     next: hasNext ? ()=>startLesson(L.idx+1) : null, retry:()=>startLesson(L.idx), nextLabel:t("les.next")});
   if(stars>=1) chime();
   if(L.keys==="*words" && L.stage===0 && stars>=1 && state.blind===0) setTimeout(()=>toast("🙈",t("les.blindTip")),1500);
@@ -2337,6 +2349,7 @@ function showResult(o){
   $("#rXp").textContent="+"+o.xp; $("#rXpL").textContent=runQuiet ? t("qh.xp") : runSoft ? t("soft.xp") : "XP";
   showLevel(o.xp, o.stars, o.party!==false);
   $("#rNeed").textContent=o.need||"";
+  $("#rRec").hidden=!o.accRec; $("#rRec").textContent=o.accRec ? t("r.accRec") : "";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
   $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd>${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
   showRunText(o.res.typed);
@@ -2438,8 +2451,8 @@ function boostList(){
 /* How far the best run of chapter L is from the rule of its next star. 0 = rule already met once. */
 function boostGap(L){
   const r=lessonRec(L.idx)||{stars:0,wpm:0,acc:0};
-  const w = r.stars<2 ? L.target : Math.ceil(L.target*1.3), a = r.stars<2 ? 94 : 97;
-  return Math.max(0,(w-r.wpm)/w) + Math.max(0,(a-r.acc)/10);
+  const a = STAR_ACC[r.stars<2 ? 1 : 2], w = r.stars<2 ? 0 : L.target;     // speed counts only for ★★★
+  return Math.max(0,(a-r.acc)/10) + (w ? Math.max(0,(w-r.wpm)/w) : 0);
 }
 /* Three chapters for the lobby: easy (smallest gap), medium (middle gap) and hard (largest gap). */
 const BOOST_LEVELS=[{n:"b.easy",c:"easy"},{n:"b.mid",c:"mid"},{n:"b.hard",c:"hard"}];
@@ -2452,7 +2465,7 @@ function boostPicks(){
 /* The rule for the next star of chapter L, as text. */
 function boostGoal(L){
   const s=lessonRec(L.idx)?.stars||0;
-  return s<2 ? t("b.goal",{a:94,w:L.target}) : t("b.goal",{a:97,w:Math.ceil(L.target*1.3)});
+  return s<2 ? t("b.goalAcc",{a:STAR_ACC[1]}) : t("b.goal",{a:STAR_ACC[2],w:L.target});
 }
 function weakKeys(letters, n){
   return letters.map(c=>{ const s=state.keys[c]||{h:0,m:0}, tot=s.h+s.m; return {c, r: tot<5 ? 0 : s.m/tot}; })
@@ -2510,7 +2523,7 @@ function boostDone(L,res){
   const xp=earnXp(Math.round(S.text.length*Math.pow(res.acc/100,2)/3) + (up?BOOST_XP:0));
   const more=boostList().length>0, cw=`${chapterWord()} ${L.idx+1}`;
   showResult({title:`⚡ ${t("m.boost")} · ${L.title}`, stars, res, xp, party:up, mood: up?"wow":"happy",
-    msg: up ? t("b.up",{c:cw,s:"★".repeat(stars)}) : res.acc>=94 ? t("b.close") : t("train.ok"),
+    msg: up ? t("b.up",{c:cw,s:"★".repeat(stars)}) : res.acc>=STAR_ACC[1]-2 ? t("b.close") : t("train.ok"),
     need: stars>=3 ? t("b.complete",{c:cw}) : `${t("b.for")} ${"★".repeat(stars+1)}: ${boostGoal(L)}.`,
     retry: stars<3 ? ()=>startBoost(L.idx) : openBoost, next: more ? openBoost : null, nextLabel:t("b.again")});
   if(up) chime();
@@ -2809,6 +2822,8 @@ function countIn(go){
   const iv=setInterval(step, LIGHT_STEP); step();
 }
 function stopLights(){ $("#lights").classList.remove("on"); $$("#lights i").forEach(l=>l.classList.remove("on")); $("#text").classList.remove("wait"); }
+/* Average accuracy of the last 10 runs (home screen). */
+function avgAcc(){ const h=state.history.slice(-10); return h.length? Math.round(h.reduce((a,b)=>a+b.acc,0)/h.length) : 0; }
 function avgWpm(){ const h=state.history.slice(-10); return h.length? Math.round(h.reduce((a,b)=>a+b.wpm,0)/h.length) : 0; }
 
 /* =========================================================================
@@ -3637,7 +3652,7 @@ function renderHome(){
   renderStreak(sk);
   $("#gTxt").textContent=`${Math.min(10,Math.floor(secs/60))} / 10 min`+(secs>=GOAL_SECS?" ✅":"");
   $("#gBar").style.width=Math.min(100,secs/600*100)+"%";
-  $("#sBest").textContent=state.bestWpm; $("#sAvg").textContent=avgWpm(); $("#sStars").textContent=totalStars();
+  $("#sBest").textContent=state.bestWpm; $("#sAcc").textContent=state.history.length ? avgAcc()+"%" : "–"; $("#sStars").textContent=totalStars();
   const cur=currentLessonIdx(); const L=lessonsFlat();
   const rest=softLocked(cur);
   $("#mContText").textContent= rest ? t(isQuiet() && !goalDone() ? "qh.cont" : "soft.cont") : `${cur+1}. ${L[cur].title}`;
@@ -3654,7 +3669,7 @@ function renderHome(){
   // map
   const map=$("#map"); let html="";
   CURRICULUM[state.layout].forEach((st,si)=>{
-    html+=`<div class="stage"><h3>${tx(st.stage)} <span class="tgt">${t("map.target",{w:st.target})}</span></h3><div class="lessons">`;
+    html+=`<div class="stage"><h3>${tx(st.stage)} <span class="tgt">${t("map.target",{a:STAR_ACC[1]})}</span></h3><div class="lessons">`;
     L.filter(l=>l.stage===si).forEach(l=>{
       const r=lessonRec(l.idx); const st2=r?.stars||0; const un=isUnlocked(l.idx);
       const rv=l.keys==="*review";
@@ -3663,7 +3678,7 @@ function renderHome(){
       html+=`<button class="lesson${rv?" review":""} ${un?"":"locked"}${rs?" locked rest":""} ${l.idx===cur&&un?"current":""}" data-i="${l.idx}">
         <div class="n">${chapterWord().toUpperCase()} ${l.idx+1}${keys}</div><div class="t">${esc(l.title)}</div>
         <div class="s">${[0,1,2].map(i=>`<span class="${i<st2?"on":""}">★</span>`).join("")}</div>
-        <div class="muted w">${r?`${r.wpm} WPM · ${r.acc}%`:""}</div></button>`;
+        <div class="muted w">${r?`<b class="acc">🎯 ${r.acc}%</b> · ${r.wpm} WPM`:""}</div></button>`;
     });
     html+=`</div></div>`;
   });
@@ -3873,7 +3888,7 @@ const TOUR=[
   {el:"#home .profile", t:"This is you 🧑‍🚀", p:"Your level, your daily goal and your speed. Let's zoom in."},
   {el:"#pLevelBox", t:"XP = power ⚡", p:"Every good key gives XP. Fill the bar and level up."},
   {el:"#gBox", t:"10 minutes a day 🎯", p:"Fill the green bar every day. Small steps, big speed."},
-  {el:"#home .stats3", t:"What is WPM? 🏎️", p:"Words Per Minute: how fast you type. 30 WPM? You fly!"},
+  {el:"#home .stats3", t:"Accuracy first 🎯", p:"🎯 shows how many keys you type right. Aim for 96%. Speed (WPM) comes by itself."},
   {el:"#home .modes", t:"Games 🎮", p:"Race Keebo, stop meteors, climb the word ladder. 🔒 opens later."},
   {el:"#home .card:has(#badges)", t:"Badges 🏅", p:"Collect them all. Tap one to see how to win it."},
   {el:"#hSettings", t:"Settings ⚙️", p:"Sound, keyboard, shortcuts. Make Typoo yours."},

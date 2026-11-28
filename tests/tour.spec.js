@@ -1,5 +1,5 @@
 // Tour of the home screen: after onboarding, and again with the ? button or the ? key.
-// Order: Keebo, you, XP, goal, WPM, games, badges, Settings, ?, map, Continue. The last step starts the next chapter.
+// Order: Keebo, you, XP, goal, accuracy, games, badges, Settings, ?, map, Continue. The last step starts the next chapter.
 const { test, expect } = require("@playwright/test");
 const { player, openApp, saved } = require("./helpers");
 
@@ -39,7 +39,8 @@ test("order: big picture first, map and Continue last", async ({ page }) => {
   }
   expect(titles[0]).toContain("Keebo");
   expect(titles.findIndex((t) => t.includes("XP"))).toBeLessThan(titles.findIndex((t) => t.includes("Games")));
-  expect(titles.findIndex((t) => t.includes("WPM"))).toBeLessThan(titles.findIndex((t) => t.includes("Games")));
+  expect(titles.findIndex((t) => t.includes("Accuracy"))).toBeGreaterThan(-1);
+  expect(titles.findIndex((t) => t.includes("Accuracy"))).toBeLessThan(titles.findIndex((t) => t.includes("Games")));
   expect(titles.findIndex((t) => t.includes("Badges"))).toBeLessThan(titles.findIndex((t) => t.includes("Settings")));
   expect(titles.findIndex((t) => t.includes("❓"))).toBeLessThan(titles.findIndex((t) => t.includes("map")));
   expect(titles[n - 1]).toContain("Go");
