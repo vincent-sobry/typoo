@@ -77,3 +77,9 @@ test("reduced motion: all at once", async ({ page }) => {
   expect(await op(page, "#rText")).toBe(1);
   await expect(page.locator("#rAcc")).toHaveText("100%");
 });
+
+test("the shown accuracy rounds down: a failed run at 89.6% shows 89%", async ({ page }) => {
+  await openApp(page, player());
+  await page.evaluate(() => showResult({ title: "T", stars: 0, res: { acc: 89.6, wpm: 20, secs: 30, miss: {} }, xp: 0, msg: "", retry: () => {}, next: null }));
+  await expect(page.locator("#rAcc")).toHaveText("89%");
+});

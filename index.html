@@ -2357,7 +2357,7 @@ function showResult(o){
   $("#rTitle").textContent=o.title;
   $("#rStars").style.display = o.stars===undefined ? "none" : "";
   $("#rWpm").textContent=Math.round(o.res.wpm);
-  $("#rAcc").textContent=Math.round(o.res.acc)+"%";
+  $("#rAcc").textContent=Math.floor(o.res.acc)+"%";
   $("#rTime").textContent=o.res.secs<60?Math.round(o.res.secs)+"s":fmtTime(o.res.secs);
   $("#rXp").textContent="+"+o.xp; $("#rXpL").textContent=runQuiet ? t("qh.xp") : runSoft ? t("soft.xp") : "XP";
   showLevel(o.xp, o.stars, o.party!==false, o.stars===undefined ? 1000 : 1600);   // after the stars
@@ -2384,7 +2384,8 @@ const REVEAL = {on:false, timers:[], raf:0, end:null};
 function revealStop(){ REVEAL.timers.forEach(clearTimeout); REVEAL.timers=[]; cancelAnimationFrame(REVEAL.raf); }
 function revealResult(o, main){
   revealStop();
-  const root=$("#result"), accEl=$("#rAcc"), acc=Math.round(o.res.acc), stars=$$("#rStars span");
+  // The shown accuracy rounds down, so a failed run (89.6%) never shows a pass value (90%).
+  const root=$("#result"), accEl=$("#rAcc"), acc=Math.floor(o.res.acc), stars=$$("#rStars span");
   const at=(ms,f)=>REVEAL.timers.push(setTimeout(f,ms));
   const showIn=sel=>$$(sel).forEach(e=>e.classList.add("in"));
   const starOn=i=>{ stars[i].className = i<(o.stars||0) ? "on" : "dim"; };
