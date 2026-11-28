@@ -295,8 +295,9 @@ body.fframe #fframe{display:block}
 .rbtns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .need{font-size:14px;color:var(--muted);margin-top:6px}
 .weak{margin-top:10px;font-size:14px}
-.rtext{display:none;text-align:left;font-size:20px;height:auto;max-height:clamp(96px,22vh,170px);overflow-y:auto;white-space:pre-wrap;text-wrap:balance;margin:0;padding:10px 18px;overscroll-behavior:contain}
-#result .rtext.on + .weak{margin:8px 0 22px}     /* tricky keys under the text box, then space before Keebo */
+.rtext{display:none;text-align:left;font-size:20px;height:auto;max-height:calc(6.2em + 12px);overflow-y:auto;white-space:pre-wrap;text-wrap:balance;margin:0;padding:10px 18px 0;overscroll-behavior:contain}
+#result .rtext.on + .weak{margin:16px 0 36px}     /* tricky keys under the text box, then space before Keebo */
+@media (max-height:760px){.rtext{max-height:calc(4.65em + 12px)}}   /* 3 rows on short screens, no half row */
 .rtext.on{display:block}
 .rtext .w{white-space:nowrap}
 .rtext .ms{color:#c08a3a}                                   /* same orange as a fixed error while typing */
