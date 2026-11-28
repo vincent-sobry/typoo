@@ -16,13 +16,13 @@ test("onboarding saves a new player", async ({ page }) => {
   await openApp(page, null);
   await expect(page.locator("#onboard")).toBeVisible();
   await page.fill("#obName", "Nova");
-  await page.click("#obLayout [data-v=qwerty]");
+  await page.click("#obLayout [data-v=us]");
   await page.click("#obLang [data-v=en]");
   await page.click("#obGo");
   await expect(page.locator("#home")).toBeVisible();
   await expect(page.locator("#pName")).toHaveText("Nova");
   const s = await saved(page);
-  expect(s).toMatchObject({ name: "Nova", layout: "qwerty", lang: "en" });
+  expect(s).toMatchObject({ name: "Nova", layout: "qwerty", kbd: "us", lang: "en" });
 });
 
 test("old saved progress still loads", async ({ page }) => {
