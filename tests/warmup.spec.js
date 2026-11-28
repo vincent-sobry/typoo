@@ -158,7 +158,7 @@ test("test tool 'new day': dates move back 1 day, the warm-up shows again, the s
   await openApp(page, withChapters(3, { warmup: { last: d, count: 1 }, today: { date: d, secs: 300 }, streak: { count: 4, last: d } }));
   await expect(page.locator("#mWarm")).toHaveClass(/locked/);
   await page.click("#hSettings");
-  await expect(page.locator("#setNewDay"), "only on the dev preview").toBeHidden();
+  await expect(page.locator("#devMenu"), "only on the dev preview").toBeHidden();
   const r = await page.evaluate(() => { newDay(); goHome(); return { st: state, streak: streakNow(), y: dayBefore(todayStr()), tile: !$("#mWarm").classList.contains("locked") }; });
   expect(r.st.warmup.last).toBe(r.y);
   expect(r.st.today.date).toBe(r.y);
