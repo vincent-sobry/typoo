@@ -14,9 +14,11 @@ function player(extra = {}) {
 /** Open the app with a saved state (or none, for onboarding).
  *  The result-screen lock is off by default, so tests can go on at once. Pass { resultLock: true } to keep it.
  *  The day welcome pop-up is off by default. Pass { welcome: true } to show it.
+ *  The staged reveal of the result screen is off by default (all shows at once). Pass { reveal: true } to keep it.
  *  The clock says 12:00. Pass { hour: 23 } for quiet hours. */
 async function openApp(page, state, opts = {}) {
   if (!opts.resultLock) await page.addInitScript(() => { window.TYPOO_RESULT_LOCK = { keys: 0, clicks: 0 }; });
+  if (!opts.reveal) await page.addInitScript(() => { window.TYPOO_REVEAL = false; });
   // Fixed clock: midday, day change at midnight, so tests do not depend on the hour they run (quiet hours 23:00-5:00).
   await page.addInitScript((h) => { window.TYPOO_HOUR = h; window.TYPOO_DAY_START = 0; }, opts.hour ?? 12);
   if (!opts.welcome) await page.addInitScript(() => { window.TYPOO_WELCOME_OFF = true; });   // the day welcome (UX-31) has its own tests

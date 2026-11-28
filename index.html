@@ -311,6 +311,19 @@ body.fframe #fframe{display:block}
 .rtext .w{white-space:nowrap}
 .rtext .ms{color:#c08a3a}                                   /* same orange as a fixed error while typing */
 .rtext .ms.sp{background:#c08a3a40}
+/* Staged reveal (result screen): one step at a time, in order of importance. Only opacity and transform move.
+   Any key or tap ends it. Reduced motion: all at once. */
+#result .rv{transition:opacity .3s ease-out,transform .3s cubic-bezier(.3,1.4,.5,1)}
+#result.reveal .rv:not(.in){opacity:0;transform:translateY(6px) scale(.97);pointer-events:none}
+#result.reveal .rv.slide:not(.in){transform:translateY(-10px)}
+#result.reveal .weak kbd.rv:not(.in){transform:scale(.5)}
+.weak kbd{display:inline-block}
+.rtext .ms.pulse{animation:msPulse .7s ease-in-out}
+@keyframes msPulse{50%{opacity:.25}}
+#result .btn.glow{position:relative}
+#result .btn.glow::after{content:"";position:absolute;inset:-3px;border-radius:14px;box-shadow:0 0 20px 6px #7c5cffaa;opacity:0;pointer-events:none;animation:btnGlow 1.6s ease-out}
+@keyframes btnGlow{30%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#result .rv,.bigstars span{transition:none}.rtext .ms.pulse,#result .btn.glow::after{animation:none}}
 .weak kbd{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-family:var(--mono);margin:0 2px}
 
 /* ---------- Race ---------- */
@@ -650,34 +663,34 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <!-- ============ RESULT ============ -->
   <section id="result" class="screen">
     <div class="result card">
-      <div class="textbox rtext" id="rText" role="region" data-ta="aria-label=r.typed" aria-label="Your text"></div>
-      <div class="weak" id="rWeak"></div>
-      <div class="botbox" style="justify-content:center">
+      <div class="textbox rtext rv" id="rText" role="region" data-ta="aria-label=r.typed" aria-label="Your text"></div>
+      <div class="weak rv" id="rWeak"></div>
+      <div class="botbox rv rv4" style="justify-content:center">
         <svg class="bot" viewBox="0 0 120 120"></svg>
         <div class="bubble" id="rBubble">…</div>
       </div>
-      <h2 id="rTitle" style="margin-top:12px">Chapter complete</h2>
+      <h2 id="rTitle" class="rv" style="margin-top:12px">Chapter complete</h2>
       <div class="bigstars" id="rStars"><span>★</span><span>★</span><span>★</span></div>
-      <div class="accrec" id="rRec" role="status" hidden></div>
+      <div class="accrec rv slide" id="rRec" role="status" hidden></div>
       <div class="rstats">
-        <div class="stat main"><b id="rAcc">0%</b><small data-t="r.acc">Accuracy</small></div>
-        <div class="stat minor"><b id="rWpm">0</b><small>WPM</small></div>
-        <div class="stat"><b id="rTime">0s</b><small data-t="r.time">Time</small></div>
-        <div class="stat"><b id="rXp">+0</b><small id="rXpL">XP</small></div>
+        <div class="stat main rv"><b id="rAcc">0%</b><small data-t="r.acc">Accuracy</small></div>
+        <div class="stat minor rv rv2"><b id="rWpm">0</b><small>WPM</small></div>
+        <div class="stat rv rv2"><b id="rTime">0s</b><small data-t="r.time">Time</small></div>
+        <div class="stat rv rv2"><b id="rXp">+0</b><small id="rXpL">XP</small></div>
       </div>
-      <div class="need" id="rNeed"></div>
-      <div class="rlvl" id="rLvl">
+      <div class="need rv rv2" id="rNeed"></div>
+      <div class="rlvl rv rv2" id="rLvl">
         <div class="row"><b id="rLvlName">Level 1</b><div class="spacer"></div><span class="muted" id="rLvlXp"></span></div>
         <div class="bar"><i id="rLvlBar" style="width:0"></i></div>
       </div>
       <div class="lvlup" id="rLvlUp"></div>
       <div class="lvlup goal" id="rGoal" role="status"></div>
-      <div class="rbtns">
+      <div class="rbtns rv rv4">
         <button class="btn ghost" id="rMap" data-t="map">Map</button>
         <button class="btn ghost" id="rRetry" data-t="r.retry">↻ Retry</button>
         <button class="btn" id="rNext">Next →</button>
       </div>
-      <div class="muted" style="font-size:12px;margin-top:10px" data-t="r.enter">Press <b>Enter</b> for the main button</div>
+      <div class="muted rv rv4" style="font-size:12px;margin-top:10px" data-t="r.enter">Press <b>Enter</b> for the main button</div>
     </div>
   </section>
 
@@ -2342,16 +2355,16 @@ const resultClicksLocked = () => performance.now() - resultAt < RESULT_CLICK_LOC
 function showResult(o){
   show("result"); resultAt = performance.now();
   $("#rTitle").textContent=o.title;
-  $$("#rStars span").forEach((s,i)=>{ s.className=""; if(o.stars===undefined){ s.parentElement.style.display="none"; } else { s.parentElement.style.display=""; setTimeout(()=>s.className= i<o.stars?"on":"dim", 250+i*300); } });
+  $("#rStars").style.display = o.stars===undefined ? "none" : "";
   $("#rWpm").textContent=Math.round(o.res.wpm);
-  $("#rAcc").textContent=Math.round(o.res.acc)+"%";
+  $("#rAcc").textContent=Math.floor(o.res.acc)+"%";
   $("#rTime").textContent=o.res.secs<60?Math.round(o.res.secs)+"s":fmtTime(o.res.secs);
   $("#rXp").textContent="+"+o.xp; $("#rXpL").textContent=runQuiet ? t("qh.xp") : runSoft ? t("soft.xp") : "XP";
-  showLevel(o.xp, o.stars, o.party!==false);
+  showLevel(o.xp, o.stars, o.party!==false, o.stars===undefined ? 1000 : 1600);   // after the stars
   $("#rNeed").textContent=o.need||"";
   $("#rRec").hidden=!o.accRec; $("#rRec").textContent=o.accRec ? t("r.accRec") : "";
   const weak=Object.entries(o.res.miss||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd>${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
+  $("#rWeak").innerHTML = weak.length ? t("r.tricky")+" "+weak.map(([c,n])=>`<kbd class="rv">${c===" "?t("space"):esc(c)}</kbd>×${n}`).join(" ") : t("r.noMiss");
   showRunText(o.res.typed);
   say("#result", runQuiet ? t("qh.say",{name: state.name ? ", "+esc(state.name) : ""}) : o.msg, runQuiet ? "think" : o.mood);
   $("#rNext").style.display = o.next ? "" : "none";
@@ -2361,8 +2374,61 @@ function showResult(o){
   $$("#result .rbtns .btn").forEach(b=>b.classList.remove("filling")); void main.offsetWidth;
   main.style.setProperty("--lock", RESULT_KEY_LOCK+"ms"); main.classList.add("filling");
   main.onanimationend = e => { if(e.animationName==="btnfill") main.classList.remove("filling"); };   // ready: normal colour again
+  revealResult(o, main);
   offerLayout();
 }
+/* Staged reveal of the result. Order: accuracy counts up, stars pop in, record chip, WPM/time/XP and level,
+   the text box (errors pulse once), tricky keys, then Keebo and the buttons with a glow on the main button.
+   About 2.5 s. Any key or tap ends it at once. Reduced motion (or tests, TYPOO_REVEAL=false): all at once. */
+const REVEAL = {on:false, timers:[], raf:0, end:null};
+function revealStop(){ REVEAL.timers.forEach(clearTimeout); REVEAL.timers=[]; cancelAnimationFrame(REVEAL.raf); }
+function revealResult(o, main){
+  revealStop();
+  // The shown accuracy rounds down, so a failed run (89.6%) never shows a pass value (90%).
+  const root=$("#result"), accEl=$("#rAcc"), acc=Math.floor(o.res.acc), stars=$$("#rStars span");
+  const at=(ms,f)=>REVEAL.timers.push(setTimeout(f,ms));
+  const showIn=sel=>$$(sel).forEach(e=>e.classList.add("in"));
+  const starOn=i=>{ stars[i].className = i<(o.stars||0) ? "on" : "dim"; };
+  REVEAL.end=()=>{
+    revealStop(); REVEAL.on=false;
+    accEl.textContent=acc+"%"; stars.forEach((s,i)=>starOn(i));
+    root.classList.remove("reveal"); showIn("#result .rv");
+    main.classList.remove("glow"); void main.offsetWidth; main.classList.add("glow");
+  };
+  stars.forEach(s=>s.className="");
+  if(window.TYPOO_REVEAL===false || matchMedia("(prefers-reduced-motion: reduce)").matches){ REVEAL.end(); return; }
+  $$("#result .rv").forEach(e=>e.classList.remove("in")); main.classList.remove("glow");
+  root.classList.add("reveal"); REVEAL.on=true;
+  // 1. Accuracy counts up from 0
+  let t=30;
+  accEl.textContent="0%";
+  at(t, ()=>{ showIn("#rTitle, #result .stat.main");
+    const t0=performance.now(), dur=600;
+    const step=now=>{ const p=Math.min(1,Math.max(0,(now-t0)/dur)); accEl.textContent=Math.round(acc*(1-Math.pow(1-p,3)))+"%"; if(p<1) REVEAL.raf=requestAnimationFrame(step); };
+    REVEAL.raf=requestAnimationFrame(step); });
+  t+=650;
+  // Stars pop in one by one, a soft note for each star won
+  if(o.stars!==undefined){
+    stars.forEach((s,i)=>at(t+i*250, ()=>{ starOn(i); if(i<o.stars) beep(660+i*130, 0.12, "sine", 0.035); }));
+    t+=stars.length*250+100;
+  }
+  // 2. Record chip, only when it is true
+  if(o.accRec){ at(t, ()=>showIn("#rRec")); t+=250; }
+  // 3. WPM, time, XP and level: small, no count-up
+  at(t, ()=>showIn("#result .rv2")); t+=300;
+  // 4. The text box; the orange errors pulse once
+  at(t, ()=>showIn("#rText")); t+=300;
+  at(t, ()=>$$("#rText .ms").forEach(e=>e.classList.add("pulse")));
+  // 5. Tricky keys: the line, then the chips pop in, a few ms apart
+  const kb=$$("#rWeak kbd");
+  at(t, ()=>showIn("#rWeak"));
+  kb.forEach((k,i)=>at(t+i*70, ()=>k.classList.add("in")));
+  t+=250+kb.length*70;
+  // 6. Keebo and the buttons, then a soft glow on the main button
+  at(t, ()=>showIn("#result .rv4"));
+  at(t+250, ()=>REVEAL.end());
+}
+$("#result").addEventListener("pointerdown", ()=>{ if(REVEAL.on) REVEAL.end(); }, true);
 /* The text box of the run, same style as during the run, at the top of the result.
    Letters with an error are orange, as while typing. The keys that were pressed do not show. */
 function showRunText(ty){
@@ -2388,14 +2454,13 @@ function showGoal(){
   confetti(160); chime();
 }
 /* XP sum after the summary. A new level gets a celebration. */
-function showLevel(gained, stars, party=true){
+function showLevel(gained, stars, party=true, delay=1300){
   const now=levelInfo(state.xp), before=levelInfo(state.xp-gained);
   const up=now.lvl>before.lvl, newTitle=now.title!==before.title;
   clearTimeout(lvlTimer); clearTimeout(goalTimer); $("#rLvlUp").classList.remove("on"); $("#rGoal").classList.remove("on");
   $("#rLvlName").textContent=`${t("level")} ${before.lvl} · ${before.title}`;
   $("#rLvlXp").textContent=`${before.into} / ${before.need} XP`;
   const bar=$("#rLvlBar"); bar.style.transition="none"; bar.style.width=(before.into/before.need*100)+"%"; void bar.offsetWidth; bar.style.transition="";
-  const delay = stars===undefined ? 300 : 1300; // after the stars
   if(goalPending) goalTimer=setTimeout(showGoal, delay + (up ? 1700 : 500));
   lvlTimer=setTimeout(()=>{
     if(up){
@@ -4002,6 +4067,7 @@ document.addEventListener("click", e=>{ if(e.detail===0) pressFx(e.target.closes
    GLOBAL KEYS
    ========================================================================= */
 document.addEventListener("keydown", e=>{
+  if(screen==="result" && REVEAL.on) REVEAL.end();                              // any key shows the full result at once
   if(screen==="result" && resultKeysLocked()){ e.preventDefault(); return; }   // still typing: ignore all keys for a moment
   if(T){ if(e.key==="Escape"){ e.preventDefault(); endTour(); } else if(e.key==="Enter"||e.key==="ArrowRight"){ e.preventDefault(); tourNextStep(); } else if(e.key==="ArrowLeft"){ e.preventDefault(); tourStep(T.i-1); } return; }
   if($("#dayWelcome").classList.contains("on")){ if(e.key==="Enter"){ e.preventDefault(); welcomeGo(); } else if(e.key==="Escape"){ e.preventDefault(); welcomeSkip(); } return; }
