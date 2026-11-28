@@ -35,7 +35,8 @@ test("typing and result: accuracy first; a better accuracy shows a record chip",
   await expect(page.locator("#type .live .pill").first()).toContainText("🎯");
   await typeAll(page);
   await expect(page.locator("#result")).toBeVisible();
-  await expect(page.locator("#result .rstats .stat b").first()).toHaveAttribute("id", "rAcc");
+  const ids = await page.$$eval("#result .rstats .stat b", (b) => b.map((e) => e.id));
+  expect(ids).toEqual(["rTime", "rWpm", "rAcc", "rXp"]);                    // KPI row: time, WPM, accuracy, +XP
   await expect(page.locator("#rRec")).toBeVisible();
   await expect(page.locator("#rRec")).toContainText("New accuracy record");
 });
