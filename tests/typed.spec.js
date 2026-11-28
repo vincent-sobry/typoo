@@ -1,4 +1,4 @@
-// Result screen: the typed text with the errors marked, so the player can see what went wrong.
+// Result screen: the text box of the run at the top, letters with an error in orange.
 const { test, expect } = require("@playwright/test");
 const { player, openApp, typeAll } = require("./helpers");
 
@@ -20,22 +20,25 @@ async function typeWithErrors(page, at) {
   return text;
 }
 
-test("chapter with errors: the text shows, each wrong key is on top of its letter", async ({ page }) => {
+test("the text box of the run is at the top; letters with an error are orange, no pressed keys", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 657 });
   await openApp(page, player());
   await page.click("#mContinue");
   const text = await typeWithErrors(page, [0, 5]);
-  await expect(page.locator("#result")).toBeVisible();
-  await expect(page.locator("#rTyped")).toBeVisible();
-  const box = page.locator("#rTypedBox");
-  const er = box.locator(".er");
-  await expect(er).toHaveCount(2);
-  await expect(er.first()).toHaveAttribute("data-w", text[0] === "x" ? "z" : "x");
-  await expect(er.first()).toHaveText(text[0] === " " ? "␣" : text[0]);
-  // all text is in the box (spaces with an error show as ␣)
-  const shown = (await box.innerText()).replace(/␣/g, " ").replace(/\s+/g, " ").trim();
-  expect(shown).toBe(text.replace(/\s+/g, " ").trim());
-  // the box scrolls when the text is long, and the buttons can still be reached
+  const box = page.locator("#rText");
+  await expect(box).toBeVisible();
+  await expect(box).toHaveClass(/textbox/);
+  const ms = box.locator(".ms");
+  await expect(ms).toHaveCount(2);
+  await expect(ms.first()).toHaveCSS("color", "rgb(192, 138, 58)");        // the orange of a fixed error while typing
+  expect((await box.innerText()).replace(/\s+/g, " ").trim()).toBe(text.replace(/\s+/g, " ").trim());
+  // order: text box, tricky keys, Keebo, title
+  const y = async (sel) => (await page.locator(sel).boundingBox()).y;
+  expect(await y("#rText")).toBeLessThan(await y("#rWeak"));
+  expect(await y("#rWeak")).toBeLessThan(await y("#result .botbox"));
+  expect(await y("#result .botbox")).toBeLessThan(await y("#rTitle"));
+  await expect(page.locator("#rTyped")).toHaveCount(0);                      // the old lower box is gone
+  // the buttons can be reached
   await page.locator("#rNext").scrollIntoViewIfNeeded();
   await expect(page.locator("#rNext")).toBeInViewport();
   // nothing of it goes into the saved state
@@ -43,30 +46,10 @@ test("chapter with errors: the text shows, each wrong key is on top of its lette
   expect(savedStr).not.toContain("wrong");
 });
 
-test("chapter with no errors: no typed text block", async ({ page }) => {
+test("no errors: the text box shows, with no orange letters", async ({ page }) => {
   await openApp(page, player());
   await page.click("#mContinue");
   await typeAll(page);
-  await expect(page.locator("#result")).toBeVisible();
-  await expect(page.locator("#rTyped")).toBeHidden();
-});
-
-test("the head of the block follows the language", async ({ page }) => {
-  await openApp(page, player({ lang: "nl" }));
-  await page.click("#mContinue");
-  await typeWithErrors(page, [1]);
-  await expect(page.locator("#rTyped .tyhead b")).toHaveText("Jouw tekst");
-});
-
-test("version B: the text box of the run is at the top, letters with an error are red, no pressed keys", async ({ page }) => {
-  await openApp(page, player());
-  await page.click("#mContinue");
-  const text = await typeWithErrors(page, [0, 5]);
-  const box = page.locator("#rText");
-  await expect(box).toBeVisible();
-  await expect(box).toHaveClass(/textbox/);
-  await expect(box.locator(".ms")).toHaveCount(2);
-  expect((await box.innerText()).replace(/\s+/g, " ").trim()).toBe(text.replace(/\s+/g, " ").trim());
-  const boxY = (await box.boundingBox()).y, titleY = (await page.locator("#rTitle").boundingBox()).y;
-  expect(boxY).toBeLessThan(titleY);                                         // top of the summary
+  await expect(page.locator("#rText")).toBeVisible();
+  await expect(page.locator("#rText .ms")).toHaveCount(0);
 });
