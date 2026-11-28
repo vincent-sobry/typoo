@@ -471,6 +471,8 @@ body{text-wrap:pretty}
 .field input[type=text]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:18px}
 .seg{display:flex;gap:8px;flex-wrap:wrap}
 .seg button{flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px;font-weight:700}
+.kbseg button{min-width:92px}
+.kbseg span{display:block}.kbseg span::first-letter{text-transform:uppercase}
 .seg button.on{background:var(--accent);border-color:var(--accent)}
 .langseg button{min-width:110px}
 .seg button small{display:block;font-weight:500;color:#cfd3ff;font-size:12px}
@@ -532,9 +534,12 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
       </div>
       <div class="field"><label for="obName" data-t="ob.name">What's your name?</label><input id="obName" type="text" maxlength="20" placeholder="Your name" data-ta="placeholder=ob.namePh" autocomplete="off"></div>
       <div class="field"><label><span data-t="ob.kb">Which keyboard do you have?</span> <span class="muted" style="font-weight:400" data-t="ob.kbHint">Look at the first letters on the top row.</span></label>
-        <div class="seg" id="obLayout">
-          <button data-v="azerty">AZERTY<small data-t="lay.az">Belgian / French</small></button>
-          <button data-v="qwerty">QWERTY<small data-t="lay.qw">US / UK / Dutch</small></button>
+        <div class="seg kbseg" id="obLayout">
+          <button data-v="us"><span data-t="kb.us">US</span><small data-t="kb.usSub">QWERTY, also NL</small></button>
+          <button data-v="uk"><span data-t="kb.uk">UK</span><small>QWERTY</small></button>
+          <button data-v="it"><span data-t="kb.it">Italian</span><small>QWERTY</small></button>
+          <button data-v="be"><span data-t="kb.be">Belgian</span><small>AZERTY</small></button>
+          <button data-v="fr"><span data-t="kb.fr">French</span><small>AZERTY</small></button>
         </div>
         <div class="muted" id="obDetect" style="font-size:13px;margin-top:6px"></div>
       </div>
@@ -752,9 +757,12 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
   <div class="field"><label data-t="set.lang">Language</label><div class="seg langseg" id="setLang">
     <button data-v="nl">Nederlands</button><button data-v="en">English</button><button data-v="fr">Français</button><button data-v="it">Italiano</button></div>
     <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.langNote">Screens, Keebo and all typing texts.</div></div>
-  <div class="field"><label data-t="set.kb">Keyboard</label><div class="seg" id="setLayout">
-    <button data-v="azerty">AZERTY<small data-t="lay.az">Belgian / French</small></button>
-    <button data-v="qwerty">QWERTY<small data-t="lay.qw">US / UK / Dutch</small></button></div>
+  <div class="field"><label data-t="set.kb">Keyboard</label><div class="seg kbseg" id="setLayout">
+    <button data-v="us"><span data-t="kb.us">US</span><small data-t="kb.usSub">QWERTY, also NL</small></button>
+    <button data-v="uk"><span data-t="kb.uk">UK</span><small>QWERTY</small></button>
+    <button data-v="it"><span data-t="kb.it">Italian</span><small>QWERTY</small></button>
+    <button data-v="be"><span data-t="kb.be">Belgian</span><small>AZERTY</small></button>
+    <button data-v="fr"><span data-t="kb.fr">French</span><small>AZERTY</small></button></div>
     <div class="muted" style="font-size:12px;margin-top:4px" data-t="set.kbNote">Each keyboard has its own chapter progress.</div></div>
   </section>
   <section class="setgrp"><h3>⌨️ <span data-t="set.gHelp">Typing help</span></h3>
@@ -862,8 +870,12 @@ button.fx-press{animation:fxSquish .22s ease-out,fxGlow .28s ease-out}
    DATA: keyboard layouts
    fingers: 0=L pinky 1=L ring 2=L middle 3=L index 4=R index 5=R middle 6=R ring 7=R pinky 8=thumb
    ========================================================================= */
+/* One map per national keyboard. state.layout keeps the family (qwerty | azerty): chapters, saved
+   progress and chapter codes go by family. state.kbd is the national keyboard; see kbd().
+   A shift label "\u00a0" = the key has no Shift character. ISO keyboards have the extra key left of Z. */
+const ISO = {left:[0,1.5,1.75,1.25], right:["⌫","Enter","","Shift"]};
 const LAYOUTS = {
-  qwerty: {
+  us: { family:"qwerty",
     rows: [
       {base:"`1234567890-=",   shift:"~!@#$%^&*()_+",  fingers:"0012334456777"},
       {base:"qwertyuiop[]\\",  shift:"QWERTYUIOP{}|",  fingers:"0123344567777"},
@@ -872,16 +884,53 @@ const LAYOUTS = {
     ],
     left:[0,1.5,1.75,2.25], right:["⌫","","Enter","Shift"]
   },
-  azerty: {
+  uk: Object.assign({ family:"qwerty",
+    rows: [
+      {base:"`1234567890-=",   shift:"¬!\"£$%^&*()_+", fingers:"0012334456777"},
+      {base:"qwertyuiop[]",    shift:"QWERTYUIOP{}",   fingers:"012334456777"},
+      {base:"asdfghjkl;'#",    shift:"ASDFGHJKL:@~",   fingers:"012334456777"},
+      {base:"\\zxcvbnm,./",    shift:"|ZXCVBNM<>?",    fingers:"00123344567"}
+    ]}, ISO),
+  it: Object.assign({ family:"qwerty",
+    rows: [
+      {base:"\\1234567890'ì",  shift:"|!\"£$%&/()=?^", fingers:"0012334456777"},
+      {base:"qwertyuiopè+",    shift:"QWERTYUIOPé*",   fingers:"012334456777"},
+      {base:"asdfghjklòàù",    shift:"ASDFGHJKLç°§",   fingers:"012334456777"},
+      {base:"<zxcvbnm,.-",     shift:">ZXCVBNM;:_",    fingers:"00123344567"}
+    ],
+    swap:{";":"ò", "/":"-"}}, ISO),              // chapter keys that are not on this keyboard
+  be: Object.assign({ family:"azerty",
     rows: [
       {base:"²&é\"'(§è!çà)-",  shift:"³1234567890°_",  fingers:"0012334456777"},
       {base:"azertyuiop^$",    shift:"AZERTYUIOP¨*",   fingers:"012334456777"},
       {base:"qsdfghjklmùµ",    shift:"QSDFGHJKLM%£",   fingers:"012334456777"},
       {base:"<wxcvbn,;:=",     shift:">WXCVBN?./+",    fingers:"00123344567"}
-    ],
-    left:[0,1.5,1.75,1.25], right:["⌫","Enter","","Shift"]
-  }
+    ]}, ISO),
+  fr: Object.assign({ family:"azerty",
+    rows: [
+      {base:"²&é\"'(-è_çà)=",  shift:"\u00a01234567890°+", fingers:"0012334456777"},
+      {base:"azertyuiop^$",    shift:"AZERTYUIOP¨£",   fingers:"012334456777"},
+      {base:"qsdfghjklmù*",    shift:"QSDFGHJKLM%µ",   fingers:"012334456777"},
+      {base:"<wxcvbn,;:!",     shift:">WXCVBN?./§",    fingers:"00123344567"}
+    ]}, ISO)
 };
+const KBDS = ["us","uk","it","be","fr"];
+/* The national keyboard for a family when the player did not pick one (old saves, chapter codes). */
+function defaultKbd(family){
+  const nav=(navigator.language||"").toLowerCase();
+  if(family==="azerty") return nav==="fr-fr" ? "fr" : "be";
+  return state.lang==="it" || nav.startsWith("it") ? "it" : nav==="en-gb" ? "uk" : "us";
+}
+/* The national keyboard in use. It always belongs to the family in state.layout. */
+function kbd(){ const k=state.kbd; return LAYOUTS[k] && LAYOUTS[k].family===state.layout ? k : defaultKbd(state.layout); }
+function setKbd(k){ state.kbd=k; state.layout=LAYOUTS[k].family; }
+/* Name for messages, for example "Belgian AZERTY". */
+const kbdName = k => t("kb.name",{k:t("kb."+k), f:LAYOUTS[k].family.toUpperCase()});
+/* Chapter keys on the current keyboard: the Italian keyboard has ò for ; and - for /. */
+function kbdSwap(str, layout=state.layout){
+  const sw = layout===state.layout && LAYOUTS[kbd()].swap; if(!sw) return str;
+  return [...str].map(c=>sw[c]||c).join("");
+}
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const LEFT_LABEL = ["","Tab","Caps","Shift"];
@@ -1045,7 +1094,7 @@ I18N.en = {
   /* onboarding */
   "ob.hi":"Hi! I'm <b>Keebo</b>, your typing coach. I'll teach you to type with all ten fingers, without looking. First, a few questions.",
   "ob.name":"What's your name?","ob.namePh":"Your name","ob.kb":"Which keyboard do you have?","ob.kbHint":"Look at the first letters on the top row.",
-  "ob.detect":"I think you have {g}. Change it if I'm wrong.","ob.go":"Let's go! →","lay.az":"Belgian / French","lay.qw":"US / UK / Dutch",
+  "ob.detect":"I think you have {g}. Change it if I'm wrong.","ob.go":"Let's go! →","kb.us":"US","kb.usSub":"QWERTY, also NL","kb.uk":"UK","kb.it":"Italian","kb.be":"Belgian","kb.fr":"French","kb.name":"{k} {f}",
   /* home */
   "h.streakT":"Streak: days in a row with today's goal reached","h.tourT":"Tour (?)","h.tourA":"Start the tour","h.week":"Streak: last 7 days",
   "h.wsave":"Reach today's goal to save your streak","h.toNext":"{x} XP to next level",
@@ -1139,7 +1188,7 @@ I18N.en = {
   "bc.unlocked":"Badge unlocked:","bc.done":"Done! ✅","bc.notYet":"Not yet","bc.of":"{c} of {g} {u}","bc.earned":"Earned on {d}","bc.notEarned":"Not earned yet. You can do it!",
   "u.star":"star","u.stars":"stars","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"days","u.points":"points","u.win":"win","u.chapters":"chapters","u.warmups":"warm-ups","u.sentences":"sentences",
   /* settings */
-  "set.h":"⚙️ Settings","set.name":"Name","set.kb":"Keyboard","set.kbNote":"Each keyboard has its own chapter progress.",
+  "set.h":"⚙️ Settings","set.name":"Name","set.kb":"Keyboard","set.kbNote":"QWERTY and AZERTY each have their own chapter progress.",
   "set.lang":"Language","set.langNote":"Screens, Keebo and all typing texts.","set.help":"Keyboard help on screen",
   "set.full":"Full","set.fullS":"labels + colors","set.blind":"Blind","set.blindS":"no letters","set.proS":"no keyboard",
   "set.hands":"Hands below the keyboard","set.handsOn":"show which finger","set.handsOff":"no finger hint",
@@ -1175,7 +1224,7 @@ I18N.nl = {
   "lines.hello":["Hoi {n}! Klaar om je vingers te trainen?","Welkom terug, {n}! 10 minuten vandaag?","Hey {n}! Elke toets maakt je sneller.","Fijn je te zien, {n}! Versla je score van gisteren."],
   "ob.hi":"Hoi! Ik ben <b>Keebo</b>, je typcoach. Ik leer je typen met tien vingers, zonder te kijken. Eerst een paar vragen.",
   "ob.name":"Hoe heet je?","ob.namePh":"Je naam","ob.kb":"Welk toetsenbord heb je?","ob.kbHint":"Kijk naar de eerste letters op de bovenste rij.",
-  "ob.detect":"Ik denk dat je {g} hebt. Pas het aan als ik me vergis.","ob.go":"Daar gaan we! →","lay.az":"Belgisch / Frans","lay.qw":"VS / VK / Nederlands",
+  "ob.detect":"Ik denk dat je {g} hebt. Pas het aan als ik me vergis.","ob.go":"Daar gaan we! →","kb.us":"VS","kb.usSub":"QWERTY, ook NL","kb.uk":"Brits","kb.it":"Italiaans","kb.be":"Belgisch","kb.fr":"Frans","kb.name":"{k} {f}",
   "h.streakT":"Reeks: dagen na elkaar met je doel gehaald","h.tourT":"Rondleiding (?)","h.tourA":"Start de rondleiding","h.week":"Reeks: laatste 7 dagen",
   "h.wsave":"Haal het doel van vandaag om je reeks te redden","h.toNext":"nog {x} XP tot het volgende level",
   "st.best":"Beste WPM","st.avg":"Gem. WPM","st.stars":"Sterren",
@@ -1254,7 +1303,7 @@ I18N.nl = {
   "rain.txt":"Score <b>{s}</b> · {k} meteoren gestopt · +{x} XP","rain.goal":"🎯 Dagdoel gehaald! 10 minuten vandaag.",
   "bc.unlocked":"Badge verdiend:","bc.done":"Gehaald! ✅","bc.notYet":"Nog niet","bc.of":"{c} van {g} {u}","bc.earned":"Verdiend op {d}","bc.notEarned":"Nog niet verdiend. Jij kunt het!",
   "u.star":"ster","u.stars":"sterren","u.run":"run","u.WPM":"WPM","u.race":"race","u.races":"races","u.days":"dagen","u.points":"punten","u.win":"overwinning","u.chapters":"hoofdstukken","u.warmups":"opwarmingen","u.sentences":"zinnen",
-  "set.h":"⚙️ Instellingen","set.name":"Naam","set.kb":"Toetsenbord","set.kbNote":"Elk toetsenbord heeft zijn eigen voortgang.",
+  "set.h":"⚙️ Instellingen","set.name":"Naam","set.kb":"Toetsenbord","set.kbNote":"QWERTY en AZERTY hebben elk hun eigen voortgang.",
   "set.lang":"Taal","set.langNote":"Schermen, Keebo en alle typteksten.","set.help":"Hulp van het toetsenbord op het scherm",
   "set.full":"Volledig","set.fullS":"letters + kleuren","set.blind":"Blind","set.blindS":"geen letters","set.proS":"geen toetsenbord",
   "set.hands":"Handen onder het toetsenbord","set.handsOn":"toon welke vinger","set.handsOff":"geen vingerhulp",
@@ -1322,7 +1371,7 @@ I18N.fr = {
   "lines.hello":["Salut {n} ! Prêt à entraîner tes doigts ?","Re-bonjour, {n} ! 10 minutes aujourd'hui ?","Hé {n} ! Chaque touche te rend plus rapide.","Content de te voir, {n} ! On bat le score d'hier ?"],
   "ob.hi":"Salut ! Je suis <b>Keebo</b>, ton coach de frappe. Je vais t'apprendre à taper avec tes dix doigts, sans regarder. D'abord, quelques questions.",
   "ob.name":"Comment tu t'appelles ?","ob.namePh":"Ton prénom","ob.kb":"Quel clavier as-tu ?","ob.kbHint":"Regarde les premières lettres de la rangée du haut.",
-  "ob.detect":"Je pense que tu as un {g}. Change-le si je me trompe.","ob.go":"C'est parti ! →","lay.az":"belge / français","lay.qw":"US / UK / néerlandais",
+  "ob.detect":"Je pense que tu as un {g}. Change-le si je me trompe.","ob.go":"C'est parti ! →","kb.us":"américain","kb.usSub":"QWERTY, aussi NL","kb.uk":"britannique","kb.it":"italien","kb.be":"belge","kb.fr":"français","kb.name":"{f} {k}",
   "h.streakT":"Série : jours d'affilée avec l'objectif atteint","h.tourT":"Visite (?)","h.tourA":"Lancer la visite","h.week":"Série : 7 derniers jours",
   "h.wsave":"Atteins l'objectif du jour pour sauver ta série","h.toNext":"encore {x} XP jusqu'au niveau suivant",
   "st.best":"Meilleur WPM","st.avg":"WPM moyen","st.stars":"Étoiles",
@@ -1401,7 +1450,7 @@ I18N.fr = {
   "rain.txt":"Score <b>{s}</b> · {k} météores arrêtés · +{x} XP","rain.goal":"🎯 Objectif du jour atteint ! 10 minutes aujourd'hui.",
   "bc.unlocked":"Badge débloqué :","bc.done":"Réussi ! ✅","bc.notYet":"Pas encore","bc.of":"{c} sur {g} {u}","bc.earned":"Gagné le {d}","bc.notEarned":"Pas encore gagné. Tu peux le faire !",
   "u.star":"étoile","u.stars":"étoiles","u.run":"partie","u.WPM":"WPM","u.race":"course","u.races":"courses","u.days":"jours","u.points":"points","u.win":"victoire","u.chapters":"chapitres","u.warmups":"échauffements","u.sentences":"phrases",
-  "set.h":"⚙️ Réglages","set.name":"Prénom","set.kb":"Clavier","set.kbNote":"Chaque clavier a sa propre progression.",
+  "set.h":"⚙️ Réglages","set.name":"Prénom","set.kb":"Clavier","set.kbNote":"QWERTY et AZERTY ont chacun leur propre progression.",
   "set.lang":"Langue","set.langNote":"Écrans, Keebo et tous les textes à taper.","set.help":"Aide du clavier à l'écran",
   "set.full":"Complet","set.fullS":"lettres + couleurs","set.blind":"Aveugle","set.blindS":"sans lettres","set.proS":"sans clavier",
   "set.hands":"Mains sous le clavier","set.handsOn":"montre quel doigt","set.handsOff":"pas d'aide pour les doigts",
@@ -1469,7 +1518,7 @@ I18N.it = {
   "lines.hello":["Ciao {n}! Pronto ad allenare le dita?","Bentornato, {n}! 10 minuti oggi?","Ehi {n}! Ogni tasto ti rende più veloce.","Che bello vederti, {n}! Battiamo il punteggio di ieri."],
   "ob.hi":"Ciao! Sono <b>Keebo</b>, il tuo allenatore di scrittura. Ti insegno a scrivere con dieci dita, senza guardare. Prima, qualche domanda.",
   "ob.name":"Come ti chiami?","ob.namePh":"Il tuo nome","ob.kb":"Che tastiera hai?","ob.kbHint":"Guarda le prime lettere della fila in alto.",
-  "ob.detect":"Penso che tu abbia una {g}. Cambiala se sbaglio.","ob.go":"Andiamo! →","lay.az":"belga / francese","lay.qw":"USA / UK / olandese",
+  "ob.detect":"Penso che tu abbia una {g}. Cambiala se sbaglio.","ob.go":"Andiamo! →","kb.us":"americana","kb.usSub":"QWERTY, anche NL","kb.uk":"britannica","kb.it":"italiana","kb.be":"belga","kb.fr":"francese","kb.name":"{f} {k}",
   "h.streakT":"Serie: giorni di fila con l'obiettivo raggiunto","h.tourT":"Tour (?)","h.tourA":"Avvia il tour","h.week":"Serie: ultimi 7 giorni",
   "h.wsave":"Raggiungi l'obiettivo di oggi per salvare la serie","h.toNext":"ancora {x} XP al prossimo livello",
   "st.best":"WPM migliore","st.avg":"WPM medio","st.stars":"Stelle",
@@ -1548,7 +1597,7 @@ I18N.it = {
   "rain.txt":"Punti <b>{s}</b> · {k} meteoriti fermati · +{x} XP","rain.goal":"🎯 Obiettivo del giorno raggiunto! 10 minuti oggi.",
   "bc.unlocked":"Medaglia sbloccata:","bc.done":"Fatto! ✅","bc.notYet":"Non ancora","bc.of":"{c} su {g} {u}","bc.earned":"Vinta il {d}","bc.notEarned":"Non ancora vinta. Ce la puoi fare!",
   "u.star":"stella","u.stars":"stelle","u.run":"partita","u.WPM":"WPM","u.race":"gara","u.races":"gare","u.days":"giorni","u.points":"punti","u.win":"vittoria","u.chapters":"capitoli","u.warmups":"riscaldamenti","u.sentences":"frasi",
-  "set.h":"⚙️ Impostazioni","set.name":"Nome","set.kb":"Tastiera","set.kbNote":"Ogni tastiera ha i suoi progressi.",
+  "set.h":"⚙️ Impostazioni","set.name":"Nome","set.kb":"Tastiera","set.kbNote":"QWERTY e AZERTY hanno ciascuna i propri progressi.",
   "set.lang":"Lingua","set.langNote":"Schermate, Keebo e tutti i testi da scrivere.","set.help":"Aiuto della tastiera sullo schermo",
   "set.full":"Completo","set.fullS":"lettere + colori","set.blind":"Cieco","set.blindS":"senza lettere","set.proS":"senza tastiera",
   "set.hands":"Mani sotto la tastiera","set.handsOn":"mostra quale dito","set.handsOff":"nessun aiuto per le dita",
@@ -1709,9 +1758,15 @@ const fits = (w,set) => [...w].every(c=>set.has(c) || set.has(fold(c)));
 const isDigit = c => c>="0" && c<="9";
 
 function lessonsFlat(layout=state.layout){
-  const out=[]; CURRICULUM[layout].forEach((st,si)=>st.lessons.forEach(l=>{
-    out.push({idx:out.length, stage:si, stageName:tx(st.stage), keys:l[0], title:lessonTitle(l[1]), target:l[2]||st.target, tip:tx(st.tip)});
-  })); return out;
+  const out=[]; CURRICULUM[layout].forEach((st,si)=>{
+    const swapped = st.lessons.some(l=>l[0][0]!=="*" && kbdSwap(l[0],layout)!==l[0]);
+    const tip = swapped ? kbdSwap(tx(st.tip),layout).replace(/ò/g,"Ò") : tx(st.tip);
+    st.lessons.forEach(l=>{
+      const keys = l[0][0]==="*" ? l[0] : kbdSwap(l[0],layout);
+      const title = /^\S and \S$/.test(l[1]) ? kbdSwap(l[1],layout) : l[1];
+      out.push({idx:out.length, stage:si, stageName:tx(st.stage), keys, title:lessonTitle(title), target:l[2]||st.target, tip});
+    });
+  }); return out;
 }
 /* UI label for one lesson. Internal names and saved data keep "lesson". */
 function chapterWord(){ return t("chapter"); }
@@ -1851,7 +1906,7 @@ const pick = (k,n) => rnd(t("lines."+k)).replace("{n}", esc(n||""));
    ========================================================================= */
 let CHARMAP = {};
 function buildKeyboard(){
-  const lay=LAYOUTS[state.layout]; const kb=$("#kb"); kb.innerHTML=""; CHARMAP={};
+  const lay=LAYOUTS[kbd()]; const kb=$("#kb"); kb.innerHTML=""; CHARMAP={};
   lay.rows.forEach((row,ri)=>{
     const r=document.createElement("div"); r.className="krow";
     if(lay.left[ri]){ const s=document.createElement("div"); s.className="key sp"; s.style.flex="none"; s.style.width=`calc(var(--u) * ${lay.left[ri]} + ${(lay.left[ri]-1)*5}px)`;
@@ -1895,7 +1950,7 @@ function clearHighlights(){
 }
 function highlightChar(ch){
   clearHighlights();
-  const m=CHARMAP[fold(ch)]||CHARMAP[ch]; if(!m){ $("#fingerLbl").textContent=""; return; }
+  const m=CHARMAP[ch]||CHARMAP[fold(ch)]; if(!m){ $("#fingerLbl").textContent=""; return; }
   const el=document.getElementById(m.id); if(el) el.classList.add("next");
   $("#fframe").style.setProperty("--ff", FINGER_COLORS[m.finger]);
   const fingers=[m.finger];
@@ -2470,7 +2525,7 @@ const CUSTOM_N = 24;                                  // words and letter groups
 const CUSTOM_MIN_WORDS = 12;                          // fewer real words than this: add letter groups
 /* The letter keys of the layout, per row: [{c, f}] with f = finger. */
 function customRows(){
-  return LAYOUTS[state.layout].rows.slice(1).map(r=>[...r.base].map((c,i)=>({c, f:+r.fingers[i]})).filter(k=>/[a-z]/.test(k.c)));
+  return LAYOUTS[kbd()].rows.slice(1).map(r=>[...r.base].map((c,i)=>({c, f:+r.fingers[i]})).filter(k=>/[a-z]/.test(k.c)));
 }
 const customHome = () => customRows()[1].map(k=>k.c).join("");
 const customSort = keys => { const order=customRows().flat().map(k=>k.c).join(""); return [...new Set(keys)].filter(c=>order.includes(c)).sort((a,b)=>order.indexOf(a)-order.indexOf(b)).join(""); };
@@ -3658,25 +3713,37 @@ $("#tBlind").onclick=e=>{ state.blind=(state.blind+1)%3; save(); applyBlind(); e
 let layoutHinted=false, layoutGuess=null;
 /* Show the layout hint, if the app noted a mismatch. Called on the result and home screens. */
 function offerLayout(){
-  const g=layoutGuess; if(!g || g===state.layout){ $("#layoutWarn").classList.remove("on"); return; }
-  $("#layoutWarnTxt").innerHTML=t("lay.warn",{g:g.toUpperCase(),a:state.layout.toUpperCase()});
+  const g=layoutGuess; if(!g || g===kbd()){ $("#layoutWarn").classList.remove("on"); return; }
+  $("#layoutWarnTxt").innerHTML=t("lay.warn",{g:kbdName(g),a:kbdName(kbd())});
   $("#layoutWarn").classList.add("on");
-  $("#layoutFix").onclick=()=>{ layoutGuess=null; state.layout=g; save(); $("#layoutWarn").classList.remove("on"); buildKeyboard(); goHome(); };
+  $("#layoutFix").onclick=()=>{ layoutGuess=null; setKbd(g); save(); $("#layoutWarn").classList.remove("on"); buildKeyboard(); goHome(); };
   $("#layoutLater").onclick=()=>{ layoutGuess=null; $("#layoutWarn").classList.remove("on"); };
+}
+/* Guess the keyboard from one key press: the physical key (e.code) and the character it gives (e.key).
+   Gives a national keyboard ("it") or only a family ("azerty"). */
+function kbdFromKey(code, key){
+  key=(key||"").toLowerCase();
+  if(code==="KeyQ"){ if(key==="a") return "azerty"; if(key==="q") return "qwerty"; }
+  if(code==="KeyA"){ if(key==="q") return "azerty"; if(key==="a") return "qwerty"; }
+  if(code==="Semicolon"){ if(key==="m") return "azerty"; if(key==="ò"||key==="ç") return "it"; }
+  if(code==="Digit6"){ if(key==="§") return "be"; if(key==="-") return "fr"; }
+  if(code==="Backslash" && (key==="#"||key==="~")) return "uk";
+  return null;
 }
 function detectLayout(e){
   if(layoutHinted || !e.code) return;
-  let guess=null;
-  if(e.code==="KeyQ"){ if(e.key.toLowerCase()==="a") guess="azerty"; else if(e.key.toLowerCase()==="q") guess="qwerty"; }
-  if(e.code==="KeyA"){ if(e.key.toLowerCase()==="q") guess="azerty"; else if(e.key.toLowerCase()==="a") guess="qwerty"; }
-  if(e.code==="Semicolon" && e.key.toLowerCase()==="m") guess="azerty";
-  if(guess && guess!==state.layout){
-    // Only note it. The hint shows after the run (result or home screen), never during typing.
-    layoutHinted=true; layoutGuess=guess;
+  let g=kbdFromKey(e.code, e.key); if(!g) return;
+  if(!LAYOUTS[g]){ if(g===state.layout) return; g=defaultKbd(g); }
+  if(g!==kbd()){
+    layoutHinted=true; layoutGuess=g;
   }
 }
 async function guessLayout(){
-  try{ if(navigator.keyboard && navigator.keyboard.getLayoutMap){ const m=await navigator.keyboard.getLayoutMap(); const q=m.get("KeyQ"); if(q==="a") return "azerty"; if(q==="q") return "qwerty"; } }catch(e){}
+  try{ if(navigator.keyboard && navigator.keyboard.getLayoutMap){ const m=await navigator.keyboard.getLayoutMap();
+    const q=m.get("KeyQ"), sc=m.get("Semicolon");
+    if(q==="a") return m.get("Digit6")==="-" ? "fr" : "be";
+    if(q==="q") return sc==="ò" ? "it" : m.get("Backslash")==="#" ? "uk" : "us";
+  } }catch(e){}
   return null;
 }
 
@@ -3686,27 +3753,31 @@ async function guessLayout(){
 function segInit(sel, val, cb){
   $$(sel+" button").forEach(b=>{ b.classList.toggle("on", b.dataset.v===String(val)); b.onclick=()=>{ $$(sel+" button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); cb(b.dataset.v); }; });
 }
-let ob={layout:"azerty", detect:""};
+let ob={kbd:"", detect:"", picked:false};
+/* First-start keyboard when the browser cannot tell: from the language (NL and FR: Belgium). */
+function obDefaultKbd(){ return state.lang==="it" ? "it" : state.lang==="en" ? defaultKbd("qwerty") : defaultKbd("azerty"); }
 /* Onboarding. The language comes first: the screen changes at once. */
 async function startOnboarding(){
   show("onboard");
   state.lang=guessLang(); applyLang(); $("#obDetect").textContent="";
-  segInit("#obLang", state.lang, v=>{ state.lang=v; applyLang(); obDetectTxt(); });
-  const g=await guessLayout(); if(g){ ob.layout=g; ob.detect=g; obDetectTxt(); }
-  segInit("#obLayout", ob.layout, v=>ob.layout=v);
+  ob={kbd:obDefaultKbd(), detect:"", picked:false};
+  const pickKbd=()=>segInit("#obLayout", ob.kbd, v=>{ ob.kbd=v; ob.picked=true; });
+  segInit("#obLang", state.lang, v=>{ state.lang=v; applyLang(); obDetectTxt(); if(!ob.detect && !ob.picked){ ob.kbd=obDefaultKbd(); pickKbd(); } });
+  pickKbd();
+  const g=await guessLayout(); if(g && !ob.picked){ ob.kbd=g; ob.detect=g; obDetectTxt(); pickKbd(); }
   setTimeout(()=>$("#obName").focus(),50);
 }
-function obDetectTxt(){ if(ob.detect) $("#obDetect").textContent=t("ob.detect",{g:ob.detect.toUpperCase()}); }
+function obDetectTxt(){ if(ob.detect) $("#obDetect").textContent=t("ob.detect",{g:kbdName(ob.detect)}); }
 $("#obGo").onclick=()=>{
   const n=$("#obName").value.trim(); if(!n){ $("#obName").focus(); $("#obName").style.borderColor="var(--bad)"; return; }
-  state.name=n; state.layout=ob.layout; state.dayOpen=todayStr(); save(); buildKeyboard(); goHome();
+  state.name=n; setKbd(ob.kbd); state.dayOpen=todayStr(); save(); buildKeyboard(); goHome();
   if(!state.flags.tour) setTimeout(startTour, 400);      // first visit: short tour of the home screen
 };
 $("#obName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#obGo").click(); });
 
 function openSettings(){
   $("#setName").value=state.name;
-  segInit("#setLayout", state.layout, v=>{ state.layout=v; save(); buildKeyboard(); renderHome(); });
+  segInit("#setLayout", kbd(), v=>{ setKbd(v); layoutGuess=null; save(); buildKeyboard(); renderChapterCodes(); renderHome(); });
   segInit("#setLang", state.lang, v=>{ state.lang=v; save(); applyLang(); buildKeyboard(); renderChapterCodes(); renderHome(); });
   segInit("#setBlind", state.blind, v=>{ state.blind=+v; save(); applyBlind(); });
   segInit("#setHands", state.hands, v=>{ state.hands=+v; save(); fitKeyboard(); });

@@ -81,13 +81,13 @@ test("onboarding: the language comes first and changes the screen at once", asyn
   await page.click("#obLang [data-v=it]");
   await expect(page.locator("label[for=obName]")).toHaveText("Come ti chiami?");
   await page.fill("#obName", "Lucas");
-  await page.click("#obLayout [data-v=azerty]");
+  await page.click("#obLayout [data-v=be]");
   await page.click("#obGo");
   await expect(page.locator("#home")).toBeVisible();
   await expect(page.locator("#mContinue b")).toHaveText("Continua");
   expect(await page.evaluate("document.documentElement.lang")).toBe("it");
   const s = await saved(page);
-  expect(s).toMatchObject({ name: "Lucas", layout: "azerty", lang: "it" });
+  expect(s).toMatchObject({ name: "Lucas", layout: "azerty", kbd: "be", lang: "it" });
 });
 
 test("a saved player keeps the language: NL saves show Dutch screens", async ({ page }) => {
@@ -125,7 +125,7 @@ test("accents: the base letter counts as correct (é = e), the accent key too", 
 });
 
 test("the on-screen keyboard shows the base letter for an accent", async ({ page }) => {
-  await openApp(page, player({ lang: "it" }));
+  await openApp(page, player({ lang: "it", kbd: "us" }));   // the US keyboard has no à key (the Italian keyboard has one: tests/kbd.spec.js)
   await page.evaluate(() => startSession({ mode: "smart", title: "test", text: "città", onFinish: () => {} }));
   await page.keyboard.type("citt", { delay: 5 });
   await expect(page.locator("#fingerLbl")).toHaveText("Mignolo sinistro");
